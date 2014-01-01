@@ -2,4 +2,5 @@ FreedomBone is a personal home communications server based upon the BeagleBone B
 
 beaglebone.txt is in Emacs org-mode format.
 
-See http://freedombone.uk.to
+* [Main site](http://freedombone.uk.to)
+* [Initial project announcement](http://computationalist.uk.to/?x=entry:entry140101-121418)
