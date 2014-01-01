@@ -1,0 +1,2177 @@
+#+TITLE: FreedomBone
+#+AUTHOR: Bob Mottram
+#+EMAIL: bob@robotics.uk.to
+#+KEYWORDS: freedombox, debian, beaglebone, friendica, email, web server, home server, internet, censorship, surveillance
+#+DESCRIPTION: Turn the Beaglebone Black into a personal communications server
+
+#+BEGIN_CENTER
+*How to turn the Beaglebone Black into a FreedomBox-like personal communications server*
+#+END_CENTER
+
+#+BEGIN_CENTER
+[[[[file:images/freedombone.jpg]]]]
+#+END_CENTER
+
+#+BEGIN_CENTER
+Copyright (C)  2014  Bob Mottram
+
+Permission is granted to copy, distribute and/or modify this document under the terms of the [[https://gnu.org/licenses/fdl.html][GNU Free Documentation License]], Version 1.3 or any later version published by the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+
+Source for this web site in [[https://en.wikipedia.org/wiki/Org-mode][Emacs org-mode]] format is available [[/beaglebone.txt][here]].
+#+END_CENTER
+
+* Introduction
+
+#+BEGIN_VERSE
+/If you look at it from an engineering perspective, an iterative perspective, it’s clear that you have to try something rather than do nothing./
+
+-- Edward J. Snowden
+#+END_VERSE
+
+** What is FreedomBone?
+Today many of us rely upon "free" services in the cloud, such as Gmail, Facebook, Google+ and so on.  It might appear that these services are indispensible infrastructure of the modern internet, but actually they're not strictly needed and the amount of value which they deliver to the average internet user is very marginal.  It is possible to be a citizen of the internet and yet not use those things - to disintermediate the most well known companies and cut out their prurient or merely cringeworthy business models.
+
+FreedomBone is a personal home communications server based upon the BeagleBone Black hardware.  It's small and cheap and will allow you to use email, have your own web site and do social networking in a federated way without needing to rely upon any intermediary companies other than your ISP.
+** Do I need any prior knowledge?
+In these instructions only a minimal level of familiarity with Linux is assumed.  It's assumed that you know the basics of the /nano/ and /emacs/ editors, but it would be simple to also use other editors if you prefer.
+** Why should I do this?
+You should consider doing this if you are a freedom-oriented sort of person and you want to maintain sovereignty over your information.  Laws in many places in the world consider you to have relinquished any property rights over data which you put onto a server not owned by youself (i.e. owned by a third party, such as Google or Facebook).
+
+If you don't like the idea of having all your communications intercepted and investigated by the Surveillance State then you should consider running a FreedomBone.  If your profession involves maintaining confidentiality as an essential feature, such as legal or medical services, counselling, teaching or any sort of activism then you should consider running a FreedomBone.
+
+As Eben Moglen noted in his now famous [[https://www.youtube.com/watch?v=QOEMv0S8AcA]["Freedom in The Cloud"]] talk the simple fact of you keeping your own internet logs (found in the /var/log directory) puts a certain amount of power in your hands and takes it away from parties who would otherwise sell that information without your knowledge or permission to advertisers or other shady outfits who may not have your best interests at heart.
+** After it's installed will it need a lot of maintenance?
+So long as the hardware is ok the amount of maintenance needed should be very small.  Unlike on Windows based systems you don't need to defragment drives or mess about with anti-virus programs.  I ran a similar Sheevaplug system between 2010 and 2013 with only occasional software updates or reboots, and uptime was probably 99% or better.
+** Is it secure?
+Nothing is totally secure or infallible.  You could have the most secure technology and yet still use easy to guess passwords.  This system will not defend you from an attacker who is actively trying to block or corrupt your communications, but I assume that doesn't apply in the majority of cases.  Another thing to be aware of is that running a FreedomBone could make you more vulnerable to traffic analysis, since the server is associated with your home address and isn't a giant aggregation of users somewhere in the cloud.  You need to weigh this alongside the additional legal protection which owning the server and having it in your own home gives you.
+
+FreedomBone should be far more secure than using popular cloud-based services which have spying built into them as a core feature (although not one which is typically advertised), but it is not necessarily an impenetrable information fortress.
+** Will running a server all the time affect my electricity bill?
+Hardly at all.  The BeagleBone Black consumes very little power - less than 5W.  It would even be potentially possible to run it from a solar panel.
+* Inventory
+
+These instructions assume that you have the following ingredients.
+
+** A BeagleBone Black (BBB)
+
+It should come with a suitable USB cable for the initial setup.  To make things look nicer you may also want to get a case for it.
+
+** An internet connection
+
+It is assumed that the most common situation is via a router installed at home. The router should have ethernet sockets on it and a web interface which allows you to forward ports (sometimes under the "firewall" settings), so that you can forward ssh and web traffic to the BBB.
+
+** microSD card
+
+To use as the main storage for the BBB.  16 or 32GB is fine, and can be obtained quite cheaply.  Try to use Sandisk (class 10 or better) where possible and avoid cheaper cards which often have poor performance.
+
+You may also need an SD card adaptor or USB card reader in order to flash the operating image to the microSD card.  For instance, many laptops have an SD card slot but not a microSD slot.
+
+** 5V/1A power supply
+
+With a plug suitable for powering the BBB.  If you have some device with a USB socket nearby you may also be able to just use that for electrical power.  However, powering from the USB cable alone might result in crashes when the system is under load, depending upon how many milliamps can be supplied by the USB hub/socket.  If the system crashes due to running out of power then you will see that the LEDs on the BBB are continuously on, rather than flashing.
+
+** An ethernet patch cable
+
+Just an ordinary cat5 or cat6 cable that you can get from most electrical/computer stores.
+
+* Installing Debian onto the microSD card
+
+The Debian Linux OS will be installed onto a small flash drive.  It's a good idea to do this rather than using the internal flash, because it will allow you to easily create backups of the entire system if necessary using the dd command.
+
+Download the image.
+
+#+BEGIN_SRC: bash
+wget http://freedombone.uk.to/debian-7.2-console-armhf-2013-11-15.tar.xz
+#+END_SRC
+
+Verify it.
+
+#+BEGIN_SRC: bash
+md5sum debian-7.2-console-armhf-2013-11-15.tar.xz
+0a448f55d14f64c5a7eb3d7cb2c54185  debian-7.2-console-armhf-2013-11-15.tar.xz
+#+END_SRC
+
+Uncompress it.
+
+#+BEGIN_SRC: bash
+tar xJf debian-7.2-console-armhf-2013-11-15.tar.xz
+cd debian-7.2-console-armhf-2013-11-15
+#+END_SRC
+
+Create the disk image, where sdX is the name of the flash drive (probably it will be sdb or sdc).
+
+#+BEGIN_SRC: bash
+sudo apt-get install u-boot-tools
+sudo ./setup_sdcard.sh --mmc /dev/sdX --uboot bone --swap-file 1024
+#+END_SRC
+
+Once completed then safely remove the microSD card via your file manager (usually right click and "safely remove" or "eject").
+
+* Setup
+
+#+BEGIN_VERSE
+/Build the tools for a future you would want to live in/
+
+-- Kurt Opsahl
+#+END_VERSE
+
+** Things to be aware of
+*** A note on ssh
+When using ssh to log into the BBB if you get warnings of the type "/the ECDSA host key for domain differs from the key for the IP address/" then run the command:
+
+#+BEGIN_SRC: bash
+ssh-keygen -R <IP address>
+#+END_SRC
+*** Passwords
+It's highly recommended that you use a password manager, such as KeepassX, and make all your passwords long random strings.  It's also a good idea to use different passwords for different pieces of software, instead of one or two passwords for the whole system.  That compartmentalises the security such that even if an attacker gains access to one system they can't necessarily get access to others.
+** Initial
+Plug the microSD card into the BBB and Connect the USB cable to your laptop/desktop, then login via ssh.
+
+#+BEGIN_SRC: bash
+ssh debian@192.168.7.2
+#+END_SRC
+
+The default password is /temppwd/
+
+Then log in as root:
+
+#+BEGIN_SRC: bash
+su
+#+END_SRC
+
+The default password is /root/
+
+The first thing to do is to change the passwords from their defaults.
+
+#+BEGIN_SRC: bash
+passwd
+#+END_SRC
+
+Then you will need to change the network interfaces.  The main task here is to comment out the stuff related to usb0.  That will enable you to plug the BBB into the back of a router and for it to be detectable on the network.
+
+#+BEGIN_SRC: bash
+nano /etc/network/interfaces
+#+END_SRC
+
+The resulting interfaces file should look like this:
+
+#+BEGIN_SRC: bash
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# The primary network interface
+allow-hotplug eth0
+iface eth0 inet static
+    address 192.168.1.60
+    netmask 255.255.255.0
+    gateway 192.168.1.254
+    dns-nameservers 213.73.91.35 85.214.20.141
+# Example to keep MAC address between reboots
+#hwaddress ether DA:AD:CE:EF:CA:FE
+
+# WiFi Example
+#auto wlan0
+#iface wlan0 inet dhcp
+#    wpa-ssid "essid"
+#    wpa-psk  "password"
+
+# Ethernet/RNDIS gadget (g_ether)
+# ... or on host side, usbnet and random hwaddr
+# Note on some boards, usb0 is automaticly setup with an init script
+# in that case, to completely disable remove file [run_boot-scripts] from the boot partition
+#iface usb0 inet static
+#    address 192.168.7.2
+#    netmask 255.255.255.0
+#    network 192.168.7.0
+#    gateway 192.168.7.1
+#+END_SRC
+
+CTRL-O followed by ENTER to save, then CTRL-X to exit.
+
+In the above example "address 192.168.1.60" is a static IP address for the BBB, which will allow incoming network traffic to be directed from the router in a reliable manner.  It should be outside of the DHCP range set up on the router.
+
+"gateway 192.168.1.254" should be the IP address of the router.
+
+Note that setting the DNS servers with dns-nameservers is important because some home routers do not allow you to change the DNS settings.
+
+Edit resolv.conf.
+
+#+BEGIN_SRC: bash
+nano /etc/resolv.conf
+#+END_SRC
+
+It should look something like the following:
+
+#+BEGIN_SRC: bash
+domain localdomain
+search localdomain
+nameserver 213.73.91.35
+nameserver 85.214.20.141
+#+END_SRC
+
+CTRL-O followed by ENTER to save, then CTRL-X to exit.
+
+Now disconnect the BBB from your computer and plug it into the router.  You'll need an ethernet patch cable and you may also need a 5V/1A power supply for the BBB.
+
+If you go to the web administration screen for your internet router (often it's on 192.168.2.1 or 192.168.1.254) then after a few minutes you should see the BBB appear on the network.  It's name will be "arm".
+
+** Add a user
+
+Ssh back in to the BBB and login as root.  In this example the BBB's IP address is 192.168.1.60.
+
+#+BEGIN_SRC: bash
+ssh-keygen -f "/home/myusername/.ssh/known_hosts" -R 192.168.1.60
+ssh debian@192.168.1.60
+su
+#+END_SRC
+
+Then make a new user.
+
+#+BEGIN_SRC: bash
+adduser /username/
+adduser /username/ sudo
+#+END_SRC
+
+Exit from the ssh login by typing "exit" a couple of times, then ssh back in as the new user.  Make sure you use a difficult to guess password/phrase, or ideally a randomly generated password used together with a password manager such as KeepassX.
+
+Remove the default debian user.
+
+#+BEGIN_SRC: bash
+userdel -r debian
+#+END_SRC
+
+** Text editor
+
+For an editor which is less erratic than vi when used within a remote console such as Terminator.
+
+#+BEGIN_SRC: bash
+apt-get update
+apt-get install emacs
+#+END_SRC
+
+** Alter ssh configuration
+
+Altering the ssh configuration will make it a little more secure than the standard Debian settings.
+
+#+BEGIN_SRC: bash
+emacs /etc/ssh/sshd_config
+#+END_SRC
+
+Check the following values:
+
+#+BEGIN_SRC: bash
+PermitRootLogin no
+X11Forwarding no
+ServerKeyBits 4096
+Protocol 2
+PermitEmptyPasswords no
+StrictModes yes
+#+END_SRC
+
+Append the following:
+
+#+BEGIN_SRC: bash
+Ciphers aes256-ctr,aes192-ctr,aes128-ctr
+MACs hmac-sha2-512,hmac-sha2-256,hmac-ripemd160
+KexAlgorithms diffie-hellman-group-exchange-sha256,diffie-hellman-group14-sha1,diffie-hellman-group-exchange-sha1
+#+END_SRC
+
+CTRL-X CTRL-S to save, then CTRL-X CTRL-C to exit.
+
+#+BEGIN_SRC: bash
+service ssh restart
+#+END_SRC
+
+To test the new settings log out by typing "exit" a couple of times, then log back in again with:
+
+#+BEGIN_SRC: bash
+ssh -vvv myusername@192.168.1.60
+#+END_SRC
+
+and check that some number of bits are set within a 4096 bit sized key:
+
+#+BEGIN_SRC: bash
+debug2: bits set: */4096
+#+END_SRC
+
+** Set the host name
+
+#+BEGIN_SRC: bash
+emacs /etc/hostname
+#+END_SRC
+
+CTRL-X CTRL-S to save, then CTRL-X CTRL-C to exit.
+
+also issue the command
+
+#+BEGIN_SRC: bash
+hostname /myhostname/
+#+END_SRC
+
+You may also need to assign the same hostname separately via your router's web interface.
+
+** Install NTP
+
+To synchronise time.
+
+#+BEGIN_SRC: bash
+apt-get install ntp
+#+END_SRC
+
+** Install fail2ban
+
+#+BEGIN_SRC: bash
+apt-get install fail2ban
+#+END_SRC
+
+** Getting onto the web
+Create a subdomain on [[http://freedns.afraid.org][freeDNS]].  You may need to click on "/subdomains/" a couple of times.  FreeDNS is preferred because it is one of the few domain name providers which supports genuinely free (as in beer) accounts.  So if your budget is tiny or non-existent you can still participate as a first class citizen of the internet.  If you do have money to spend there is also a premium option.
+
+Select "/dynamic DNS/" then click "/quick cron example/"
+
+An example would look like:
+
+#+BEGIN_SRC: bash
+4,9,14,19,24,29,34,39,44,49,54,59 * * * * root sleep 29 ; wget -O - http://free\ dns.afraid.org/dynamic/update.php?ABCKDNRCLFHENSLKNFEGSBFLFF== >> /\ tmp/freedns_mysubdomain_us_to.log 2>&1 &
+#+END_SRC
+
+Edit /etc/crontab and append that to the end of the file.
+
+Via your router's firewall settings you should now open port 22 (secure shell).  This will allow you to ssh into your BBB from any location - not just your own local network.
+
+** install Email
+
+#+BEGIN_VERSE
+/If you knew what I know about email, you might not use it/
+
+-- Ladar Levison
+#+END_VERSE
+
+Email is not very secure, but its usefulness and ubiquity mean that it's likely to continue as a primary communications method for many years to come.  You can encrypt the contents of email using PGP/GPG, but very few people do that and even for those that do the metadata (the From/To/CC/BCC) is always transmitted in the clear as a fundamental aspect of the protocol, allowing an attacker to easily construct detailed models of people's social network and life patterns even without knowing the content.
+
+Exim4 seems much easier to install and configure than Postfix.
+
+#+BEGIN_SRC: bash
+aptitude install exim4 sasl2-bin swaks libnet-ssleay-perl
+#+END_SRC
+
+You will be prompted to remove postfix.  Say yes and yes again.
+
+#+BEGIN_SRC: bash
+dpkg-reconfigure exim4-config
+#+END_SRC
+
+Settings as follows:
+
+#+BEGIN_SRC: bash
+internet site
+
+System mail name: mydomainname.com
+
+IP addresses to listen on: blank
+
+Destinations: mydomainname.com
+
+Domains to relay mail: blank
+
+Smarthost Relay: 192.168.1.0/60 (the range of addresses on your LAN)
+
+Dial on demand = no
+
+Maildir format in home directory
+
+Split configuration = no
+
+Root and postmaster: root email
+#+END_SRC
+
+To test the installation:
+
+#+BEGIN_SRC: bash
+telnet 192.168.1.60 25
+ehlo xxx
+quit
+#+END_SRC
+
+#+BEGIN_SRC: bash
+emacs /etc/default/saslauthd
+#+END_SRC
+
+set START=yes then save and exit.
+
+#+BEGIN_SRC: bash
+/etc/init.d/saslauthd start
+emacs exim-gencert
+#+END_SRC
+
+#+BEGIN_SRC: bash
+#!/bin/sh -e
+
+if [ -n "$EX4DEBUG" ]; then
+  echo "now debugging $0 $@"
+  set -x
+fi
+
+DIR=/etc/exim4
+CERT=$DIR/exim.crt
+KEY=$DIR/exim.key
+
+# This exim binary was built with GnuTLS which does not support dhparams
+# from a file. See /usr/share/doc/exim4-base/README.Debian.gz
+#DH=$DIR/exim.dhparam
+
+if ! which openssl > /dev/null ;then
+    echo "$0: openssl is not installed, exiting" 1>&2
+    exit 1
+fi
+
+# valid for ten years
+DAYS=3650
+
+if [ "$1" != "--force" ] && [ -f $CERT ] && [ -f $KEY ]; then
+  echo "[*] $CERT and $KEY exists!"
+  echo "    Use \"$0 --force\" to force generation!"
+  exit 0
+fi
+
+if [ "$1" = "--force" ]; then
+  shift
+fi
+
+#SSLEAY=/tmp/exim.ssleay.$$.cnf
+SSLEAY="$(tempfile -m600 -pexi)"
+cat > $SSLEAY <<EOM
+RANDFILE = $HOME/.rnd
+[ req ]
+default_bits = 4096
+default_keyfile = exim.key
+distinguished_name = req_distinguished_name
+[ req_distinguished_name ]
+countryName = Country Code (2 letters)
+countryName_default = GB
+countryName_min = 2
+countryName_max = 2
+stateOrProvinceName = State or Province Name (full name)
+localityName = Locality Name (eg, city)
+organizationName = Organization Name (eg, company; recommended)
+organizationName_max = 64
+organizationalUnitName = Organizational Unit Name (eg, section)
+organizationalUnitName_max = 64
+commonName = Server name (eg. ssl.domain.tld; required!!!)
+commonName_max = 64
+emailAddress = Email Address
+emailAddress_max = 40
+EOM
+
+echo "[*] Creating a self signed SSL certificate for Exim!"
+echo "    This may be sufficient to establish encrypted connections but for"
+echo "    secure identification you need to buy a real certificate!"
+echo "    "
+echo "    Please enter the hostname of your MTA at the Common Name (CN) prompt!"
+echo "    "
+
+openssl req -config $SSLEAY -x509 -sha256 -newkey rsa:4096 -keyout $KEY -out $CERT -days $DAYS -nodes
+#see README.Debian.gz*# openssl dhparam -check -text -5 512 -out $DH
+rm -f $SSLEAY
+
+chown root:Debian-exim $KEY $CERT $DH
+chmod 640 $KEY $CERT $DH
+
+echo "[*] Done generating self signed certificates for exim!"
+echo "    Refer to the documentation and example configuration files"
+echo "    over at /usr/share/doc/exim4-base/ for an idea on how to enable TLS"
+echo "    support in your mail transfer agent."
+#+END_SRC
+
+Save and exit
+
+#+BEGIN_SRC: bash
+chmod +x exim-gencert
+./exim-gencert
+#+END_SRC
+
+This will generate the certificate used for email authentication.  You will be asked for various details, the most important of which is the server name, which should be your domain name.
+
+#+BEGIN_SRC: bash
+emacs /etc/exim4/exim4.conf.template
+#+END_SRC
+
+Append the following:
+
+#+BEGIN_SRC: bash
+login_saslauthd_server:
+  driver = plaintext
+  public_name = LOGIN
+  server_prompts = "Username:: : Password::"
+  # don't send system passwords over unencrypted connections
+  server_condition = ${if saslauthd{{$auth1}{$auth2}}{1}{0}}
+  server_set_id = $auth1
+ .ifndef AUTH_SERVER_ALLOW_NOTLS_PASSWORDS
+ server_advertise_condition = ${if eq{$tls_cipher}{}{}{*}}
+ .endif
+#+END_SRC
+
+Search for the line *.ifdef MAIN_HARDCODE_PRIMARY_HOSTNAME* and above it insert the line:
+
+#+BEGIN_SRC: bash
+MAIN_HARDCODE_PRIMARY_HOSTNAME = mydomainname.com
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+emacs /etc/exim4/exim4.conf.template
+#+END_SRC
+
+Add the line:
+
+#+BEGIN_SRC: bash
+MAIN_TLS_ENABLE = true
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+emacs /etc/default/exim4
+change SMTPLISTENEROPTIONS to:
+SMTPLISTENEROPTIONS='-oX 465:25 -oP /var/run/exim4/exim.pid'
+#+END_SRC
+
+save and exit
+
+#+BEGIN_SRC: bash
+emacs /etc/exim4/exim4.conf.template
+under the section "main/03_exim4-config_tlsoptions"
+Add the following:
+tls_on_connect_ports=465
+#+END_SRC
+
+save and exit
+
+#+BEGIN_SRC: bash
+adduser myusername sasl
+addgroup Debian-exim sasl
+/etc/init.d/exim4 restart
+mkdir /etc/skel/Maildir
+#+END_SRC
+
+** Spam filtering
+
+#+BEGIN_SRC: bash
+apt-get install spamassassin exim4-daemon-heavy
+emacs /etc/default/spamassassin
+#+END_SRC
+
+Set ENABLED=1 then save and exit.
+
+#+BEGIN_SRC: bash
+emacs /etc/exim4/exim4.conf.template
+#+END_SRC
+
+uncomment or change according to your configuration
+
+#+BEGIN_SRC: bash
+# For spam scanning, there is a similar option that defines the interface to
+# SpamAssassin. You do not need to set this if you are using the default, which
+# is shown in this commented example. As for virus scanning, you must also
+# modify the acl_check_data access control list to enable spam scanning.
+
+ spamd_address = 127.0.0.1 783
+#+END_SRC
+
+add spam header in the /acl_check_data/ section:
+
+#+BEGIN_SRC: bash
+### acl/40_exim4-config_check_data
+#################################
+
+# This ACL is used after the contents of a message have been received. This
+# is the ACL in which you can test a message's headers or body, and in
+# particular, this is where you can invoke external virus or spam scanners.
+
+acl_check_data:
+...
+...
+...
+# See the exim docs and the exim wiki for more suitable examples.
+#
+# warn
+#   spam = Debian-exim:true
+#   add_header = X-Spam_score: $spam_score\n\
+#             X-Spam_score_int: $spam_score_int\n\
+#             X-Spam_bar: $spam_bar\n\
+#             X-Spam_report: $spam_report
+
+# put headers in all messages (no matter if spam or not)
+ warn  spam = nobody:true
+     add_header = X-Spam-Score: $spam_score ($spam_bar)
+     add_header = X-Spam-Report: $spam_report
+
+# add second subject line with *SPAM* marker when message
+# is over threshold
+  warn  spam = nobody
+      add_header = Subject: ***SPAM (score:$spam_score)*** $h_Subject:
+#+END_SRC
+
+Save and exit.
+
+Then restart
+
+#+BEGIN_SRC: bash
+exit
+emacs ~/.procmailrc
+#+END_SRC
+
+The text should look like the following.
+
+#+BEGIN_SRC: sh
+MAILDIR=$HOME/Maildir
+DEFAULT=$MAILDIR/
+LOGFILE=$HOME/log/procmail.log
+LOGABSTRACT=all
+
+# get spamassassin to check emails
+:0fw: .spamassassin.lock
+  * < 256000
+| spamc
+
+# strong spam are discarded
+:0
+  * ^X-Spam-Level: \*\*\*\*\*\*
+/dev/null
+
+# weak spam are kept just in case - clear this out every now and then
+:0
+  * ^X-Spam-Level: \*\*\*\*\*
+.0-spam/
+
+# if it wasn't detected as spam, but is to a fake address, then we
+# know it is spam, so learn from that
+:0
+  * !^(From|To|cc|bcc)[ :].*($USER|root|webmaster|admin|postmaster).*@acooke\.org
+  * !^(From|To|cc|bcc)[ :].*@isti\.com
+# add mailing lists below
+  * !^From[ :].*(snowmail_daily@...|Section@...|rforno@...|alert@...).*
+{
+  # save in case of screw-ups, mailing lists, etc
+  :0 c
+  .0-spam/
+  :0
+  .learn-spam/
+}
+
+# otherwise, marginal spam goes here for revision
+:0
+  * ^X-Spam-Level: \*\*
+.spam/
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+su
+emacs /usr/bin/filterspam
+#+END_SRC
+
+Add the following contents:
+
+#+BEGIN_SRC: bash
+#!/bin/bash
+
+USERNAME=$1
+MAILDIR=/home/$USERNAME/Maildir/.learn-spam
+
+if [ ! -d "$MAILDIR" ]; then
+    exit
+fi
+
+for f in `ls $MAILDIR/cur`
+do
+    spamc -L spam < "$MAILDIR/cur/$f" > /dev/null
+    rm "$MAILDIR/cur/$f"
+done
+for f in `ls $MAILDIR/new`
+do
+    spamc -L spam < "$MAILDIR/new/$f" > /dev/null
+    rm "$MAILDIR/new/$f"
+done
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+emacs /usr/bin/filterham
+#+END_SRC
+
+Add the following contents:
+
+#+BEGIN_SRC: bash
+#!/bin/bash
+
+USERNAME=$1
+MAILDIR=/home/$USERNAME/Maildir/.learn-ham
+
+if [ ! -d "$MAILDIR" ]; then
+    exit
+fi
+
+for f in `ls $MAILDIR/cur`
+do
+    spamc -L ham < "$MAILDIR/cur/$f" > /dev/null
+    rm "$MAILDIR/cur/$f"
+done
+for f in `ls $MAILDIR/new`
+do
+    spamc -L ham < "$MAILDIR/new/$f" > /dev/null
+    rm "$MAILDIR/new/$f"
+done
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+emacs /etc/crontab
+#+END_SRC
+
+Append the following, replacing *myusername* with your username.
+
+#+BEGIN_SRC: bash
+*/3 * * * * root /usr/bin/filterspam myusername
+*/3 * * * * root /usr/bin/filterham myusername
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+chmod 655 /usr/bin/filterspam /usr/bin/filterham
+service spamassassin restart
+service exim4 restart
+service cron restart
+#+END_SRC
+
+** Install dovecot
+
+#+BEGIN_SRC: bash
+aptitude -y install dovecot-common dovecot-pop3d dovecot-imapd
+#+END_SRC
+
+#+BEGIN_SRC: bash
+emacs /etc/dovecot/dovecot.conf
+#+END_SRC
+
+# line 26: change ( if not listen IPv6 port )
+
+listen = *
+
+#+BEGIN_SRC: bash
+emacs /etc/dovecot/conf.d/10-auth.conf
+#+END_SRC
+
+# line 9: uncomment and change ( allow plain text auth )
+
+disable_plaintext_auth = no
+
+# line 99: add
+
+auth_mechanisms = plain login
+
+#+BEGIN_SRC: bash
+emacs /etc/dovecot/conf.d/10-mail.conf
+#+END_SRC
+
+# line 30: uncomment and add
+
+mail_location = maildir:~/Maildir
+
+#+BEGIN_SRC: bash
+service dovecot restart
+#+END_SRC
+
+** Mutt email client
+
+#+BEGIN_SRC: bash
+apt-get install mutt lynx abook
+exit
+mkdir ~/.mutt
+echo "text/html; lynx -dump -width=78 -nolist %s | sed ‘s/^ //’; copiousoutput; needsterminal; nametemplate=%s.html" > ~/.mutt/mailcap
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+sudo emacs /etc/Muttrc
+#+END_SRC
+
+Append the following:
+
+#+BEGIN_SRC: bash
+set mbox_type=Maildir
+set folder="~/Maildir"
+set mask="!^\\.[^.]"
+set mbox="~/Maildir"
+set record="+.Sent"
+set postponed="+.Drafts"
+set spoolfile="~/Maildir"
+auto_view text/x-vcard text/html text/enriched
+set editor="emacsclient %s"
+
+macro index S "<tag-prefix><save-message>=.learn-spam<enter>" "move to learn-spam"
+macro pager S "<save-message>=.learn-spam<enter>" "move to learn-spam"
+macro index H "<tag-prefix><copy-message>=.learn-ham<enter>" "copy to learn-ham"
+macro pager H "<copy-message>=.learn-ham<enter>" "copy to learn-ham"
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+emacs /etc/mail/spamassassin/local.cf
+#+END_SRC
+
+Uncomment *use_bayes*, *bayes_auto_learn*
+
+Save and exit, then run:
+
+#+BEGIN_SRC: bash
+service spamassassin restart
+#+END_SRC
+
+Now to add an address book:
+
+#+BEGIN_SRC: bash
+emacs ~/.muttrc
+#+END_SRC
+
+Append the following:
+
+#+BEGIN_SRC: bash
+set alias_file=~/.mutt-alias
+source ~/.mutt-alias
+set query_command= "abook --mutt-query '%s'"
+macro index,pager A "<pipe-message>abook --add-email-quiet<return>" "add the sender address to abook"
+#+END_SRC
+
+Then save and exit.
+
+#+BEGIN_SRC: bash
+touch ~/.mutt-alias
+#+END_SRC
+
+Finally you can then type *mutt* to get access to your email.  Hence as a fallback, or if you prefer as the primary way of accessing email, you can ssh into the BBB and use the mutt command line email client.  Ssh clients are available for all operating systems, and also you should be reasonably protected from passive surveillance between wherever you are and the BBB (although not between the BBB and the wider internet), which can be useful if you are for example using an Android tablet from a cafe or railway station.
+
+To use the address book system open an email and then to add the sender to the address list press the A key.  It will ask you for an alias which may be used the next time you want to send a mail.  Alternatively you may just edit the *~/.mutt-alias* file directly to add email addresses.
+
+Some useful keys to know are:
+
+| ESC / | Search for text within message contents                 |
+| "/"   | Search for text within headers                          |
+| *     | Move to the last message                                |
+| TAB   | Move to the next unread message                         |
+| d     | Delete a message                                        |
+| u     | Undelete a mail which is pending deletion               |
+| $     | Delete all messages selected and check for new messages |
+| a     | Add to the address book                                 |
+| m     | Send a new mail                                         |
+| S     | Mark a message as spam                                  |
+| H     | Mark a message as ham                                   |
+
+** K9 email client
+*** Incoming server settings
+ * Select settings/account settings
+ * Select Fetching mail/incoming server
+ * Enter your username and password
+ * IMAP server should be your domain name
+ * Security: SSL/TLS (always)
+ * Authentication: Plain
+ * Port: 993
+*** Outgoing (SMTP) server settings
+ * Select settings/account settings
+ * Select Sending mail/outgoing server
+ * Set SMTP server to your domain name
+ * Set Security to SSL/TLS (always)
+ * Set port to 465
+** Setting up a web site
+
+Edit the apache configuration so that it doesn't run out of memory if there are a lot of connections.
+
+#+BEGIN_SRC: bash
+su
+emacs /etc/apache2/apache2.conf
+#+END_SRC
+
+Search for MaxClients and replace the value with 20 then save and exit.
+
+In the examples below replace mydomainname.com with your own domain.
+
+#+BEGIN_SRC: bash
+export HOSTNAME=mydomainname.com
+mkdir /var/www/$HOSTNAME
+mkdir /var/www/$HOSTNAME/htdocs
+emacs /etc/apache2/sites-available/$HOSTNAME
+#+END_SRC
+
+The Apache configuration for the site should look something like the following:
+
+#+BEGIN_SRC: bash
+<VirtualHost *:80>
+	ServerAdmin myusername@mydomainname.com
+	ServerName mydomainname.com
+
+	DocumentRoot /var/www/mydomainname.com/htdocs
+	<Directory />
+		Options FollowSymLinks
+		AllowOverride All
+	</Directory>
+	<Directory /var/www/mydomainname.com/htdocs/>
+		Options All
+		AllowOverride All
+		Order allow,deny
+		allow from all
+	</Directory>
+
+	ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/
+	<Directory "/usr/lib/cgi-bin">
+		AllowOverride All
+		Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+		Order allow,deny
+		Allow from all
+	</Directory>
+
+	ErrorLog ${APACHE_LOG_DIR}/error.log
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+
+	CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+
+<IfModule mod_ssl.c>
+<VirtualHost *:443>
+	ServerAdmin myusername@mydomainname.com
+	ServerName mydomainname.com
+
+	DocumentRoot /var/www/mydomainname.com/htdocs
+	<Directory />
+		Options FollowSymLinks
+		AllowOverride All
+	</Directory>
+	<Directory /var/www/mydomainname.com/htdocs/>
+		Options All
+		AllowOverride All
+		Order allow,deny
+		allow from all
+	</Directory>
+
+	ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/
+	<Directory "/usr/lib/cgi-bin">
+		AllowOverride All
+		Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+		Order allow,deny
+		Allow from all
+	</Directory>
+
+	ErrorLog ${APACHE_LOG_DIR}/error.log
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+
+	CustomLog ${APACHE_LOG_DIR}/ssl_access.log combined
+
+	#   SSL Engine Switch:
+	#   Enable/Disable SSL for this virtual host.
+	SSLEngine on
+
+	#   A self-signed certificate
+	SSLCertificateFile    /etc/ssl/certs/mydomainname.com.crt
+	SSLCertificateKeyFile /etc/ssl/private/mydomainname.com.key
+
+    # Options based on bettercrypto.org
+    SSLProtocol All -SSLv2 -SSLv3
+    SSLHonorCipherOrder On
+    SSLCompression off
+    # Add six earth month HSTS header for all users ...
+    Header add Strict-Transport-Security "max-age=15768000"
+    # If you want to protect all subdomains , use the following header
+    # ALL subdomains HAVE TO support https if you use this !
+    # Strict-Transport-Security: max-age=15768000 ; includeSubDomains
+    # SSLCipherSuite ’EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH:+CAMELLIA256:+AES256:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!SEED:!ECDSA:CAMELLIA256-SHA:AES256-SHA:CAMELLIA128-SHA:AES128-SHA’
+
+	#   SSL Engine Options:
+	#   Set various options for the SSL engine.
+	#   o FakeBasicAuth:
+	#     Translate the client X.509 into a Basic Authorisation.  This means that
+	#     the standard Auth/DBMAuth methods can be used for access control.  The
+	#     user name is the `one line' version of the client's X.509 certificate.
+	#     Note that no password is obtained from the user. Every entry in the user
+	#     file needs this password: `xxj31ZMTZzkVA'.
+	#   o ExportCertData:
+	#     This exports two additional environment variables: SSL_CLIENT_CERT and
+	#     SSL_SERVER_CERT. These contain the PEM-encoded certificates of the
+	#     server (always existing) and the client (only existing when client
+	#     authentication is used). This can be used to import the certificates
+	#     into CGI scripts.
+	#   o StdEnvVars:
+	#     This exports the standard SSL/TLS related `SSL_*' environment variables.
+	#     Per default this exportation is switched off for performance reasons,
+	#     because the extraction step is an expensive operation and is usually
+	#     useless for serving static content. So one usually enables the
+	#     exportation for CGI and SSI requests only.
+	#   o StrictRequire:
+	#     This denies access when "SSLRequireSSL" or "SSLRequire" applied even
+	#     under a "Satisfy any" situation, i.e. when it applies access is denied
+	#     and no other module can change it.
+	#   o OptRenegotiate:
+	#     This enables optimized SSL connection renegotiation handling when SSL
+	#     directives are used in per-directory context.
+	#SSLOptions +FakeBasicAuth +ExportCertData +StrictRequire
+	<FilesMatch "\.(cgi|shtml|phtml|php)$">
+		SSLOptions +StdEnvVars
+	</FilesMatch>
+	<Directory /usr/lib/cgi-bin>
+		SSLOptions +StdEnvVars
+	</Directory>
+
+	#   SSL Protocol Adjustments:
+	#   The safe and default but still SSL/TLS standard compliant shutdown
+	#   approach is that mod_ssl sends the close notify alert but doesn't wait for
+	#   the close notify alert from client. When you need a different shutdown
+	#   approach you can use one of the following variables:
+	#   o ssl-unclean-shutdown:
+	#     This forces an unclean shutdown when the connection is closed, i.e. no
+	#     SSL close notify alert is send or allowed to received.  This violates
+	#     the SSL/TLS standard but is needed for some brain-dead browsers. Use
+	#     this when you receive I/O errors because of the standard approach where
+	#     mod_ssl sends the close notify alert.
+	#   o ssl-accurate-shutdown:
+	#     This forces an accurate shutdown when the connection is closed, i.e. a
+	#     SSL close notify alert is send and mod_ssl waits for the close notify
+	#     alert of the client. This is 100% SSL/TLS standard compliant, but in
+	#     practice often causes hanging connections with brain-dead browsers. Use
+	#     this only for browsers where you know that their SSL implementation
+	#     works correctly.
+	#   Notice: Most problems of broken clients are also related to the HTTP
+	#   keep-alive facility, so you usually additionally want to disable
+	#   keep-alive for those clients, too. Use variable "nokeepalive" for this.
+	#   Similarly, one has to force some clients to use HTTP/1.0 to workaround
+	#   their broken HTTP/1.1 implementation. Use variables "downgrade-1.0" and
+	#   "force-response-1.0" for this.
+	BrowserMatch "MSIE [2-6]" \
+		nokeepalive ssl-unclean-shutdown \
+		downgrade-1.0 force-response-1.0
+	# MSIE 7 and newer should be able to use keepalive
+	BrowserMatch "MSIE [17-9]" ssl-unclean-shutdown
+
+</VirtualHost>
+</IfModule>
+#+END_SRC
+
+Then to enable the site:
+
+#+BEGIN_SRC: bash
+a2ensite
+a2dissite default
+a2dissite default-ssl
+a2enmod rewrite
+a2enmod headers
+#+END_SRC
+
+Ensure that "NameVirtualHost *:443" is added to /etc/apache2/ports.conf.  It should look something like the following:
+
+#+BEGIN_SRC: bash
+NameVirtualHost *:80
+Listen 80
+
+<IfModule mod_ssl.c>
+	NameVirtualHost *:443
+    Listen 443
+</IfModule>
+
+<IfModule mod_gnutls.c>
+    NameVirtualHost *:443
+    Listen 443
+</IfModule>
+#+END_SRC
+
+Create a self-signed certificate. The passphrase isn't important and will be removed, so make it easy (such as "password").
+
+#+BEGIN_SRC: bash
+emacs makecert
+#+END_SRC
+
+Enter the following:
+
+#+BEGIN_SRC: bash
+#!/bin/bash
+
+HOSTNAME=$1
+
+openssl genrsa -des3 -out $HOSTNAME.key 1024
+openssl req -new -x509 -nodes -sha1 -days 3650 -key $HOSTNAME.key -out $HOSTNAME.crt
+openssl rsa -in $HOSTNAME.key -out $HOSTNAME.new.key
+cp $HOSTNAME.new.key $HOSTNAME.key
+rm $HOSTNAME.new.key
+cp $HOSTNAME.key /etc/ssl/private
+chmod 400 /etc/ssl/private/$HOSTNAME.key
+cp $HOSTNAME.crt /etc/ssl/certs
+shred -zu $HOSTNAME.key $HOSTNAME.crt
+a2enmod ssl
+service apache2 restart
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+chmod +x makecert
+./makecert mydomainname.com
+#+END_SRC
+
+If all has gone well then there should be no warnings or errors after you run the service restart command.  After that you should enable ports 80 (HTTP) and 443 (HTTPS) on your internet router/firewall, such that they are redirected to the BBB.
+** Social Networking
+
+#+BEGIN_VERSE
+/Facebook is not your friend, it is a surveillance engine./
+
+-- Richard Stallman
+#+END_VERSE
+
+*** Installation
+#+BEGIN_SRC: bash
+apt-get install mysql-server php5-common php5-cli php5-curl php5-gd php5-mysql php5-mcrypt
+#+END_SRC
+
+Enter an admin password for MySQL.
+
+Create a mysql database.
+
+#+BEGIN_SRC: bash
+mysql -u root -p
+create database friendica;
+CREATE USER 'friendicaadmin'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON friendica.* TO 'friendicaadmin'@'localhost';
+quit
+#+END_SRC
+
+You may need to fix Git SSL problems.
+
+#+BEGIN_SRC: bash
+git config --global http.sslVerify true
+apt-get install ca-certificates
+cd ~/
+emacs .gitconfig
+#+END_SRC
+
+The .gitconfig file should look something like this:
+
+#+BEGIN_SRC: bash
+[http]
+        sslVerify = true
+        sslCAinfo = /etc/ssl/certs/ca-certificates.crt
+[user]
+        email = myusername@mydomainname.com
+        name = yourname
+#+END_SRC
+
+Get the source code.
+
+#+BEGIN_SRC: bash
+export HOSTNAME=mydomainname.com
+cd /var/www/$HOSTNAME
+mv htdocs htdocs_old
+git clone https://github.com/friendica/friendica.git htdocs
+chmod -R 755 htdocs
+chown -R www-data:www-data htdocs
+chown -R www-data:www-data htdocs/view/smarty3
+git clone https://github.com/friendica/friendica-addons.git htdocs/addon
+#+END_SRC
+
+Now visit the URL of your site and you should be taken through the rest of the installation procedure.  If you have trouble with "allow override" ensure that "AllowOverride" is set to "all" in your Apache settings for the site (within /etc/apache2/sites-available) and then restart the apache2 service.
+
+Install the poller.
+
+#+BEGIN_SRC
+emacs /etc/crontab
+#+END_SRC
+
+and append the following, changing mydomainname.com to whatever your domain is.
+
+#+BEGIN_SRC
+*/10 *  * * *	root	cd /var/www/mydomainname.com/htdocs; /usr/bin/php include/poller.php
+#+END_SRC
+
+Save and exit, then restart cron.
+
+#+BEGIN_SRC: bash
+service cron restart
+#+END_SRC
+
+*** Backups
+
+Make sure that the database gets backed up.  By using cron if anything goes wrong then you should be able to recover the database either from the previous day or the previous week.
+
+#+BEGIN_SRC: bash
+emacs /etc/cron.daily/friendicabackup
+#+END_SRC
+
+Enter the following
+
+#+BEGIN_SRC: bash
+#!/bin/sh
+
+MYSQL_PASSWORD=<mysql root password>
+
+umask 0077
+
+# Backup the database
+mysqldump --password=$MYSQL_PASSWORD friendica > /var/backups/friendica_daily.sql
+
+# Make the backup readable only by root
+chmod 600 /var/backups/friendica_daily.sql
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+chmod 600 /etc/cron.daily/friendicabackup
+chmod +x /etc/cron.daily/friendicabackup
+emacs /etc/cron.weekly/friendicabackup
+#+END_SRC
+
+Enter the following
+
+#+BEGIN_SRC: bash
+#!/bin/sh
+
+MYSQL_PASSWORD=<mysql root password>
+
+umask 0077
+
+# Backup the database
+mysqldump --password=$MYSQL_PASSWORD friendica > /var/backups/friendica_weekly.sql
+
+# Make the backup readable only by root
+chmod 600 /var/backups/friendica_weekly.sql
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+chmod 600 /etc/cron.weekly/friendicabackup
+chmod +x /etc/cron.weekly/friendicabackup
+#+END_SRC
+
+*** Recommended configuration
+**** Admin
+To get to the admin settings you will need to be logged in with the admin email address which you specified at the beginning of the installation procedure.  Depending upon the theme which you're using "/admin/" will be available either as an icon or on a drop down menu.
+
+Under the *plugins* section the main one which you may wish to enable is the NSFW plugin.  With that enabled if a post contans the #NSFW tag then it will appear minimised by default and you will need to click a button to open it.
+
+Under the *themes* section select a few themes, including mobile themes which are suitable for phones or tablets.
+
+Under the *site* section give your Friendica node a name other than "/my friend network/", you can change the icon and banner text and set the default mobile theme typically to /frost-mobile/.  If you don't want your node to host a lot of accounts for people you don't know then you may want to set the register policy to "/requires approval/".  For security it's probably a good idea only to host accounts for people who you actually know, rather than random strangers.  Also be aware that the Beaglebone does not have a great deal of computational power or bandwidth and will not function well if there are hundreds of users using your node.  If you're not federating with Diaspora or other sites then you may wish to select "/only allow Friendica contacts/".  That improves the security of the system, since communication between Friendica nodes is always encrypted separately and in addition to the usual SSL encryption layer - which makes life interesting for the Surveillance State and at least keeps those cryptanalysts employed.
+
+It's probably a good idea to enable "/private posts by default for new users/" and also "/don't include post content in email notifications/".  Since traditional email isn't a secure system and is easily vulnerable to attack by systems such as [[https://en.wikipedia.org/wiki/XKeyscore][Xkeyscore]].
+
+**** Settings
+Each user has their own customisable settings, typically available either via an icon or by an entry on a drop down menu.
+
+Under *additional features* enable "/richtext editor/", "/post preview/", "/group filter/", "/network filter/", "/edit sent posts/" and "/dislike posts/".
+
+Under *display settings* select your desktop and mobile themes.
+
+Once you have connected to enough friends it's also a good idea to use the "/export personal data/" option from here.  This will save a file to your local system, which you can import into another friendica node if necessary.
+*** To access from an Android device
+**** App
+Open a browser on your device and go to https://f-droid.org/ then download and install the F-Droid apk.  If you then open F-Droid you can search for and install the Friendica app.
+
+If you are using a self-signed certificate then at the login screen scroll down to the bottom, select the SSL settings then scroll down and disable SSL certificate checks.  You will then be able to log in using https, which at least gives you some protection via the encryption.
+
+More information about the Friendica app can be found on http://friendica-for-android.wiki-lab.net/
+**** Mobile Theme
+Another way to access Friendica from a mobile device is to just use the web browser.  If you have selected a mobile theme within your settings then when viewing from an Android system the mobile theme will be displayed.
+** Install a Blog
+
+Wordpress is the most popular blogging platform, but in practice I found it to be high maintenance with frequent security updates and breakages.  More practical for a home server is Flatpress.  Flatpress doesn't use a MySql database, just text files, and so is easy to relocate or reinstall.
+
+See the "/Setting up a web site/" section of this document for details of how to configure the web server for your blog's domain.
+
+Download flatpress.
+
+#+BEGIN_SRC: bash
+wget http://freedombone.uk.to/flatpress.tar.gz
+#+END_SRC
+
+Verify the download:
+
+#+BEGIN_SRC: bash
+md5sum flatpress.tar.gz
+6ad5c230a5cb1ac096ff657f1b138cc7  flatpress.tar.gz
+#+END_SRC
+
+Extract and install it.
+
+#+BEGIN_SRC: bash
+tar -xzvf flatpress.tar.gz
+cd flatpress-*
+cp -r * /var/www/$HOSTNAME/htdocs
+rm -rf flatpress-*
+rm -f flatpress.tar.gz
+#+END_SRC
+
+Now visit your blog and follow the setup instructions, which are quite minimal.  Various themes and addons are available from the Flatpress web site, http://www.flatpress.org
+
+** Install a VoIP server
+
+#+BEGIN_VERSE
+/Our core principles, whether in software or sovereignty, have always been about freedom and dignity, for all people, on an equal basis/
+
+-- David Sugar
+#+END_VERSE
+
+Packages for the GNU/Linux distribution Debian 7.x Wheezy are available by adding the line
+
+#+BEGIN_SRC: bash
+emacs /etc/apt/sources.list
+#+END_SRC
+
+Append the following line:
+
+#+BEGIN_SRC: bash
+deb http://dev.gnutelephony.org/archive/ wheezy/
+#+END_SRC
+
+Save and exit.
+
+to load the repository the first time after adding it to the sources.list, since you do not have the verification keys already installed yet. Then do
+
+#+BEGIN_SRC: bash
+apt-get install gnutelephony-keyring
+#+END_SRC
+
+After that it will be happy to accept it as a signed repository. The verification keys can also be directly fetched with
+
+#+BEGIN_SRC: bash
+wget http://dev.gnutelephony.org/archive/wheezy/public.key
+#+END_SRC
+
+and manually added instead with
+
+#+BEGIN_SRC: bash
+apt-key add public.key
+#+END_SRC
+
+To make sure you have all dependencies, do
+
+#+BEGIN_SRC: bash
+apt-get update;apt-get dist-upgrade
+#+END_SRC
+
+Before we install anything, let's inspect what is available to us by using
+
+#+BEGIN_SRC: bash
+dpkg -l sipwitch
+#+END_SRC
+
+to see the main application. The columns will indicate if the package is installed, which version and a description of the package. Then do
+
+#+BEGIN_SRC: bash
+dpkg -l sipwitch-*
+#+END_SRC
+
+to see available supporting applications and plugins. Again, the columns will indicate if the package is installed, which version and a description of each of these.
+
+To install only the main application, do
+
+#+BEGIN_SRC: bash
+apt-get install sipwitch
+#+END_SRC
+
+and to install all supporting plugins:
+
+#+BEGIN_SRC: bash
+apt-get install sipwitch-plugin-scripting sipwitch-plugin-subscriber sipwitch-plugin-forward sipwitch-plugin-zeroconf
+#+END_SRC
+
+Add your user into the sipwitch group
+
+#+BEGIN_SRC: bash
+groupadd sipwitch
+usermod -aG sipwitch myusername
+#+END_SRC
+
+Then edit the configuration
+
+#+BEGIN_SRC: bash
+emacs /etc/sipwitch.conf
+#+END_SRC
+
+Change the *mapped* value from 200 to 4, since we don't want to be serving huge numbers of calls.
+
+#+BEGIN_SRC: bash
+export HOSTNAME=mydomainname.com
+touch /etc/sipwitch.d/$HOSTNAME.xml
+chmod 600 /etc/sipwitch.d/$HOSTNAME.xml
+emacs /etc/sipwitch.d/$HOSTNAME.xml
+#+END_SRC
+
+It should look something like the following:
+
+#+BEGIN_SRC: bash
+ <provision>
+   <user id="myusername">
+     <secret>yourpassword</secret> <extension>201</extension> <display>Your full name</display>
+   </user>
+   <user id="anotherusername">
+     <secret>anotherpassword</secret> <extension>202</extension> <display>Another full name</display>
+   </user>
+ </provision>
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+service sipwitch restart
+#+END_SRC
+
+To test:
+
+#+BEGIN_SRC: bash
+sipw -x9 -f
+#+END_SRC
+
+** Install an IRC server
+
+#+BEGIN_SRC: bash
+apt-get install ircd-hybrid
+#+END_SRC
+
+This will install the IRC server and run it on ports (6666.6669) TCP
+You can connect to the server by visiting 127.0.0.1 with your irc client
+————————————————————————————————
+
+Because hybrid doesn’t support OpenSSL by default, you have to do a manual patch to get it working
+
+1- First we OpenSSL package for ssl certificate
+
+#+BEGIN_SRC: bash
+sudo apt-get install openssl libssl-dev
+#+END_SRC
+
+2- Second we need hybrid source to patch it:
+
+#+BEGIN_SRC: bash
+mkdir hybrid; cd hybrid
+apt-get install openssl libssl-dev
+apt-get source ircd-hybrid
+#+END_SRC
+
+To enable SSL
+
+#+BEGIN_SRC: bash
+emacs ircd-hybrid-*/debian/rules
+#+END_SRC
+
+Add at the top:
+
+#+BEGIN_SRC: bash
+USE_OPENSSL = 1
+#+END_SRC
+
+So the file should looks like:
+
+#+BEGIN_SRC: bash
+1# ...
+2# Some useful stuff to edit here.
+3# Beware: TOPICLEN may not exceed 390.
+4NICKLEN = 15
+5TOPICLEN = 350
+6MAXCLIENTS = 200
+7USE_OPENSSL = 1
+8# ...
+#+END_SRC
+
+Rebuild the deb-file and install it:
+
+#+BEGIN_SRC: bash
+cd ircd-hybrid-*
+apt-get install build-essential debhelper dpatch docbook-to-man flex bison libpcre3-dev
+dpkg-buildpackage -rfakeroot -uc -b
+cd ..
+dpkg -i ircd-hybrid_*.deb
+#+END_SRC
+
+Edit connect, listen and operator:
+
+#+BEGIN_SRC: bash
+emacs /etc/ircd-hybrid/ircd.conf
+#+END_SRC
+
+Edit the connect section.
+
+#+BEGIN_SRC: c
+connect {
+        /* name: the name of the server */
+        name = "myircdomainname.com";
+
+        /* host: the host or IP to connect to.  If a hostname is used it
+         * must match the reverse dns of the server.
+         */
+        host = "127.0.0.1";
+
+        /* passwords: the passwords we send (OLD C:) and accept (OLD N:).
+         * The remote server will have these passwords reversed.
+         */
+        send_password = "password";
+        accept_password = "password";
+
+        /* compressed: controls whether traffic is compressed via ziplinks.
+         * By default this is disabled
+         */
+        compressed = yes;
+};
+
+/* listen {}: contain information about the ports ircd listens on (OLD P:) */
+listen {
+/* port: the specific port to listen on. if no host is specified
+ * before, it will listen on all available IPs.
+ *
+ * ports are seperated via a comma, a range may be specified using ".."
+ */
+
+/* port: listen on all available IPs, ports 6665 to 6669 */
+host = "127.0.0.1";
+port = 6665 .. 6669;
+
+/* sslport: ports to accept ONLY ssl connections on */
+flags = ssl;
+port = 6697
+};
+#+END_SRC
+
+Generate a password for the IRC operator using mkpasswd tool
+
+#+BEGIN_SRC: bash
+mkpasswd -Hmd5
+#+END_SRC
+
+Search for operator block and change it to look like this:
+
+#+BEGIN_SRC: c
+# ...
+operator {
+/* name: the name of the oper */
+name = "root";
+
+/* user: the user@host required for this operator. CIDR is not
+ * supported. multiple user="" lines are supported.
+ */
+user = "*@*";
+
+/* password: the password required to oper. By default this will
+ * need to be encrypted using '/usr/bin/mkpasswd'.
+ * WARNING: Please do not mix up the 'mkpasswd' program from
+ * /usr/sbin with this one. If you are root, typing 'mkpasswd'
+ * will run that one instead and you will receive a strange error.
+ *
+ * MD5 is supported. If you want to use it, use mkpasswd -Hmd5.
+ */
+password = "#MD5 PASSWORD HERE#";
+# ...
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+service ircd-hybrid restart
+#+END_SRC
+
+Now open ports 6665 to 6669 on your internet router/firewall.
+
+After connecting to IRC server you should see something like this:
+
+#+BEGIN_SRC: bash
+23:50 -!- - hybrid7.debian.local Message of the Day -
+23:50 -!- -         _,met$$$$$gg.       ircd-hybrid 7.2.2
+23:50 -!- -      ,g$$$$$$$$$$$$$$$P.    -----------------
+23:50 -!- -    ,g$$P""       """Y$$.".
+23:50 -!- -   ,$$P'              `$$$.  If you are seeing this, you have
+23:50 -!- - ',$$P       ,ggs.     `$$b: installed the ircd-hybrid package and
+23:50 -!- - `d$$'     ,$P"'   .    $$$  you are now connected to your new IRC
+23:50 -!- -  $$P      d$'     ,    $$P  server -- congratulations.
+23:50 -!- -  $$:      $$.   -    ,d$$'
+23:50 -!- -  $$;      Y$b._   _,d$P'    Since you have just installed the
+23:50 -!- -  Y$$.    `.`"Y$$$$P"'       package, there are some things you
+23:50 -!- -  `$$b      "-.__            should do before going any further:
+23:50 -!- -   `Y$$b
+23:50 -!- -    `Y$$.                    1. Edit /etc/ircd-hybrid/ircd.conf to
+23:50 -!- -      `$$b.                  suit your needs. Beware some options have
+23:50 -!- -        `Y$$b.               been removed or moved into other blocks in
+23:50 -!- -          `"Y$b._            the configuration file since
+23:50 -!- -             `""""           ircd-hybrid 7.0.3.
+23:50 -!- -
+23:50 -!- -                             2. Edit /etc/ircd-hybrid/ircd.motd (this
+23:50 -!- -                             MOTD) to suit your needs. You are free
+23:50 -!- -                             to use this Debian swirl under the
+23:50 -!- -                             Debian Open Use Logo License. :)
+23:50 -!- -
+23:50 -!- -                             3. Restart the server using invoke-rc.d
+23:50 -!- -                             ircd-hybrid restart.
+23:50 -!- -
+23:50 -!- -                             -- Joshua Kwan
+23:50 -!- -                             -- Aurélien GÉRÔME
+23:50 -!- End of /MOTD command.
+#+END_SRC
+
+We can change the motd message by editing */etc/ircd-hybrid/ircd.motd*
+Hint: Don’t forget to restart the service */etc/init.d/ircd-hybrid restart*
+
+Now if your have ever used IRC before you will be familiar with NickServ and ChanServ, well these are addons services for IRC and they come in vary useful when configuring chat channels and users.
+We we will use hybserv and to install it:
+
+#+BEGIN_SRC: bash
+apt-get install hybserv
+#+END_SRC
+
+Then edit /etc/hybserv/hybserv.conf to look like this, remember to change #MD5 PASSWORD HERE# to the other password we setup earlier:
+
+#+BEGIN_SRC: bash
+O:*@*:#MD5 PASSWORD HERE#:root:segj
+A:YOUR NAME
+N:irc.example.com:Hybrid services
+S:password:127.0.0.1:6667
+#+END_SRC
+
+now we need to restart the ircd and hybrid server to make things work:
+
+#+BEGIN_SRC: bash
+/etc/init.d/ircd-hybrid restart
+/etc/init.d/hybserv restart
+#+END_SRC
+
+And that’s it you should have a Basic IRC server running with the NickServ and ChanServ bots running.
+
+HERE is a Comparison of Internet Relay Chat services.
+
+Try to connect to the IRC and identify yourself as an operator.
+
+** Install Gopher
+Gopher is an old internet protocol which originated a few years before the web and is purely text based.  It can be quite fun to build a gopher site and browse the gopherverse.  One thing to keep in mind is that there is no security with gopher, so any text transmitted is trivially interceptable by systems such as [[https://en.wikipedia.org/wiki/XKeyscore][Xkeyscore]] or deep packet inspection.
+
+To set up a gopher server:
+
+#+BEGIN_SRC: bash
+apt-get install build-essential
+wget http://freedombone.uk.to/geomyidae-current.tgz
+#+END_SRC
+
+Verify the download:
+
+#+BEGIN_SRC: bash
+md5sum geomyidae-current.tgz
+3d8bb8601f37ca953b00fc2445ab5abe  geomyidae-current.tgz
+#+END_SRC
+
+Then extract and install it.
+
+#+BEGIN_SRC: bash
+tar -xzvf geomyidae-current.tgz
+cd geomyidae-*
+make
+make install
+mkdir -p /var/gopher
+#+END_SRC
+
+Your content should be placed within /var/gopher with the index page being named index.gph.  The Gopher format is very simple - simpler than HTML - so creating pages is not much more difficult than editing a text file.
+
+#+BEGIN_SRC: bash
+emacs /etc/init.d/gopher
+#+END_SRC
+
+Enter the following:
+
+#+BEGIN_SRC: bash
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          gopher
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Gopher daemon
+# Description:       Gopher daemon
+### END INIT INFO
+
+# Do NOT "set -e"
+
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+DESC="Gopher daemon"
+NAME=geomyidae
+DAEMON=/usr/bin/$NAME
+DAEMON_ARGS="-l /var/log/geomyidae.log -b /var/gopher -p 70"
+PIDFILE=/var/run/$NAME.pid
+SCRIPTNAME=/etc/init.d/$NAME
+
+# Exit if the package is not installed
+[ -x "$DAEMON" ] || exit 0
+
+# Read configuration variable file if it is present
+[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.2-14) to ensure that this file is present
+# and status_of_proc is working.
+. /lib/lsb/init-functions
+
+#
+# Function that starts the daemon/service
+#
+do_start()
+{
+	# Return
+	#   0 if daemon has been started
+	#   1 if daemon was already running
+	#   2 if daemon could not be started
+	start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
+		|| return 1
+	start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON -- \
+		$DAEMON_ARGS \
+		|| return 2
+	# Add code here, if necessary, that waits for the process to be ready
+	# to handle requests from services started subsequently which depend
+	# on this one.  As a last resort, sleep for some time.
+}
+
+#
+# Function that stops the daemon/service
+#
+do_stop()
+{
+	# Return
+	#   0 if daemon has been stopped
+	#   1 if daemon was already stopped
+	#   2 if daemon could not be stopped
+	#   other if a failure occurred
+	start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE --name $NAME
+	RETVAL="$?"
+	[ "$RETVAL" = 2 ] && return 2
+	# Wait for children to finish too if this is a daemon that forks
+	# and if the daemon is only ever run from this initscript.
+	# If the above conditions are not satisfied then add some other code
+	# that waits for the process to drop all resources that could be
+	# needed by services started subsequently.  A last resort is to
+	# sleep for some time.
+	start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 --exec $DAEMON
+	[ "$?" = 2 ] && return 2
+	# Many daemons don't delete their pidfiles when they exit.
+	rm -f $PIDFILE
+	return "$RETVAL"
+}
+
+#
+# Function that sends a SIGHUP to the daemon/service
+#
+do_reload() {
+	#
+	# If the daemon can reload its configuration without
+	# restarting (for example, when it is sent a SIGHUP),
+	# then implement that here.
+	#
+	start-stop-daemon --stop --signal 1 --quiet --pidfile $PIDFILE --name $NAME
+	return 0
+}
+
+case "$1" in
+  start)
+	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
+	do_start
+	case "$?" in
+		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
+	;;
+  stop)
+	[ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
+	do_stop
+	case "$?" in
+		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
+	;;
+  status)
+	status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
+	;;
+  #reload|force-reload)
+	#
+	# If do_reload() is not implemented then leave this commented out
+	# and leave 'force-reload' as an alias for 'restart'.
+	#
+	#log_daemon_msg "Reloading $DESC" "$NAME"
+	#do_reload
+	#log_end_msg $?
+	#;;
+  restart|force-reload)
+	#
+	# If the "reload" option is implemented then remove the
+	# 'force-reload' alias
+	#
+	log_daemon_msg "Restarting $DESC" "$NAME"
+	do_stop
+	case "$?" in
+	  0|1)
+		do_start
+		case "$?" in
+			0) log_end_msg 0 ;;
+			1) log_end_msg 1 ;; # Old process is still running
+			*) log_end_msg 1 ;; # Failed to start
+		esac
+		;;
+	  *)
+		# Failed to stop
+		log_end_msg 1
+		;;
+	esac
+	;;
+  *)
+	#echo "Usage: $SCRIPTNAME {start|stop|restart|reload|force-reload}" >&2
+	echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
+	exit 3
+	;;
+esac
+
+:
+#+END_SRC
+
+Save and exit.  Then start the gopher service.
+
+#+BEGIN_SRC: bash
+chmod +x /etc/init.d/gopher
+update-rc.d gopher defaults
+service gopher start
+#+END_SRC
+
+On your internet router change the firewall settings to route port 70 to the BBB, then provided that you have a gopher plugin installed within your browser then you should be able to navigate to your gopher site with:
+
+#+BEGIN_SRC: bash
+gopher://mydomainname.com
+#+END_SRC
+
+There is a browser addon for Gopher called "overbite".  Installing that should enable you to view your site.
+
+** Install a Wiki
+Dokuwiki is based upon flat files, and so is easy to move from one server to another without a lot of database complications.
+
+Download the wiki.
+
+#+BEGIN_SRC: bash
+wget http://freedombone.uk.to/dokuwiki.tgz
+#+END_SRC
+
+Verify it.
+
+#+BEGIN_SRC: bash
+md5sum dokuwiki.tgz
+9f35055848429659fd63cda1cfea5a48  dokuwiki.tgz
+#+END_SRC
+
+Then extract and install it.
+
+#+BEGIN_SRC: bash
+export HOSTNAME=mywikidomainname.com
+tar -xzvf dokuwiki.tgz
+mv /var/www/$HOSTNAME/htdocs /var/www/$HOSTNAME/htdocs_old
+mv dokuwiki /var/www/$HOSTNAME/htdocs
+#+END_SRC
+
+Edit the Apache configuration for your wiki site.
+
+#+BEGIN_SRC: bash
+emacs /etc/apache2/sites-available/$HOSTNAME
+#+END_SRC
+
+The settings should look something like the following.
+
+#+BEGIN_SRC: bash
+<VirtualHost *:80>
+	ServerAdmin myusername@mywikidomainname.com
+	ServerName mydomainname.com
+
+	DocumentRoot /var/www/mywikidomainname.com/htdocs
+
+    <Directory /var/www/mywikidomainname.com/htdocs>
+        order deny,allow
+        allow from all
+    </Directory>
+
+    <LocationMatch "/(data|conf|bin|inc)/">
+        order allow,deny
+        deny from all
+        satisfy all
+    </LocationMatch>
+
+	<Directory />
+		Options FollowSymLinks
+		AllowOverride All
+	</Directory>
+
+	ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/
+	<Directory "/usr/lib/cgi-bin">
+		AllowOverride All
+		Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+		Order allow,deny
+		Allow from all
+	</Directory>
+
+	ErrorLog ${APACHE_LOG_DIR}/error.log
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+
+	CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+
+<IfModule mod_ssl.c>
+<VirtualHost *:443>
+	ServerAdmin myusername@mywikidomainname.com
+	ServerName mywikidomainname.com
+
+	DocumentRoot /var/www/mywikidomainname.com/htdocs
+
+    <Directory /var/www/mywikidomainname.com/htdocs>
+        order deny,allow
+        allow from all
+    </Directory>
+
+    <LocationMatch "/(data|conf|bin|inc)/">
+        order allow,deny
+        deny from all
+        satisfy all
+    </LocationMatch>
+
+	<Directory />
+		Options FollowSymLinks
+		AllowOverride All
+	</Directory>
+
+	ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/
+	<Directory "/usr/lib/cgi-bin">
+		AllowOverride All
+		Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+		Order allow,deny
+		Allow from all
+	</Directory>
+
+	ErrorLog ${APACHE_LOG_DIR}/error.log
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+
+	CustomLog ${APACHE_LOG_DIR}/ssl_access.log combined
+
+	#   SSL Engine Switch:
+	#   Enable/Disable SSL for this virtual host.
+	SSLEngine on
+
+	#   A self-signed certificate
+	SSLCertificateFile    /etc/ssl/certs/mydomainname.com.crt
+	SSLCertificateKeyFile /etc/ssl/private/mydomainname.com.key
+
+
+	#   SSL Engine Options:
+	#   Set various options for the SSL engine.
+	#   o FakeBasicAuth:
+	#     Translate the client X.509 into a Basic Authorisation.  This means that
+	#     the standard Auth/DBMAuth methods can be used for access control.  The
+	#     user name is the `one line' version of the client's X.509 certificate.
+	#     Note that no password is obtained from the user. Every entry in the user
+	#     file needs this password: `xxj31ZMTZzkVA'.
+	#   o ExportCertData:
+	#     This exports two additional environment variables: SSL_CLIENT_CERT and
+	#     SSL_SERVER_CERT. These contain the PEM-encoded certificates of the
+	#     server (always existing) and the client (only existing when client
+	#     authentication is used). This can be used to import the certificates
+	#     into CGI scripts.
+	#   o StdEnvVars:
+	#     This exports the standard SSL/TLS related `SSL_*' environment variables.
+	#     Per default this exportation is switched off for performance reasons,
+	#     because the extraction step is an expensive operation and is usually
+	#     useless for serving static content. So one usually enables the
+	#     exportation for CGI and SSI requests only.
+	#   o StrictRequire:
+	#     This denies access when "SSLRequireSSL" or "SSLRequire" applied even
+	#     under a "Satisfy any" situation, i.e. when it applies access is denied
+	#     and no other module can change it.
+	#   o OptRenegotiate:
+	#     This enables optimized SSL connection renegotiation handling when SSL
+	#     directives are used in per-directory context.
+	#SSLOptions +FakeBasicAuth +ExportCertData +StrictRequire
+	<FilesMatch "\.(cgi|shtml|phtml|php)$">
+		SSLOptions +StdEnvVars
+	</FilesMatch>
+	<Directory /usr/lib/cgi-bin>
+		SSLOptions +StdEnvVars
+	</Directory>
+
+	#   SSL Protocol Adjustments:
+	#   The safe and default but still SSL/TLS standard compliant shutdown
+	#   approach is that mod_ssl sends the close notify alert but doesn't wait for
+	#   the close notify alert from client. When you need a different shutdown
+	#   approach you can use one of the following variables:
+	#   o ssl-unclean-shutdown:
+	#     This forces an unclean shutdown when the connection is closed, i.e. no
+	#     SSL close notify alert is send or allowed to received.  This violates
+	#     the SSL/TLS standard but is needed for some brain-dead browsers. Use
+	#     this when you receive I/O errors because of the standard approach where
+	#     mod_ssl sends the close notify alert.
+	#   o ssl-accurate-shutdown:
+	#     This forces an accurate shutdown when the connection is closed, i.e. a
+	#     SSL close notify alert is send and mod_ssl waits for the close notify
+	#     alert of the client. This is 100% SSL/TLS standard compliant, but in
+	#     practice often causes hanging connections with brain-dead browsers. Use
+	#     this only for browsers where you know that their SSL implementation
+	#     works correctly.
+	#   Notice: Most problems of broken clients are also related to the HTTP
+	#   keep-alive facility, so you usually additionally want to disable
+	#   keep-alive for those clients, too. Use variable "nokeepalive" for this.
+	#   Similarly, one has to force some clients to use HTTP/1.0 to workaround
+	#   their broken HTTP/1.1 implementation. Use variables "downgrade-1.0" and
+	#   "force-response-1.0" for this.
+	BrowserMatch "MSIE [2-6]" \
+		nokeepalive ssl-unclean-shutdown \
+		downgrade-1.0 force-response-1.0
+	# MSIE 7 and newer should be able to use keepalive
+	BrowserMatch "MSIE [17-9]" ssl-unclean-shutdown
+
+</VirtualHost>
+</IfModule>
+#+END_SRC
+
+Enable your site with:
+
+#+BEGIN_SRC: bash
+a2ensite
+#+END_SRC
+
+then select the domain name and reload.
+
+#+BEGIN_SRC: bash
+service apache2 reload
+#+END_SRC
+
+and alter permissions:
+
+#+BEGIN_SRC: bash
+chmod -R 755 /var/www/$HOSTNAME/htdocs
+chown -R www-data:www-data /var/www/$HOSTNAME/htdocs
+#+END_SRC
+
+Open a browser and visit http://$HOSTNAME/install.php, then fill out the details.  Once everything has been accepted without errors:
+
+#+BEGIN_SRC: bash
+rm /var/www/$HOSTNAME/htdocs/install.php
+#+END_SRC
+
+** Install Tripwire
+
+Tripwire will try to detect any intrusions into your system. It's a good idea to install it after you have installed all of the other programs which you intend to use.
+
+#+BEGIN_SRC: bash
+apt-get install tripwire
+export HOSTNAME=mydomainname.com
+cd /etc/tripwire
+cp arm-local.key $HOSTNAME-local.key
+cp site.key $HOSTNAME-site.key
+tripwire --init
+tripwire --update-policy --secure-mode low /etc/tripwire/twpol.txt
+tripwire --check --interactive
+#+END_SRC
+
+you will be asked for two passphrases ("site" and "local").  Make a note of these.
+
+If you subsequently install any more packages or make configuration changes then update the policy again with:
+
+#+BEGIN_SRC: bash
+tripwire --update-policy --secure-mode low /etc/tripwire/twpol.txt
+#+END_SRC
+
+Also, to look for any rootkits.
+
+#+BEGIN_SRC: bash
+apt-get install rkhunter
+#+END_SRC
+
+* Router/Firewall ports
+The following ports on your internet router/firewall should be forwarded to the BBB.
+
+| Protocol |     Port/s |
+|----------+------------|
+| Gopher   |         70 |
+| HTTP     |         80 |
+| HTTPS    |        443 |
+| IMAP     |        143 |
+| IRC      | 6665..6669 |
+| SIP      |       5060 |
+| SMTP     |         25 |
+| SMTP     |        587 |
+| SMTPS    |        465 |
+| SSH      |         22 |
+
+* Hints and Tips
+** Messaging security
+If you're connected to other friends via Friendica then the preferred way to send private messages is via Friendica's built-in messaging system.  This is a lot more convenient than using GPG with ordinary email and yet still provides a similar level of protection from unwarranted interception.
+** Restrictive/hostile user environments
+If you are typically operating within a restrictive of hostile environment where using ssh is not an option because everything other than web ports are blocked then you may wish to try installing oterm:
+
+http://www.coralbits.com/oterm/
+
+https://github.com/davidmoreno/onion
+** Moving Domains
+If you're moving servers and using a different domain name or path then you can search and replace URLs within files in the following way:
+
+#+BEGIN_SRC: bash
+find /var/www/mynewdomain/htdocs -type f -exec sed -i 's@myolddomain@mynewdomain@g' {} \;
+#+END_SRC
+
+** MySql foo
+*** Backup all databases
+To back up all mysql databases:
+
+#+BEGIN_SRC: bash
+mysqldump -u root -p --all-databases --events > /var/backups/databasebackup.sql
+#+END_SRC
+*** Restoring a particular mysql database
+To restore yesterday's friendica backup:
+
+#+BEGIN_SRC: bash
+mysql -D friendica -o < /var/backups/friendica_daily.sql
+#+END_SRC
+
+To restore yesterday's mediawiki backup:
+
+#+BEGIN_SRC: bash
+mysql -D wikidb -o < /var/backups/wikidb_daily.sql
+#+END_SRC
+*** Removing mysql server
+
+If you manage to screw up sql server completely then it can be fully deleted with:
+
+#+BEGIN_SRC: bash
+ps aux | grep mysql
+#+END_SRC
+
+and use /kill -9 <pid>/ to kill all mysql processes.
+
+#+BEGIN_SRC: bash
+sudo apt-get remove --purge mysql\*
+apt-get clean
+updatedb
+#+END_SRC
