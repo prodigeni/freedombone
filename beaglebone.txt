@@ -913,7 +913,7 @@ mkdir /var/www/$HOSTNAME/htdocs
 emacs /etc/apache2/sites-available/$HOSTNAME
 #+END_SRC
 
-The Apache configuration for the site should look something like the following:
+The Apache configuration for the site should look something like the following.  Replaye mydonainname with the site domain name.
 
 #+BEGIN_SRC: bash
 <VirtualHost *:80>
@@ -931,6 +931,22 @@ The Apache configuration for the site should look something like the following:
 		Order allow,deny
 		allow from all
 	</Directory>
+
+	# Don't serve .php~ or .php# files created by emacs
+	<Files ~ "(^#.*#|~|\.sw[op])$">
+		Order allow,deny
+		Deny from all
+	</Files>
+
+	<IfModule headers_module>
+		Header set X-Content-Type-Options nosniff
+		Header set Cache-Control "max-age=0, no-cache, no-store, must-revalidate, private"
+		Header set Pragma no-cache
+	</IfModule>
+
+	<Files .htaccess>
+	  deny from all
+	</Files>
 
 	ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/
 	<Directory "/usr/lib/cgi-bin">
@@ -965,6 +981,22 @@ The Apache configuration for the site should look something like the following:
 		Order allow,deny
 		allow from all
 	</Directory>
+
+	# Don't serve .php~ or .php# files created by emacs
+	<Files ~ "(^#.*#|~|\.sw[op])$">
+		Order allow,deny
+		Deny from all
+	</Files>
+
+	<IfModule headers_module>
+		Header set X-Content-Type-Options nosniff
+		Header set Cache-Control "max-age=0, no-cache, no-store, must-revalidate, private"
+		Header set Pragma no-cache
+	</IfModule>
+
+	<Files .htaccess>
+	  deny from all
+	</Files>
 
 	ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/
 	<Directory "/usr/lib/cgi-bin">
@@ -1130,13 +1162,15 @@ chmod +x makecert
 ./makecert mydomainname.com
 #+END_SRC
 
+Enter some trivial password for the key file.  The password will be removed as part of the makecert script.  Note that leaving a password on the key file would mean that after a power cycle the apache server will not be able to boot properly (it would wait indefinitely for a password to be manually entered) and would look as if it had crashed.
+
 If all has gone well then there should be no warnings or errors after you run the service restart command.  After that you should enable ports 80 (HTTP) and 443 (HTTPS) on your internet router/firewall, such that they are redirected to the BBB.
 ** Social Networking
 
 #+BEGIN_VERSE
 /Facebook is not your friend, it is a surveillance engine./
 
--- Richard Stallman
+-- Richard Stallman, Free Software Foundation
 #+END_VERSE
 
 *** Installation
@@ -1297,7 +1331,7 @@ Another way to access Friendica from a mobile device is to just use the web brow
 
 Wordpress is the most popular blogging platform, but in practice I found it to be high maintenance with frequent security updates and breakages.  More practical for a home server is Flatpress.  Flatpress doesn't use a MySql database, just text files, and so is easy to relocate or reinstall.
 
-See the "/Setting up a web site/" section of this document for details of how to configure the web server for your blog's domain.
+See the [[Setting up a web site]] section of this document for details of how to configure the web server for your blog's domain.
 
 Download flatpress.
 
@@ -1329,10 +1363,13 @@ Now visit your blog and follow the setup instructions, which are quite minimal. 
 #+BEGIN_VERSE
 /Our core principles, whether in software or sovereignty, have always been about freedom and dignity, for all people, on an equal basis/
 
--- David Sugar
+-- David Sugar, GNU Telephony
 #+END_VERSE
 
-Packages for the GNU/Linux distribution Debian 7.x Wheezy are available by adding the line
+*** The server
+Sipwitch is like an introduction service or phone book for SIP VoIP clients.  Once introduced the clients can then talk directly, and this means that sipwitch is very lightweight and can run on low power systems such as the BBB.
+
+Edit your package sources:
 
 #+BEGIN_SRC: bash
 emacs /etc/apt/sources.list
@@ -1346,7 +1383,7 @@ deb http://dev.gnutelephony.org/archive/ wheezy/
 
 Save and exit.
 
-to load the repository the first time after adding it to the sources.list, since you do not have the verification keys already installed yet. Then do
+To load the repository the first time after adding it to the sources.list, since you do not have the verification keys already installed yet. Then do
 
 #+BEGIN_SRC: bash
 apt-get install gnutelephony-keyring
@@ -1376,7 +1413,7 @@ Before we install anything, let's inspect what is available to us by using
 dpkg -l sipwitch
 #+END_SRC
 
-to see the main application. The columns will indicate if the package is installed, which version and a description of the package. Then do
+To see the main application. The columns will indicate if the package is installed, which version and a description of the package. Then do
 
 #+BEGIN_SRC: bash
 dpkg -l sipwitch-*
@@ -1400,7 +1437,9 @@ Add your user into the sipwitch group
 
 #+BEGIN_SRC: bash
 groupadd sipwitch
+groupadd sipusers
 usermod -aG sipwitch myusername
+usermod -aG sipusers myusername
 #+END_SRC
 
 Then edit the configuration
@@ -1409,7 +1448,21 @@ Then edit the configuration
 emacs /etc/sipwitch.conf
 #+END_SRC
 
-Change the *mapped* value from 200 to 4, since we don't want to be serving huge numbers of calls.
+Change the *mapped* value from 200 to 20, since we don't want to be serving huge numbers of calls.
+
+Alter the *range* value to 10, since we don't need a large number of extensions.  This will mean that exension numbers 200 to 209 are available.
+
+Do not set the *realm* value, as doing so seems to prevent the server from working.
+
+Save and exit.
+
+Create a digest string for your username:
+
+#+BEGIN_SRC: bash
+sipwitch digest myusername
+#+END_SRC
+
+Make a note of the resulting string because you're going to use it in the users file you'll now create.
 
 #+BEGIN_SRC: bash
 export HOSTNAME=mydomainname.com
@@ -1421,28 +1474,72 @@ emacs /etc/sipwitch.d/$HOSTNAME.xml
 It should look something like the following:
 
 #+BEGIN_SRC: bash
- <provision>
-   <user id="myusername">
-     <secret>yourpassword</secret> <extension>201</extension> <display>Your full name</display>
-   </user>
-   <user id="anotherusername">
-     <secret>anotherpassword</secret> <extension>202</extension> <display>Another full name</display>
-   </user>
- </provision>
+<provision>
+    <user id="myusername">
+        <digest>yourdigeststring</digest>
+		<extension>201</extension>
+		<display>Your full name</display>
+    </user>
+</provision>
 #+END_SRC
 
-Save and exit.
+Save and exit.  Now edit the configuration.
 
 #+BEGIN_SRC: bash
-service sipwitch restart
+emacs /etc/default/sipwitch
 #+END_SRC
 
-To test:
+Change "desktop" to "server", then save and exit.
+
+Update the IP settings:
 
 #+BEGIN_SRC: bash
+iptables -A INPUT -p tcp --dport 5060 -j ACCEPT
+iptables -A INPUT -p udp --dport 5060 -j ACCEPT
+iptables -A INPUT -p tcp --dport 5061 -j ACCEPT
+iptables -A INPUT -p udp --dport 5061 -j ACCEPT
+iptables-save
+#+END_SRC
+
+Test that it's working:
+
+#+BEGIN_SRC: bash
+pkill -9 sipw
 sipw -x9 -f
 #+END_SRC
 
+Then try to register with the server using a SIP client (such as Jitsi). If everything worked then use CTRL-C to exit.  Then start the service.
+
+#+BEGIN_SRC: bash
+service sipwitch start
+#+END_SRC
+
+*** Clients
+**** Jitsi
+Download the latst version from https://jitsi.org/index.php/Main/Download
+
+TODO
+**** Twinkle client
+
+The client should have a user profile as following:
+
+The "user name" is the xxx id used in the <user id="xxx"> entry of /etc/sipwitch.conf
+
+The "domain" is the yyy domain in the main config <stack><domain>yyy entry of /etc/sipwitch.conf
+
+The SIP Authentication should have:
+
+realm = realm as set in <registry><realm> of /etc/sipwitch.conf
+
+authentication name = <user id="xx"> entry, same as "User Name" field.
+
+password = value of <secret>zzz in <user> entry of /etc/sipwitch.conf
+
+Under security tab, set "Enable ZRTP/SRTP encryption"
+**** Android
+TODO
+
+CSipSimple?
 ** Install an IRC server
 
 #+BEGIN_SRC: bash
@@ -1654,9 +1751,17 @@ now we need to restart the ircd and hybrid server to make things work:
 
 And that’s it you should have a Basic IRC server running with the NickServ and ChanServ bots running.
 
-HERE is a Comparison of Internet Relay Chat services.
-
 Try to connect to the IRC and identify yourself as an operator.
+
+In irssi:
+
+#+BEGIN_SRC
+/connect -ssl irc.example.com 6667 ircpassowrd YourNick
+#+END_SRC
+
+/join #spatula
+/msg -servername chanserv REGISTER #spatula channelpassword
+/msg -servername chanserv set #spatula mlock +k channelpassword
 
 ** Install Gopher
 Gopher is an old internet protocol which originated a few years before the web and is purely text based.  It can be quite fun to build a gopher site and browse the gopherverse.  One thing to keep in mind is that there is no security with gopher, so any text transmitted is trivially interceptable by systems such as [[https://en.wikipedia.org/wiki/XKeyscore][Xkeyscore]] or deep packet inspection.
@@ -2080,6 +2185,71 @@ Open a browser and visit http://$HOSTNAME/install.php, then fill out the details
 rm /var/www/$HOSTNAME/htdocs/install.php
 #+END_SRC
 
+** Install Owncloud
+
+First create an apache configuration for your Owncloud site.  You will need to create a new subdomain via FreeDNS.  See the earlier section on [[Setting up a web site]] for details.
+
+#+BEGIN_SRC: bash
+emacs /etc/php5/apache2filter/php.ini
+#+END_SRC
+
+Set the following:
+
+#+BEGIN_SRC: bash
+post_max_size = 32M
+upload_max_filesize = 32M
+#+END_SRC
+
+Restart apache.
+
+#+BEGIN_SRC: bash
+service apache2 restart
+#+END_SRC
+
+Install some dependencies:
+
+#+BEGIN_SRC: bash
+apt-get install apache2 php5 php5-gd php-xml-parser php5-intl
+apt-get install php5-sqlite php5-mysql smbclient curl libcurl3 php5-curl
+#+END_SRC
+
+Download owncloud.
+
+#+BEGIN_SRC: bash
+cd /tmp
+wget http://freedombone.uk.to/owncloud.tar.bz2
+#+END_SRC
+
+Verify the download:
+
+#+BEGIN_SRC: bash
+md5 owncloud.tar.bz2
+f43eabb746b5e339ee70d0a6aaf4a49c
+#+END_SRC
+
+Extract the archive.  This may take a couple of minutes, so don't be alarmed that the system has crashed.
+
+#+BEGIN_SRC: bash
+export HOSTNAME=myownclouddomainname.com
+tar -xjf owncloud.tar.bz2
+#+END_SRC
+
+Move the extracted files to your site.
+
+#+BEGIN_SRC: bash
+cp -r owncloud /var/www/$HOSTNAME
+rm -rf /var/www/$HOSTNAME/htdocs
+mv /var/www/$HOSTNAME/owncloud /var/www/$HOSTNAME/htdocs
+chown -R www-data:www-data /var/www/$HOSTNAME/htdocs/
+chmod 775 /var/www/$HOSTNAME/htdocs
+chmod 664 /var/www/$HOSTNAME/htdocs/*
+chmod g+s /var/www/$HOSTNAME/htdocs
+#+END_SRC
+
+With a web browser visit your domain and enter an administrator username and password.
+
+** Install Gitlab
+
 ** Install Tripwire
 
 Tripwire will try to detect any intrusions into your system. It's a good idea to install it after you have installed all of the other programs which you intend to use.
@@ -2119,9 +2289,8 @@ The following ports on your internet router/firewall should be forwarded to the 
 | HTTPS    |        443 |
 | IMAP     |        143 |
 | IRC      | 6665..6669 |
-| SIP      |       5060 |
+| SIP      | 5060..5061 |
 | SMTP     |         25 |
-| SMTP     |        587 |
 | SMTPS    |        465 |
 | SSH      |         22 |
 
