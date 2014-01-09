@@ -232,7 +232,7 @@ su
 Then make a new user.  It's a bad idea to add users to the sudo group, because that then means that an attacker potentially only needs to know one password in order to get administrator access to the system.  With no sudoers an attacker needs to know, or be able to obtain, two separate passwords to be able to really compromise the system.
 
 #+BEGIN_SRC: bash
-adduser /username/
+adduser myusername
 #+END_SRC
 
 Exit from the ssh login by typing "exit" a couple of times, then ssh back in as the new user.  Make sure you use a difficult to guess password/phrase, or ideally a randomly generated password used together with a password manager such as KeepassX.
@@ -1173,7 +1173,8 @@ If all has gone well then there should be no warnings or errors after you run th
 -- Richard Stallman, Free Software Foundation
 #+END_VERSE
 
-*** Installation
+*** Friendica
+**** Installation
 #+BEGIN_SRC: bash
 apt-get install mysql-server php5-common php5-cli php5-curl php5-gd php5-mysql php5-mcrypt
 #+END_SRC
@@ -1243,7 +1244,7 @@ Save and exit, then restart cron.
 service cron restart
 #+END_SRC
 
-*** Backups
+**** Backups
 
 Make sure that the database gets backed up.  By using cron if anything goes wrong then you should be able to recover the database either from the previous day or the previous week.
 
@@ -1298,7 +1299,7 @@ chmod 600 /etc/cron.weekly/friendicabackup
 chmod +x /etc/cron.weekly/friendicabackup
 #+END_SRC
 
-*** Recommended configuration
+**** Recommended configuration
 **** Admin
 To get to the admin settings you will need to be logged in with the admin email address which you specified at the beginning of the installation procedure.  Depending upon the theme which you're using "/admin/" will be available either as an icon or on a drop down menu.
 
@@ -1318,7 +1319,7 @@ Under *additional features* enable "/richtext editor/", "/post preview/", "/grou
 Under *display settings* select your desktop and mobile themes.
 
 Once you have connected to enough friends it's also a good idea to use the "/export personal data/" option from here.  This will save a file to your local system, which you can import into another friendica node if necessary.
-*** To access from an Android device
+**** To access from an Android device
 **** App
 Open a browser on your device and go to https://f-droid.org/ then download and install the F-Droid apk.  If you then open F-Droid you can search for and install the Friendica app.
 
@@ -1544,141 +1545,21 @@ CSipSimple?
 
 #+BEGIN_SRC: bash
 apt-get install ircd-hybrid
-#+END_SRC
-
-This will install the IRC server and run it on ports (6666.6669) TCP
-You can connect to the server by visiting 127.0.0.1 with your irc client
-————————————————————————————————
-
-Because hybrid doesn’t support OpenSSL by default, you have to do a manual patch to get it working
-
-1- First we OpenSSL package for ssl certificate
-
-#+BEGIN_SRC: bash
-apt-get install openssl libssl-dev
-#+END_SRC
-
-2- Second we need hybrid source to patch it:
-
-#+BEGIN_SRC: bash
-mkdir hybrid; cd hybrid
-apt-get install openssl libssl-dev
-apt-get source ircd-hybrid
-#+END_SRC
-
-To enable SSL
-
-#+BEGIN_SRC: bash
-emacs ircd-hybrid-*/debian/rules
-#+END_SRC
-
-Add at the top:
-
-#+BEGIN_SRC: bash
-USE_OPENSSL = 1
-#+END_SRC
-
-So the file should looks like:
-
-#+BEGIN_SRC: bash
-1# ...
-2# Some useful stuff to edit here.
-3# Beware: TOPICLEN may not exceed 390.
-4NICKLEN = 15
-5TOPICLEN = 350
-6MAXCLIENTS = 200
-7USE_OPENSSL = 1
-8# ...
-#+END_SRC
-
-Rebuild the deb-file and install it:
-
-#+BEGIN_SRC: bash
-cd ircd-hybrid-*
-apt-get install build-essential debhelper dpatch docbook-to-man flex bison libpcre3-dev
-dpkg-buildpackage -rfakeroot -uc -b
-cd ..
-dpkg -i ircd-hybrid_*.deb
-#+END_SRC
-
-Edit connect, listen and operator:
-
-#+BEGIN_SRC: bash
 emacs /etc/ircd-hybrid/ircd.conf
 #+END_SRC
 
-Edit the connect section.
+Set *name* to the name of your server, and set a description.
 
-#+BEGIN_SRC: c
-connect {
-        /* name: the name of the server */
-        name = "myircdomainname.com";
+Set a *network_name* and *network_desc*.
 
-        /* host: the host or IP to connect to.  If a hostname is used it
-         * must match the reverse dns of the server.
-         */
-        host = "127.0.0.1";
+Set max_clients to 20.
 
-        /* passwords: the passwords we send (OLD C:) and accept (OLD N:).
-         * The remote server will have these passwords reversed.
-         */
-        send_password = "password";
-        accept_password = "password";
+Within the admin section set your *name* and *email*.
 
-        /* compressed: controls whether traffic is compressed via ziplinks.
-         * By default this is disabled
-         */
-        compressed = yes;
-};
+Within the *listen* section set host to your fixed IP address (in the earlier
+sections it was 192.168.1.60).
 
-/* listen {}: contain information about the ports ircd listens on (OLD P:) */
-listen {
-/* port: the specific port to listen on. if no host is specified
- * before, it will listen on all available IPs.
- *
- * ports are seperated via a comma, a range may be specified using ".."
- */
-
-/* port: listen on all available IPs, ports 6665 to 6669 */
-host = "127.0.0.1";
-port = 6665 .. 6669;
-
-/* sslport: ports to accept ONLY ssl connections on */
-flags = ssl;
-port = 6697
-};
-#+END_SRC
-
-Generate a password for the IRC operator using mkpasswd tool
-
-#+BEGIN_SRC: bash
-mkpasswd -Hmd5
-#+END_SRC
-
-Search for operator block and change it to look like this:
-
-#+BEGIN_SRC: c
-# ...
-operator {
-/* name: the name of the oper */
-name = "root";
-
-/* user: the user@host required for this operator. CIDR is not
- * supported. multiple user="" lines are supported.
- */
-user = "*@*";
-
-/* password: the password required to oper. By default this will
- * need to be encrypted using '/usr/bin/mkpasswd'.
- * WARNING: Please do not mix up the 'mkpasswd' program from
- * /usr/sbin with this one. If you are root, typing 'mkpasswd'
- * will run that one instead and you will receive a strange error.
- *
- * MD5 is supported. If you want to use it, use mkpasswd -Hmd5.
- */
-password = "#MD5 PASSWORD HERE#";
-# ...
-#+END_SRC
+Within the *auth* section set user = "*@192.168.1.60" - or whatever the fixed IP address of the BBB is on your network.
 
 Save and exit.
 
@@ -1686,82 +1567,16 @@ Save and exit.
 service ircd-hybrid restart
 #+END_SRC
 
-Now open ports 6665 to 6669 on your internet router/firewall.
-
-After connecting to IRC server you should see something like this:
-
-#+BEGIN_SRC: bash
-23:50 -!- - hybrid7.debian.local Message of the Day -
-23:50 -!- -         _,met$$$$$gg.       ircd-hybrid 7.2.2
-23:50 -!- -      ,g$$$$$$$$$$$$$$$P.    -----------------
-23:50 -!- -    ,g$$P""       """Y$$.".
-23:50 -!- -   ,$$P'              `$$$.  If you are seeing this, you have
-23:50 -!- - ',$$P       ,ggs.     `$$b: installed the ircd-hybrid package and
-23:50 -!- - `d$$'     ,$P"'   .    $$$  you are now connected to your new IRC
-23:50 -!- -  $$P      d$'     ,    $$P  server -- congratulations.
-23:50 -!- -  $$:      $$.   -    ,d$$'
-23:50 -!- -  $$;      Y$b._   _,d$P'    Since you have just installed the
-23:50 -!- -  Y$$.    `.`"Y$$$$P"'       package, there are some things you
-23:50 -!- -  `$$b      "-.__            should do before going any further:
-23:50 -!- -   `Y$$b
-23:50 -!- -    `Y$$.                    1. Edit /etc/ircd-hybrid/ircd.conf to
-23:50 -!- -      `$$b.                  suit your needs. Beware some options have
-23:50 -!- -        `Y$$b.               been removed or moved into other blocks in
-23:50 -!- -          `"Y$b._            the configuration file since
-23:50 -!- -             `""""           ircd-hybrid 7.0.3.
-23:50 -!- -
-23:50 -!- -                             2. Edit /etc/ircd-hybrid/ircd.motd (this
-23:50 -!- -                             MOTD) to suit your needs. You are free
-23:50 -!- -                             to use this Debian swirl under the
-23:50 -!- -                             Debian Open Use Logo License. :)
-23:50 -!- -
-23:50 -!- -                             3. Restart the server using invoke-rc.d
-23:50 -!- -                             ircd-hybrid restart.
-23:50 -!- -
-23:50 -!- -                             -- Joshua Kwan
-23:50 -!- -                             -- Aurélien GÉRÔME
-23:50 -!- End of /MOTD command.
-#+END_SRC
-
-We can change the motd message by editing */etc/ircd-hybrid/ircd.motd*
-Hint: Don’t forget to restart the service */etc/init.d/ircd-hybrid restart*
-
-Now if your have ever used IRC before you will be familiar with NickServ and ChanServ, well these are addons services for IRC and they come in vary useful when configuring chat channels and users.
-We we will use hybserv and to install it:
-
-#+BEGIN_SRC: bash
-apt-get install hybserv
-#+END_SRC
-
-Then edit /etc/hybserv/hybserv.conf to look like this, remember to change #MD5 PASSWORD HERE# to the other password we setup earlier:
-
-#+BEGIN_SRC: bash
-O:*@*:#MD5 PASSWORD HERE#:root:segj
-A:YOUR NAME
-N:irc.example.com:Hybrid services
-S:password:127.0.0.1:6667
-#+END_SRC
-
-now we need to restart the ircd and hybrid server to make things work:
-
-#+BEGIN_SRC: bash
-/etc/init.d/ircd-hybrid restart
-/etc/init.d/hybserv restart
-#+END_SRC
-
-And that’s it you should have a Basic IRC server running with the NickServ and ChanServ bots running.
-
 Try to connect to the IRC and identify yourself as an operator.
 
 In irssi:
 
 #+BEGIN_SRC
-/connect -ssl irc.example.com 6667 ircpassowrd YourNick
+/connect mydomainname.com
+/join #mychannel
+/msg -servername chanserv REGISTER #mychannel channelpassword
+/msg -servername chanserv set #mychannel mlock +k channelpassword
 #+END_SRC
-
-/join #spatula
-/msg -servername chanserv REGISTER #spatula channelpassword
-/msg -servername chanserv set #spatula mlock +k channelpassword
 
 ** Install Gopher
 Gopher is an old internet protocol which originated a few years before the web and is purely text based.  It can be quite fun to build a gopher site and browse the gopherverse.  One thing to keep in mind is that there is no security with gopher, so any text transmitted is trivially interceptable by systems such as [[https://en.wikipedia.org/wiki/XKeyscore][Xkeyscore]] or deep packet inspection.
@@ -2247,8 +2062,6 @@ chmod g+s /var/www/$HOSTNAME/htdocs
 #+END_SRC
 
 With a web browser visit your domain and enter an administrator username and password.
-
-** Install Gitlab
 
 ** Install Tripwire
 
