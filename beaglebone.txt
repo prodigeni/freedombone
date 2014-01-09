@@ -229,11 +229,10 @@ ssh debian@192.168.1.60
 su
 #+END_SRC
 
-Then make a new user.
+Then make a new user.  It's a bad idea to add users to the sudo group, because that then means that an attacker potentially only needs to know one password in order to get administrator access to the system.  With no sudoers an attacker needs to know, or be able to obtain, two separate passwords to be able to really compromise the system.
 
 #+BEGIN_SRC: bash
 adduser /username/
-adduser /username/ sudo
 #+END_SRC
 
 Exit from the ssh login by typing "exit" a couple of times, then ssh back in as the new user.  Make sure you use a difficult to guess password/phrase, or ideally a randomly generated password used together with a password manager such as KeepassX.
@@ -803,7 +802,8 @@ echo "text/html; lynx -dump -width=78 -nolist %s | sed ‘s/^ //’; copiousoutp
 Save and exit.
 
 #+BEGIN_SRC: bash
-sudo emacs /etc/Muttrc
+su
+emacs /etc/Muttrc
 #+END_SRC
 
 Append the following:
@@ -1555,7 +1555,7 @@ Because hybrid doesn’t support OpenSSL by default, you have to do a manual pat
 1- First we OpenSSL package for ssl certificate
 
 #+BEGIN_SRC: bash
-sudo apt-get install openssl libssl-dev
+apt-get install openssl libssl-dev
 #+END_SRC
 
 2- Second we need hybrid source to patch it:
@@ -2340,7 +2340,7 @@ ps aux | grep mysql
 and use /kill -9 <pid>/ to kill all mysql processes.
 
 #+BEGIN_SRC: bash
-sudo apt-get remove --purge mysql\*
+apt-get remove --purge mysql\*
 apt-get clean
 updatedb
 #+END_SRC
