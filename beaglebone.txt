@@ -1544,7 +1544,7 @@ CSipSimple?
 ** Install an IRC server
 
 #+BEGIN_SRC: bash
-apt-get install ircd-hybrid
+apt-get install ircd-hybrid irssi
 emacs /etc/ircd-hybrid/ircd.conf
 #+END_SRC
 
@@ -1572,10 +1572,13 @@ Try to connect to the IRC and identify yourself as an operator.
 In irssi:
 
 #+BEGIN_SRC
-/connect mydomainname.com
-/join #mychannel
-/msg -servername chanserv REGISTER #mychannel channelpassword
-/msg -servername chanserv set #mychannel mlock +k channelpassword
+  /connect mydomainname.com
+
+  /join #mychannel
+
+  /msg -servername chanserv REGISTER #mychannel channelpassword
+
+  /msg -servername chanserv set #mychannel mlock +k channelpassword
 #+END_SRC
 
 ** Install Gopher
