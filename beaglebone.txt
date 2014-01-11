@@ -1450,7 +1450,7 @@ MYSQL_PASSWORD=<mysql root password>
 umask 0077
 
 # Backup the database
-mysqldump --password=$MYSQL_PASSWORD friendica > /var/backups/redmatrix_daily.sql
+mysqldump --password=$MYSQL_PASSWORD redmatrix > /var/backups/redmatrix_daily.sql
 
 # Make the backup readable only by root
 chmod 600 /var/backups/redmatrix_daily.sql
@@ -1474,7 +1474,7 @@ MYSQL_PASSWORD=<mysql root password>
 umask 0077
 
 # Backup the database
-mysqldump --password=$MYSQL_PASSWORD friendica > /var/backups/redmatrix_weekly.sql
+mysqldump --password=$MYSQL_PASSWORD redmatrix > /var/backups/redmatrix_weekly.sql
 
 # Make the backup readable only by root
 chmod 600 /var/backups/redmatrix_weekly.sql
@@ -1486,27 +1486,6 @@ Save and exit.
 chmod 600 /etc/cron.weekly/redmatrixbackup
 chmod +x /etc/cron.weekly/redmatrixbackup
 #+END_SRC
-
-**** Recommended configuration
-***** Admin
-To get to the admin settings you will need to be logged in with the admin email address which you specified at the beginning of the installation procedure.  Depending upon the theme which you're using "/admin/" will be available either as an icon or on a drop down menu.
-
-Under the *plugins* section the main one which you may wish to enable is the NSFW plugin.  With that enabled if a post contans the #NSFW tag then it will appear minimised by default and you will need to click a button to open it.
-
-Under the *themes* section select a few themes, including mobile themes which are suitable for phones or tablets.
-
-Under the *site* section give your Friendica node a name other than "/my friend network/", you can change the icon and banner text and set the default mobile theme typically to /frost-mobile/.  If you don't want your node to host a lot of accounts for people you don't know then you may want to set the register policy to "/requires approval/".  For security it's probably a good idea only to host accounts for people who you actually know, rather than random strangers.  Also be aware that the Beaglebone does not have a great deal of computational power or bandwidth and will not function well if there are hundreds of users using your node.  If you're not federating with Diaspora or other sites then you may wish to select "/only allow Friendica contacts/".  That improves the security of the system, since communication between Friendica nodes is always encrypted separately and in addition to the usual SSL encryption layer - which makes life interesting for the Surveillance State and at least keeps those cryptanalysts employed.
-
-It's probably a good idea to enable "/private posts by default for new users/" and also "/don't include post content in email notifications/".  Since traditional email isn't a secure system and is easily vulnerable to attack by systems such as [[https://en.wikipedia.org/wiki/XKeyscore][Xkeyscore]].
-
-***** Settings
-Each user has their own customisable settings, typically available either via an icon or by an entry on a drop down menu.
-
-Under *additional features* enable "/richtext editor/", "/post preview/", "/group filter/", "/network filter/", "/edit sent posts/" and "/dislike posts/".
-
-Under *display settings* select your desktop and mobile themes.
-
-Once you have connected to enough friends it's also a good idea to use the "/export personal data/" option from here.  This will save a file to your local system, which you can import into another friendica node if necessary.
 **** To access from an Android device
 ***** App
 Open a browser on your device and go to https://f-droid.org/ then download and install the F-Droid apk.  If you then open F-Droid you can search for and install the Friendica app.
@@ -1514,9 +1493,6 @@ Open a browser on your device and go to https://f-droid.org/ then download and i
 If you are using a self-signed certificate then at the login screen scroll down to the bottom, select the SSL settings then scroll down and disable SSL certificate checks.  You will then be able to log in using https, which at least gives you some protection via the encryption.
 
 More information about the Friendica app can be found on http://friendica-for-android.wiki-lab.net/
-***** Mobile Theme
-Another way to access Friendica from a mobile device is to just use the web browser.  If you have selected a mobile theme within your settings then when viewing from an Android system the mobile theme will be displayed.
-
 ** Install a Blog
 
 Wordpress is the most popular blogging platform, but in practice I found it to be high maintenance with frequent security updates and breakages.  More practical for a home server is Flatpress.  Flatpress doesn't use a MySql database, just text files, and so is easy to relocate or reinstall.
