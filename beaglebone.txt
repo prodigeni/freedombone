@@ -2029,7 +2029,7 @@ irssi
 Connect to the IRC and identify yourself as an operator.  Here /mynetwork/ should be the same as *network_name* specified earlier within /ircd.conf/.
 
 #+BEGIN_SRC: bash
-/server add -auto -network mynetwork -ssl mydonainname.com 6670
+/server add -auto -network mynetwork -ssl mydonainname.com 6670 mysendacceptpassword
 
 /connect mydomainname.com
 
@@ -2040,7 +2040,13 @@ Connect to the IRC and identify yourself as an operator.  Here /mynetwork/ shoul
 /msg -servername chanserv set #mychannel mlock +k channelpassword
 #+END_SRC
 
-If you edit the irssi config file you should find your server configuration looks like this:
+If you edit the irssi config file:
+
+#+BEGIN_SRC: bash
+emacs ~/.irssi/config
+#+END_SRC
+
+It should look something like this:
 
 #+BEGIN_SRC: bash
   {
@@ -2054,7 +2060,7 @@ If you edit the irssi config file you should find your server configuration look
   },
 #+END_SRC
 
-If you're not using a self-signed certificate (which is the default) then you can set *ssl_verify* to "yes".
+If you're not using a self-signed certificate (self-signed is the default) then you can set *ssl_verify* to "yes".
 
 ** Install Gopher
 Gopher is an old internet protocol which originated a few years before the web and is purely text based.  It can be quite fun to build a gopher site and browse the gopherverse.  One thing to keep in mind is that there is no security with gopher, so any text transmitted is trivially interceptable by systems such as [[https://en.wikipedia.org/wiki/XKeyscore][Xkeyscore]] or deep packet inspection.
