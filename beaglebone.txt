@@ -1756,7 +1756,7 @@ emacs /etc/ircd-hybrid/ircd.conf
 
 Set *name* to the name of your server, and set a description.
 
-Set a *network_name* and *network_desc*.
+Set a *network_name* and *network_desc*.  The network name should not contain any spaces.
 
 Set max_clients to 20, or however many you expect that you'll typically need.
 
@@ -1767,7 +1767,17 @@ sections it was 192.168.1.60).
 
 Within the *auth* section set user = "*@192.168.1.60" - or whatever the fixed IP address of the BBB is on your network.
 
-Save and exit, then restart the IRC server.  Open ports 6666-6670 on your internet router and forward them to the BBB.
+Uncomment the first *connect* section and set the *name* to your domain name, the *host* to 192.168.1.60 and the send/accept passwords to a password which you use to log into the IRC server.  Also set the *port* to 6670.
+
+Save and exit, then restart the IRC server.  Open port 6670 on your internet router and forward it to the BBB.
+
+Ensure that the configuration is only readable by the root user.
+
+#+BEGIN_SRC: bash
+chmod 600 /etc/ircd-hybrid/ircd.conf
+#+END_SRC
+
+To to install channel management tools.
 
 #+BEGIN_SRC: bash
 cd /tmp
@@ -1794,7 +1804,7 @@ Edit the configuration.
 Make a md5 version of the password for the IRC server operator.
 
 #+BEGIN_SRC: bash
-mkpasswd -Hmd5 <operatorpassword>
+/usr/bin/mkpasswd <myoperatorpassword>
 #+END_SRC
 
 Edit the ircd-hybrid configuration.
@@ -2007,11 +2017,20 @@ service ircd-hybrid restart
 service hybserv restart
 #+END_SRC
 
-Try to connect to the IRC and identify yourself as an operator.
+*** Usage
 
-In irssi:
+On another computer (not the BBB).
 
 #+BEGIN_SRC: bash
+sudo apt-get install irssi
+irssi
+#+END_SRC
+
+Connect to the IRC and identify yourself as an operator.  Here /mynetwork/ should be the same as *network_name* specified earlier within /ircd.conf/.
+
+#+BEGIN_SRC: bash
+/server add -auto -network mynetwork -ssl mydonainname.com 6670
+
 /connect mydomainname.com
 
 /join #mychannel
@@ -2020,6 +2039,22 @@ In irssi:
 
 /msg -servername chanserv set #mychannel mlock +k channelpassword
 #+END_SRC
+
+If you edit the irssi config file you should find your server configuration looks like this:
+
+#+BEGIN_SRC: bash
+  {
+    address = "mydomainname.com";
+    chatnet = "mynetwork";
+    port = "6670";
+    password = "mysendacceptpassword";
+    use_ssl = "yes";
+    ssl_verify = "no";
+    autoconnect = "yes";
+  },
+#+END_SRC
+
+If you're not using a self-signed certificate (which is the default) then you can set *ssl_verify* to "yes".
 
 ** Install Gopher
 Gopher is an old internet protocol which originated a few years before the web and is purely text based.  It can be quite fun to build a gopher site and browse the gopherverse.  One thing to keep in mind is that there is no security with gopher, so any text transmitted is trivially interceptable by systems such as [[https://en.wikipedia.org/wiki/XKeyscore][Xkeyscore]] or deep packet inspection.
@@ -2544,7 +2579,6 @@ The following ports on your internet router/firewall should be forwarded to the 
 | HTTP     |         80 |
 | HTTPS    |        443 |
 | IMAP     |        143 |
-| IRC      | 6665..6669 |
 | IRC SSL  |       6670 |
 | SIP      | 5060..5061 |
 | SMTP     |         25 |
