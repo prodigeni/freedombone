@@ -1770,7 +1770,255 @@ Within the *auth* section set user = "*@192.168.1.60" - or whatever the fixed IP
 Save and exit, then restart the IRC server.  Open ports 6666-6670 on your internet router and forward them to the BBB.
 
 #+BEGIN_SRC: bash
+cd /tmp
+wget http://freedombone.uk.to/hybserv2.tar.gz
+#+END_SRC
+
+Verify it.
+
+#+BEGIN_SRC: bash
+md5sum hybserv2.tar.gz
+12efc53c421f4919f11328e48dbc519d  hybserv2.tar.gz
+#+END_SRC
+
+Install it.
+
+#+BEGIN_SRC: bash
+tar -xzvf hybserv2.tar.gz
+cd hybserv2-*
+./install.fast
+#+END_SRC
+
+Edit the configuration.
+
+Make a md5 version of the password for the IRC server operator.
+
+#+BEGIN_SRC: bash
+mkpasswd -Hmd5 <operatorpassword>
+#+END_SRC
+
+Edit the ircd-hybrid configuration.
+
+#+BEGIN_SRC: bash
+emacs /etc/ircd-hybrid/ircd.conf
+#+END_SRC
+
+Enter the md5 password which you previously created within the /operator/ section.  Also change /user/ to:
+
+#+BEGIN_SRC: bash
+	user = "*@*";
+#+END_SRC
+
+Then save and exit.
+
+#+BEGIN_SRC: bash
+emacs /usr/local/hybserv/hybserv.conf
+#+END_SRC
+
+Change #MD5 PASSWORD HERE# to the md5 operator password created earlier:
+
+#+BEGIN_SRC: bash
+O:*@*:#MD5 PASSWORD HERE#:root:segj (comment out other Q: lines)
+A:mynickname <myemailaddress>
+N:mydomainname.com:Hybrid services
+S:ConnectPassword:192.168.1.60:6667 (remove the other two services)
+#+END_SRC
+
+Save and exit.
+
+Create a daemon for hybserv2.
+
+#+BEGIN_SRC: bash
+emacs /etc/init.d/hybserv2
+#+END_SRC
+
+Enter the following, replacing /myusername/ with your username.
+
+#+BEGIN_SRC: bash
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          hybserv
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Hybserv2 daemon
+# Description:       Hybserv2 daemon
+### END INIT INFO
+
+# Do NOT "set -e"
+
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/hybserv
+DESC="Hybserv2 daemon"
+NAME=hybserv
+DAEMON=/usr/local/hybserv/$NAME
+DAEMON_ARGS=""
+PIDFILE=/var/run/ircd/$NAME.pid
+SCRIPTNAME=/etc/init.d/$NAME
+UID=myusername
+GID=myusername
+
+# Exit if the package is not installed
+[ -x "$DAEMON" ] || exit 0
+
+# Read configuration variable file if it is present
+[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.2-14) to ensure that this file is present
+# and status_of_proc is working.
+. /lib/lsb/init-functions
+
+#
+# Function that starts the daemon/service
+#
+do_start()
+{
+	# Return
+	#   0 if daemon has been started
+	#   1 if daemon was already running
+	#   2 if daemon could not be started
+	start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --chuid $UID:$GID --test > /dev/null \
+		|| return 1
+	start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --chuid $UID:$GID -- \
+		$DAEMON_ARGS \
+		|| return 2
+	# Add code here, if necessary, that waits for the process to be ready
+	# to handle requests from services started subsequently which depend
+	# on this one.  As a last resort, sleep for some time.
+}
+
+#
+# Function that stops the daemon/service
+#
+do_stop()
+{
+	# Return
+	#   0 if daemon has been stopped
+	#   1 if daemon was already stopped
+	#   2 if daemon could not be stopped
+	#   other if a failure occurred
+	start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE --name $NAME
+	RETVAL="$?"
+	[ "$RETVAL" = 2 ] && return 2
+	# Wait for children to finish too if this is a daemon that forks
+	# and if the daemon is only ever run from this initscript.
+	# If the above conditions are not satisfied then add some other code
+	# that waits for the process to drop all resources that could be
+	# needed by services started subsequently.  A last resort is to
+	# sleep for some time.
+	start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 --exec $DAEMON
+	[ "$?" = 2 ] && return 2
+	# Many daemons don't delete their pidfiles when they exit.
+	rm -f $PIDFILE
+	return "$RETVAL"
+}
+
+#
+# Function that sends a SIGHUP to the daemon/service
+#
+do_reload() {
+	#
+	# If the daemon can reload its configuration without
+	# restarting (for example, when it is sent a SIGHUP),
+	# then implement that here.
+	#
+	start-stop-daemon --stop --signal 1 --quiet --pidfile $PIDFILE --name $NAME
+	return 0
+}
+
+case "$1" in
+  start)
+	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
+	do_start
+	case "$?" in
+		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
+	;;
+  stop)
+	[ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
+	do_stop
+	case "$?" in
+		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
+	;;
+  status)
+	status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
+	;;
+  #reload|force-reload)
+	#
+	# If do_reload() is not implemented then leave this commented out
+	# and leave 'force-reload' as an alias for 'restart'.
+	#
+	#log_daemon_msg "Reloading $DESC" "$NAME"
+	#do_reload
+	#log_end_msg $?
+	#;;
+  restart|force-reload)
+	#
+	# If the "reload" option is implemented then remove the
+	# 'force-reload' alias
+	#
+	log_daemon_msg "Restarting $DESC" "$NAME"
+	do_stop
+	case "$?" in
+	  0|1)
+		do_start
+		case "$?" in
+			0) log_end_msg 0 ;;
+			1) log_end_msg 1 ;; # Old process is still running
+			*) log_end_msg 1 ;; # Failed to start
+		esac
+		;;
+	  *)
+		# Failed to stop
+		log_end_msg 1
+		;;
+	esac
+	;;
+  *)
+	#echo "Usage: $SCRIPTNAME {start|stop|restart|reload|force-reload}" >&2
+	echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
+	exit 3
+	;;
+esac
+
+:
+#+END_SRC
+
+Save and exit, then initialise the daemon, replacing /myusername/ with your username.
+
+#+BEGIN_SRC: bash
+chown -R myusername:myusername /usr/local/hybserv
+chmod u+x /etc/init.d/hybserv
+update-rc.d hybserv defaults
+#+END_SRC
+
+Now we need to restart the ircd and hybrid server to make things work:
+
+#+BEGIN_SRC: bash
 service ircd-hybrid restart
+service hybserv restart
+#+END_SRC
+
+Try to connect to the IRC and identify yourself as an operator.
+
+In irssi:
+
+#+BEGIN_SRC: bash
+/connect mydomainname.com
+
+/join #mychannel
+
+/msg -servername chanserv REGISTER #mychannel channelpassword
+
+/msg -servername chanserv set #mychannel mlock +k channelpassword
 #+END_SRC
 
 ** Install Gopher
@@ -1967,7 +2215,7 @@ esac
 Save and exit.  Then start the gopher service.
 
 #+BEGIN_SRC: bash
-chmod +x /etc/init.d/gopher
+chmod u+x /etc/init.d/gopher
 update-rc.d gopher defaults
 service gopher start
 #+END_SRC
