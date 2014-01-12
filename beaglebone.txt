@@ -1707,9 +1707,50 @@ TODO
 
 CSipSimple?
 ** Install an IRC server
+*** Basic install
+
+IRC is not an especially secure system.  For instance, even with the best encryption it's easily possible to imagine IRC-specific cribs which could be used by cryptanalytic systems.  However, we'll try to implement it in a manner which will at least give the surveillance aparatus something to ponder over.
+
+First install some dependencies.
 
 #+BEGIN_SRC: bash
-apt-get install ircd-hybrid irssi
+apt-get update
+apt-get install build-essential openssl libssl-dev
+#+END_SRC
+
+Then get the source code for ircd-hybrid.
+
+#+BEGIN_SRC: bash
+cd /tmp
+mkdir hybrid
+cd hybrid
+apt-get source ircd-hybrid
+#+END_SRC
+
+Modify the source code to include SSL security.
+
+#+BEGIN_SRC: bash
+emacs ircd-hybrid-*/debian/rules
+#+END_SRC
+
+Beneath MAXCLIENTS add the line:
+
+#+BEGIN_SRC: bash
+USE_OPENSSL = 1
+#+END_SRC
+
+Then save and exit.  Now we can build the debian package for ircd-hybrid and install it.
+
+#+BEGIN_SRC: bash
+cd ircd-hybrid-*
+dpkg-buildpackage -rfakeroot -uc -b
+cd ..
+dpkg -i ircd-hybrid_*.deb
+#+END_SRC
+
+Customise the configuration to your system, giving it a name and description.  In this example 192.168.1.60 is the static IP address on the BBB on the local network, so change that if necessary.
+
+#+BEGIN_SRC: bash
 emacs /etc/ircd-hybrid/ircd.conf
 #+END_SRC
 
@@ -1717,7 +1758,7 @@ Set *name* to the name of your server, and set a description.
 
 Set a *network_name* and *network_desc*.
 
-Set max_clients to 20.
+Set max_clients to 20, or however many you expect that you'll typically need.
 
 Within the admin section set your *name* and *email*.
 
@@ -1726,24 +1767,10 @@ sections it was 192.168.1.60).
 
 Within the *auth* section set user = "*@192.168.1.60" - or whatever the fixed IP address of the BBB is on your network.
 
-Save and exit.
+Save and exit, then restart the IRC server.  Open ports 6666-6670 on your internet router and forward them to the BBB.
 
 #+BEGIN_SRC: bash
 service ircd-hybrid restart
-#+END_SRC
-
-Try to connect to the IRC and identify yourself as an operator.
-
-In irssi:
-
-#+BEGIN_SRC
-  /connect mydomainname.com
-
-  /join #mychannel
-
-  /msg -servername chanserv REGISTER #mychannel channelpassword
-
-  /msg -servername chanserv set #mychannel mlock +k channelpassword
 #+END_SRC
 
 ** Install Gopher
@@ -2270,6 +2297,7 @@ The following ports on your internet router/firewall should be forwarded to the 
 | HTTPS    |        443 |
 | IMAP     |        143 |
 | IRC      | 6665..6669 |
+| IRC SSL  |       6670 |
 | SIP      | 5060..5061 |
 | SMTP     |         25 |
 | SMTPS    |        465 |
