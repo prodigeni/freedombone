@@ -1952,6 +1952,32 @@ On your internet router/firewall open ports 5222 and 5223 and forward them to th
 
 It's possible to test that your XMPP server is working at https://xmpp.net.  It may take several minutes and you'll get a low score because of the self-signed certificate, but it will at least verify that your server is capable of communicating.
 
+*** Managing users
+
+To add a user:
+
+#+BEGIN_SRC: bash
+prosodyctl adduser myusername@mydomainname.com
+#+END_SRC
+
+To change a user password:
+
+#+BEGIN_SRC: bash
+prosodyctl passwd myusername@mydomainname.com
+#+END_SRC
+
+To remove a user:
+
+#+BEGIN_SRC: bash
+prosodyctl deluser myusername@mydomainname.com
+#+END_SRC
+
+Report the status of the XMPP server:
+
+#+BEGIN_SRC: bash
+prosodyctl status
+#+END_SRC
+
 *** Using it with Ubuntu
 Open *System Settings* and select *Online Accounts*, *Add account*  and then *Jabber*.
 
