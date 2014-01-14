@@ -1916,7 +1916,7 @@ Install Prosody.
 #+BEGIN_SRC: bash
 apt-get install prosody
 cp -a /etc/prosody/conf.avail/example.com.cfg.lua /etc/prosody/conf.avail/xmpp.cfg.lua
-emacs /etc/prosody/conf.avail/.cfg.lua
+emacs /etc/prosody/conf.avail/xmpp.cfg.lua
 #+END_SRC
 
 Change the *VirtualHost* name to your domain name and remove the line below it.
@@ -2327,6 +2327,11 @@ The settings should look something like the following.
 	SSLCertificateFile    /etc/ssl/certs/mydomainname.com.crt
 	SSLCertificateKeyFile /etc/ssl/private/mydomainname.com.key
 
+    # Options based on bettercrypto.org
+    SSLProtocol All -SSLv2 -SSLv3
+    SSLHonorCipherOrder On
+    SSLCompression off
+    SSLCipherSuite EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH:+CAMELLIA256:+AES256:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!SEED:!ECDSA:CAMELLIA256-SHA:AES256-SHA:CAMELLIA128-SHA:AES128-SHA
 
 	#   SSL Engine Options:
 	#   Set various options for the SSL engine.
