@@ -1978,12 +1978,28 @@ Report the status of the XMPP server:
 prosodyctl status
 #+END_SRC
 
-*** Using it with Ubuntu
+*** Using with Ubuntu
 Open *System Settings* and select *Online Accounts*, *Add account*  and then *Jabber*.
 
 Enter your username (myusername@mydomainname.com) and password.
 
 Click on *Advanced* and make sure that *Encryption required* and *Ignore SSL certificate errors* are checked.  Ignoring the certificate errors will allow you to use the self-signed certificate created earlier.  Then click *Done* and set your Jabber account and Empathy to *On*.
+*** Using with Android
+Install [[https://f-droid.org/][F-Droid]]
+
+Search for and install Gibberbot
+
+From the menu open *Accounts*
+
+Select *Add account*
+
+Change the server port from 0 to 5222
+
+Done
+
+Accept unknown certificate? Select *Always*
+
+Go back to the initial screen and then using the menu you can add contacts and begin chatting.
 ** Install Gopher
 Gopher is an old internet protocol which originated a few years before the web and is purely text based.  It can be quite fun to build a gopher site and browse the gopherverse.  One thing to keep in mind is that there is no security with gopher, so any text transmitted is trivially interceptable by systems such as [[https://en.wikipedia.org/wiki/XKeyscore][Xkeyscore]] or deep packet inspection.
 
