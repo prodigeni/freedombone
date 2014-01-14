@@ -1026,12 +1026,13 @@ The Apache configuration for the site should look something like the following. 
     SSLProtocol All -SSLv2 -SSLv3
     SSLHonorCipherOrder On
     SSLCompression off
+    SSLCipherSuite EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH:+CAMELLIA256:+AES256:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!SEED:!ECDSA:CAMELLIA256-SHA:AES256-SHA:CAMELLIA128-SHA:AES128-SHA
+
     # Add six earth month HSTS header for all users ...
     Header add Strict-Transport-Security "max-age=15768000"
     # If you want to protect all subdomains , use the following header
     # ALL subdomains HAVE TO support https if you use this !
     # Strict-Transport-Security: max-age=15768000 ; includeSubDomains
-    # SSLCipherSuite ’EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH:+CAMELLIA256:+AES256:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!SEED:!ECDSA:CAMELLIA256-SHA:AES256-SHA:CAMELLIA128-SHA:AES128-SHA’
 
 	#   SSL Engine Options:
 	#   Set various options for the SSL engine.
@@ -1892,6 +1893,71 @@ It should look something like this:
 
 If you're not using a self-signed certificate (self-signed is the default) then you can set *ssl_verify* to "yes".
 
+** Install a Jabber/XMPP server
+*** The Server
+
+Generate a SSL certificate.
+
+#+BEGIN_SRC: bash
+openssl ecparam -out /etc/ssl/private/xmpp.pem -name prime256v1
+openssl genpkey -paramfile /etc/ssl/private/xmpp.pem -out /etc/ssl/private/xmpp.key
+openssl req -new -x509 -key /etc/ssl/private/xmpp.key -out /etc/ssl/certs/xmpp.crt -days 3650
+#+END_SRC
+
+The above uses a Diffie-Hellman elliptic curve (ECDH P-256) algorithm.  It is apparent that amongst crypographers there are differences of opinion about the security of elliptic curves, so if you prefer there is also a more traditional RSA way to generate an SSL certificate:
+
+#+BEGIN_SRC: bash
+openssl genrsa -out /etc/ssl/private/xmpp.key 4096
+openssl req -new -x509 -key /etc/ssl/private/xmpp.key -out /etc/ssl/certs/xmpp.crt -days 3650
+#+END_SRC
+
+Install Prosody.
+
+#+BEGIN_SRC: bash
+apt-get install prosody
+cp -a /etc/prosody/conf.avail/example.com.cfg.lua /etc/prosody/conf.avail/xmpp.cfg.lua
+emacs /etc/prosody/conf.avail/.cfg.lua
+#+END_SRC
+
+Change the *VirtualHost* name to your domain name and remove the line below it.
+
+Set the ssl section to:
+
+#+BEGIN_SRC: bash
+	ssl = {
+		key = "/etc/ssl/private/xmpp.key";
+		certificate = "/etc/ssl/certs/xmpp.crt";
+		}
+#+END_SRC
+
+Save and exit.  Create a symbolic link.
+
+#+BEGIN_SRC: bash
+ln -sf /etc/prosody/conf.avail/xmpp.cfg.lua /etc/prosody/conf.d/xmpp.cfg.lua
+#+END_SRC
+
+Add a user.  You will be prompted to specify a password.  You can repeat the process for as many users as needed.
+
+#+BEGIN_SRC: bash
+prosodyctl adduser myusername@mydomainname.com
+#+END_SRC
+
+Restart the server
+
+#+BEGIN_SRC: bash
+service prosody restart
+#+END_SRC
+
+On your internet router/firewall open ports 5222 and 5223 and forward them to the BBB.
+
+It's possible to test that your XMPP server is working at https://xmpp.net.  It may take several minutes and you'll get a low score because of the self-signed certificate, but it will at least verify that your server is capable of communicating.
+
+*** Using it with Ubuntu
+Open *System Settings* and select *Online Accounts*, *Add account*  and then *Jabber*.
+
+Enter your username (myusername@mydomainname.com) and password.
+
+Click on *Advanced* and make sure that *Encryption required* and *Ignore SSL certificate errors* are checked.  Ignoring the certificate errors will allow you to use the self-signed certificate created earlier.  Then click *Done* and set your Jabber account and Empathy to *On*.
 ** Install Gopher
 Gopher is an old internet protocol which originated a few years before the web and is purely text based.  It can be quite fun to build a gopher site and browse the gopherverse.  One thing to keep in mind is that there is no security with gopher, so any text transmitted is trivially interceptable by systems such as [[https://en.wikipedia.org/wiki/XKeyscore][Xkeyscore]] or deep packet inspection.
 
@@ -2420,6 +2486,7 @@ The following ports on your internet router/firewall should be forwarded to the 
 | SMTP     |         25 |
 | SMTPS    |        465 |
 | SSH      |         22 |
+| XMPP     | 5222..5223 |
 
 * Hints and Tips
 ** Messaging security
