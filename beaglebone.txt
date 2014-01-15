@@ -895,6 +895,12 @@ Some useful keys to know are:
  * Set port to 465
 ** Setting up a web site
 
+#+BEGIN_VERSE
+/I hope we will use the Net to cross barriers and connect cultures./
+
+-- Tim Berners-Lee
+#+END_VERSE
+
 Edit the apache configuration so that it doesn't run out of memory if there are a lot of connections.
 
 #+BEGIN_SRC: bash
@@ -913,7 +919,7 @@ mkdir /var/www/$HOSTNAME/htdocs
 emacs /etc/apache2/sites-available/$HOSTNAME
 #+END_SRC
 
-The Apache configuration for the site should look something like the following.  Replaye mydonainname with the site domain name.
+The Apache configuration for the site should look something like the following.  Replace /mydonainname.com/ with the site domain name.
 
 #+BEGIN_SRC: bash
 <VirtualHost *:80>
@@ -1894,6 +1900,13 @@ It should look something like this:
 If you're not using a self-signed certificate (self-signed is the default) then you can set *ssl_verify* to "yes".
 
 ** Install a Jabber/XMPP server
+
+#+BEGIN_VERSE
+/Well heck, it isn’t that hard to write an instant messaging system./
+
+--Jeremie Miller
+#+END_VERSE
+
 *** The Server
 
 Generate a SSL certificate.
