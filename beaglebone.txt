@@ -2505,6 +2505,12 @@ With a web browser visit your domain and enter an administrator username and pas
 
 ** Install Bitmessage
 
+#+BEGIN_VERSE
+/Love your neighbour. Fight the future. If you are reading this you ARE the resistance./
+
+-- BitChirp
+#+END_VERSE
+
 [[https://bitmessage.org][Bitmessage]] is a new type of messaging system intended to fulfill the same role as email, but without the security problems.  In particular, Bitmessage attempts to not just encrypt the content but also the metadata.  It's message broadcasting system makes it exceedingly difficult for an attacker to know which computer a message is destined for.  The only way you know whether a message has been sent to you is whether you are able to decrypt it from the passing stream of messages.
 
 Although similar to Bitcoin in some regards, such as "/proof of work/", Bitmessage has no block chain and messages are only buffered for approximately three days after which they are deleted from any given node.
