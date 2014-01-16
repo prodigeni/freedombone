@@ -2656,6 +2656,8 @@ update-rc.d pybitmessage defaults
 service pybitmessage start
 #+END_SRC
 
+Now open port 8444 on your internet router or firewall and direct it to the BBB.
+
 ** Install Tripwire
 
 Tripwire will try to detect any intrusions into your system. It's a good idea to install it after you have installed all of the other programs which you intend to use.
