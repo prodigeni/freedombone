@@ -2503,6 +2503,159 @@ chmod g+s /var/www/$HOSTNAME/htdocs
 
 With a web browser visit your domain and enter an administrator username and password.
 
+** Install Bitmessage
+
+[[https://bitmessage.org][Bitmessage]] is a new type of messaging system intended to fulfill the same role as email, but without the security problems.  In particular, Bitmessage attempts to not just encrypt the content but also the metadata.  It's message broadcasting system makes it exceedingly difficult for an attacker to know which computer a message is destined for.  The only way you know whether a message has been sent to you is whether you are able to decrypt it from the passing stream of messages.
+
+Although similar to Bitcoin in some regards, such as "/proof of work/", Bitmessage has no block chain and messages are only buffered for approximately three days after which they are deleted from any given node.
+
+Installing Bitmessage as a daemon will increase the size of the network, and therefore the level of security for all users.
+
+#+BEGIN_SRC: bash
+apt-get install python screen
+cd /tmp
+git clone https://github.com/Bitmessage/PyBitmessage.git
+cd PyBitmessage
+make install
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+emacs /etc/init.d/pybitmessage
+#+END_SRC
+
+Add the following text:
+
+#+BEGIN_SRC: bash
+#!/bin/bash
+# /etc/init.d/bitmessage
+
+### BEGIN INIT INFO
+# Provides:          pybitmessage
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts bitmessage as a background daemon, suitable for servers
+# Description:       This file should be used to construct scripts to be
+#                    placed in /etc/init.d.
+### END INIT INFO
+
+# Author: Super-Nathan <BM-Gu2k3Wy2hpTMYBxSoM2937SPcuU6xzEj>
+
+#Settings
+SERVICE='pybitmessage'
+LOGFILE='/dev/null' # this disables logging
+# LOGFILE='/var/log/bitmessage.log' # comment out the above line and un-comment this line to save a log
+COMMAND="python bitmessagemain.py > $LOGFILE"
+USERNAME='bitmsg'
+NICELEVEL=19 # from 0-19 the bigger the number, the less the impact on system resources
+HISTORY=1024
+PBM_LOCATION="/usr/local/share/pybitmessage"
+INVOCATION="nice -n ${NICELEVEL} ${COMMAND}"
+PATH='/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/core_perl:/sbin:/usr/sbin:/bin:/usr/local/share/pybitmessage'
+
+
+
+
+bm_start() {
+echo "Starting $SERVICE..."
+cd ${PBM_LOCATION}
+su --command "screen -h ${HISTORY} -dmS ${SERVICE} ${INVOCATION}" $USERNAME
+}
+
+
+bm_stop() {
+echo "Stopping $SERVICE"
+su --command "screen -p 0 -S ${SERVICE} -X stuff "'^C'"" $USERNAME
+}
+
+
+#Start-Stop here
+case "$1" in
+  start)
+    bm_start
+    ;;
+  stop)
+    bm_stop
+    ;;
+  restart)
+    bm_stop
+    sleep 60s
+    bm_start
+    ;;
+    *)
+  echo "Usage: $0 {start|stop|restart}"
+  exit 1
+  ;;
+esac
+
+exit 0
+#+END_SRC
+
+Save and exit.
+
+Add a user which will be specifically for Bitmessage.  Since bitmessage is still a relatively young and experimental project, this adds further compartmentalisation such that if there are any bugs within PyBitmessage then an attacker can't neccessarily gain control of root or any other user account.  Here we create a user called /bitmsg/ and give it a long random password.
+
+#+BEGIN_SRC: bash
+adduser bitmsg
+#+END_SRC
+
+Create a /keys.dat/ file which is used to configure Bitmessage.
+
+#+BEGIN_SRC: bash
+mkdir /home/bitmsg/.config
+mkdir /home/bitmsg/.config/PyBitmessage
+emacs /home/bitmsg/.config/PyBitmessage/keys.dat
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+[bitmessagesettings]
+settingsversion = 7
+port = 8444
+timeformat = %%a, %%d %%b %%Y  %%I:%%M %%p
+blackwhitelist = black
+startonlogon = false
+minimizetotray = false
+showtraynotifications = false
+startintray = false
+socksproxytype = none
+sockshostname = localhost
+socksport = 9050
+socksauthentication = false
+sockslisten = false
+socksusername =
+sockspassword =
+keysencrypted = false
+messagesencrypted = false
+defaultnoncetrialsperbyte = 640
+defaultpayloadlengthextrabytes = 14000
+minimizeonclose = false
+maxacceptablenoncetrialsperbyte = 0
+maxacceptablepayloadlengthextrabytes = 0
+userlocale = system
+namecoinrpctype = namecoind
+namecoinrpchost = localhost
+namecoinrpcuser =
+namecoinrpcpassword =
+namecoinrpcport = 8336
+sendoutgoingconnections = True
+daemon = true
+#+END_SRC
+
+Save and exit. Then enable the daemon and run it.
+
+#+BEGIN_SRC: bash
+rm -f /tmp/-usr-local-share-pybitmessage-*.lock
+chown -R bitmsg:bitmsg /home/bitmsg
+chmod +x /etc/init.d/pybitmessage
+update-rc.d pybitmessage defaults
+service pybitmessage start
+#+END_SRC
+
 ** Install Tripwire
 
 Tripwire will try to detect any intrusions into your system. It's a good idea to install it after you have installed all of the other programs which you intend to use.
@@ -2535,18 +2688,19 @@ apt-get install rkhunter
 * Router/Firewall ports
 The following ports on your internet router/firewall should be forwarded to the BBB.
 
-| Protocol |     Port/s |
-|----------+------------|
-| Gopher   |         70 |
-| HTTP     |         80 |
-| HTTPS    |        443 |
-| IMAP     |        143 |
-| IRC SSL  |       6670 |
-| SIP      | 5060..5061 |
-| SMTP     |         25 |
-| SMTPS    |        465 |
-| SSH      |         22 |
-| XMPP     | 5222..5223 |
+| Protocol   |     Port/s |
+|------------+------------|
+| Gopher     |         70 |
+| HTTP       |         80 |
+| HTTPS      |        443 |
+| IMAP       |        143 |
+| IRC SSL    |       6670 |
+| SIP        | 5060..5061 |
+| SMTP       |         25 |
+| SMTPS      |        465 |
+| SSH        |         22 |
+| XMPP       | 5222..5223 |
+| Bitmessage |       8444 |
 
 * Hints and Tips
 ** Messaging security
