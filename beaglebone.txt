@@ -2511,11 +2511,16 @@ With a web browser visit your domain and enter an administrator username and pas
 -- BitChirp
 #+END_VERSE
 
+*** A new kind of Email
 [[https://bitmessage.org][Bitmessage]] is a new type of messaging system intended to fulfill the same role as email, but without the security problems.  In particular, Bitmessage attempts to not just encrypt the content but also the metadata.  It's message broadcasting system makes it exceedingly difficult for an attacker to know which computer a message is destined for.  The only way you know whether a message has been sent to you is whether you are able to decrypt it from the passing stream of messages.
 
 Although similar to Bitcoin in some regards, such as "/proof of work/", Bitmessage has no block chain and messages are only buffered for approximately three days after which they are deleted from any given node.
 
 Installing Bitmessage as a daemon will increase the size of the network, and therefore the level of security for all users.
+
+*** The Daemon
+
+Install from the current source code.
 
 #+BEGIN_SRC: bash
 apt-get install python screen
@@ -2525,7 +2530,7 @@ cd PyBitmessage
 make install
 #+END_SRC
 
-Save and exit.
+Now create the daemon.
 
 #+BEGIN_SRC: bash
 emacs /etc/init.d/pybitmessage
@@ -2663,6 +2668,19 @@ service pybitmessage start
 #+END_SRC
 
 Now open port 8444 on your internet router or firewall and direct it to the BBB.
+
+*** Using Bitmessage
+Although in principle it would be possible to send Bitmessages directly from the BBB, in practice the /proof of work/ requirement would mean that it would take an infeasibly long time to send messages, and the computational workload would likely greatly impair the performance of other services also running on the system.  So to send and receive Bitmessages it's better to just install the client on a laptop or desktop machine.
+
+The easiest way to install the client is either to download it from [[https://bitmessage.org][bitmessage.org]] or to get the latest build from Github as follows:
+
+#+BEGIN_SRC: bash
+cd /tmp
+git clone https://github.com/Bitmessage/PyBitmessage.git
+cd PyBitmessage
+make install
+pybitmessage
+#+END_SRC
 
 ** Install Tripwire
 
