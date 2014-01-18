@@ -50,6 +50,12 @@ FreedomBone should be far more secure than using popular cloud-based services wh
 Hardly at all.  The BeagleBone Black consumes very little power - less than 5W.  It would even be potentially possible to run it from a solar panel.
 * Inventory
 
+#+BEGIN_VERSE
+/You can’t help someone just by making a wish to do so, you have to take action./
+
+-- Dalai Lama
+#+END_VERSE
+
 These instructions assume that you have the following ingredients.
 
 ** A BeagleBone Black (BBB)
@@ -1924,6 +1930,15 @@ openssl genrsa -out /etc/ssl/private/xmpp.key 4096
 openssl req -new -x509 -key /etc/ssl/private/xmpp.key -out /etc/ssl/certs/xmpp.crt -days 3650
 #+END_SRC
 
+Change permissions.
+
+#+BEGIN_SRC: bash
+chmod 600 /etc/ssl/private/xmpp.key
+chmod 600 /etc/ssl/certs/xmpp.crt
+chown prosody:prosody /etc/ssl/private/xmpp.key
+chown prosody:prosody /etc/ssl/certs/xmpp.crt
+#+END_SRC
+
 Install Prosody.
 
 #+BEGIN_SRC: bash
@@ -1961,7 +1976,7 @@ Restart the server
 service prosody restart
 #+END_SRC
 
-On your internet router/firewall open ports 5222 and 5223 and forward them to the BBB.
+On your internet router/firewall open ports 5222, 5223 and 5269 and forward them to the BBB.
 
 It's possible to test that your XMPP server is working at https://xmpp.net.  It may take several minutes and you'll get a low score because of the self-signed certificate, but it will at least verify that your server is capable of communicating.
 
@@ -2714,19 +2729,20 @@ apt-get install rkhunter
 * Router/Firewall ports
 The following ports on your internet router/firewall should be forwarded to the BBB.
 
-| Protocol   |     Port/s |
-|------------+------------|
-| Gopher     |         70 |
-| HTTP       |         80 |
-| HTTPS      |        443 |
-| IMAP       |        143 |
-| IRC SSL    |       6670 |
-| SIP        | 5060..5061 |
-| SMTP       |         25 |
-| SMTPS      |        465 |
-| SSH        |         22 |
-| XMPP       | 5222..5223 |
-| Bitmessage |       8444 |
+| Protocol      |     Port/s |
+|---------------+------------|
+| Gopher        |         70 |
+| HTTP          |         80 |
+| HTTPS         |        443 |
+| IMAP          |        143 |
+| IRC SSL       |       6670 |
+| SIP           | 5060..5061 |
+| SMTP          |         25 |
+| SMTPS         |        465 |
+| SSH           |         22 |
+| XMPP          | 5222..5223 |
+| XMPP (server) |       5269 |
+| Bitmessage    |       8444 |
 
 * Hints and Tips
 ** Messaging security
