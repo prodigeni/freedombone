@@ -1508,6 +1508,12 @@ If you are using a self-signed certificate then at the login screen scroll down 
 More information about the Friendica app can be found on http://friendica-for-android.wiki-lab.net/
 ** Install a Blog
 
+#+BEGIN_VERSE
+/When society gives censors wide and vague powers they never confine themselves to deserving targets. They are not snipers, but machine-gunners. Allow them to fire at will, and they will hit anything that moves./
+
+-- Nick Cohen
+#+END_VERSE
+
 Wordpress is the most popular blogging platform, but in practice I found it to be high maintenance with frequent security updates and breakages.  More practical for a home server is Flatpress.  Flatpress doesn't use a MySql database, just text files, and so is easy to relocate or reinstall.
 
 See the [[Setting up a web site]] section of this document for details of how to configure the web server for your blog's domain.
@@ -1720,6 +1726,13 @@ TODO
 
 CSipSimple?
 ** Install an IRC server
+
+#+BEGIN_VERSE
+/Give me the liberty to know, to utter, and to argue freely according to conscience, above all liberties./
+
+-- John Milton
+#+END_VERSE
+
 *** Base install
 
 IRC is not an especially secure system.  For instance, even with the best encryption it's easily possible to imagine IRC-specific cribs which could be used by cryptanalytic systems.  However, we'll try to implement it in a manner which will at least give the surveillance aparatus something to ponder over.
@@ -2017,7 +2030,7 @@ Click *Add* to add a new user, then enter the Jabber ID which you previously spe
 
 From the *File* menu you can add contacts, then select the chat icon to begin a chat.  Click on the lock icon on the right hand side and this will initiate an authentication procedure in which you can specify a question and answer to verify the identity of the person you're communicating with.  Once authentication is complete then you'll be chating using OTR, which provides an additional layer of security.
 
-You can also [[https://www.youtube.com/watch?v=vgx7VSrDGjk][see the following video]] as an example of using OTR.
+You can also [[https://www.youtube.com/watch?v=vgx7VSrDGjk][see this video]] as an example of using OTR.
 *** Using with Ubuntu
 The default XMPP client in Ubuntu is Empathy.  Using Empathy isn't as secure as using Jitsi, since it doesn't include the /off the record/ feature, but since it's the default it's what many users will have easy access to.
 
@@ -2712,6 +2725,12 @@ pybitmessage
 #+END_SRC
 
 ** Install Tripwire
+
+#+BEGIN_VERSE
+/...by the time you get done with all of that, we have a freedom box/
+
+-- Eben Moglen
+#+END_VERSE
 
 Tripwire will try to detect any intrusions into your system. It's a good idea to install it after you have installed all of the other programs which you intend to use.
 
