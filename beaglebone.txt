@@ -1964,7 +1964,7 @@ Save and exit.  Create a symbolic link.
 ln -sf /etc/prosody/conf.avail/xmpp.cfg.lua /etc/prosody/conf.d/xmpp.cfg.lua
 #+END_SRC
 
-Add a user.  You will be prompted to specify a password.  You can repeat the process for as many users as needed.
+Add a user.  You will be prompted to specify a password.  You can repeat the process for as many users as needed.  This will also be your Jabber ID (JID).
 
 #+BEGIN_SRC: bash
 prosodyctl adduser myusername@mydomainname.com
@@ -2006,7 +2006,21 @@ Report the status of the XMPP server:
 prosodyctl status
 #+END_SRC
 
+*** Using with Jitsi
+Jitsi is the recommended communications client for desktop or laptop systems, since it includes the /off the record/ (OTR) feature which provides some additional security beyond the usual SSL certificates.
+
+Jitsi can be downloaded from https://jitsi.org/
+
+On your desktop/laptop open Jitsi and select *Options* from the *Tools* menu.
+
+Click *Add* to add a new user, then enter the Jabber ID which you previously specified with /prosodyctl/ when setting up the XMPP server.  Close and then you should notice that your status is "Online" (or if not then you should be able to set it to online).
+
+From the *File* menu you can add contacts, then select the chat icon to begin a chat.  Click on the lock icon on the right hand side and this will initiate an authentication procedure in which you can specify a question and answer to verify the identity of the person you're communicating with.  Once authentication is complete then you'll be chating using OTR, which provides an additional layer of security.
+
+You can also [[https://www.youtube.com/watch?v=vgx7VSrDGjk][see the following video]] as an example of using OTR.
 *** Using with Ubuntu
+The default XMPP client in Ubuntu is Empathy.  Using Empathy isn't as secure as using Jitsi, since it doesn't include the /off the record/ feature, but since it's the default it's what many users will have easy access to.
+
 Open *System Settings* and select *Online Accounts*, *Add account*  and then *Jabber*.
 
 Enter your username (myusername@mydomainname.com) and password.
