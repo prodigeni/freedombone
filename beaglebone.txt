@@ -2490,7 +2490,7 @@ rm /var/www/$HOSTNAME/htdocs/install.php
 -- Larry Ellison
 #+END_VERSE
 
-Owncloud will allow you to upload and download files, share photos, collaboratively edit documents, have a calendar and more.
+Owncloud will allow you to upload and download files, share photos, collaboratively edit documents, have a calendar and more.  You should be warned that Owncloud runs quite slowly via an ordinary web browser, but it can be a convenient way to access and share your data from any location in a reasonably secure manner.
 
 *** Server Installation
 
@@ -2528,7 +2528,7 @@ export HOSTNAME=mydomainname.com
 emacs /etc/apache2/sites-available/$HOSTNAME
 #+END_SRC
 
-And add the following, both to the 80 section and the 443 VirtualHost sections.
+And add the following, to the 443 VirtualHost section.  Really we only will want to be using Owncloud with HTTPS to ensure some level of security and avoidance of dragnet surveillance.
 
 #+BEGIN_SRC: bash
   <Directory /var/www/mydomainname.com/htdocs/owncloud>
@@ -2536,6 +2536,14 @@ And add the following, both to the 80 section and the 443 VirtualHost sections.
     AllowOverride All
     Order allow,deny
     allow from all
+  </Directory>
+#+END_SRC
+
+To ensure that nobody logs in insecurely add the following to the 80 VirtualHost section.
+
+#+BEGIN_SRC: bash
+  <Directory /var/www/mydomainname.com/htdocs/owncloud>
+    deny from all
   </Directory>
 #+END_SRC
 
@@ -2594,6 +2602,8 @@ Save and exit.
 With a web browser visit your domain (mydomainname.com/owncloud) and enter an administrator username and password.
 
 *** Owncloud on Android
+
+First install [[https://f-droid.org/][F-Droid]] and then search for the current Owncloud app.  Once it's installed you'll then be able to log into the BBB with the URL https://mydomainname.com/opencloud, supplying your username and password.
 
 ** Install Bitmessage
 
