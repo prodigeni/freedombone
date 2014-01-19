@@ -87,6 +87,7 @@ The Debian Linux OS will be installed onto a small flash drive.  It's a good ide
 Download the image.
 
 #+BEGIN_SRC: bash
+cd ~/
 wget http://freedombone.uk.to/debian-7.2-console-armhf-2013-11-15.tar.xz
 #+END_SRC
 
@@ -1521,6 +1522,7 @@ See the [[Setting up a web site]] section of this document for details of how to
 Download flatpress.
 
 #+BEGIN_SRC: bash
+cd /tmp
 wget http://freedombone.uk.to/flatpress.tar.gz
 #+END_SRC
 
@@ -1577,6 +1579,7 @@ apt-get install gnutelephony-keyring
 After that it will be happy to accept it as a signed repository. The verification keys can also be directly fetched with
 
 #+BEGIN_SRC: bash
+cd /tmp
 wget http://dev.gnutelephony.org/archive/wheezy/public.key
 #+END_SRC
 
@@ -2062,6 +2065,7 @@ To set up a gopher server:
 
 #+BEGIN_SRC: bash
 apt-get install build-essential
+cd /tmp
 wget http://freedombone.uk.to/geomyidae-current.tgz
 #+END_SRC
 
@@ -2263,11 +2267,19 @@ gopher://mydomainname.com
 There is a browser addon for Gopher called "overbite".  Installing that should enable you to view your site.
 
 ** Install a Wiki
+
+#+BEGIN_VERSE
+/I believe that technology can liberate, but you need to be a master rather than a user. You need to pull technology apart and master it rather than letting it control you./
+
+-- Tom Barbalet
+#+END_VERSE
+
 Dokuwiki is based upon flat files, and so is easy to move from one server to another without a lot of database complications.
 
 Download the wiki.
 
 #+BEGIN_SRC: bash
+cd /tmp
 wget http://freedombone.uk.to/dokuwiki.tgz
 #+END_SRC
 
