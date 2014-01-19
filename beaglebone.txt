@@ -2517,8 +2517,8 @@ emacs /etc/php5/apache2/php.ini
 Set the following:
 
 #+BEGIN_SRC: bash
-upload_max_filesize = 32M
-post_max_size = 32M
+upload_max_filesize = 512M
+post_max_size = 512M
 #+END_SRC
 
 Save and exit, then edit your Apache configuration.
@@ -2592,8 +2592,8 @@ emacs /var/www/$HOSTNAME/htdocs/owncloud/.htaccess
 Set the following.
 
 #+BEGIN_SRC: bash
-php_value upload_max_filesize 32M
-php_value post_max_size 32M
+php_value upload_max_filesize 512M
+php_value post_max_size 512M
 php_value memory_limit 128M
 #+END_SRC
 
