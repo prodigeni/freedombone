@@ -799,6 +799,12 @@ service dovecot restart
 
 ** Mutt email client
 
+#+BEGIN_VERSE
+/I dreamt last night that I was living in a surveillance state. I woke up and… I’m still in a surveillance state./
+
+-- Conrad Kramer
+#+END_VERSE
+
 #+BEGIN_SRC: bash
 apt-get install mutt lynx abook
 exit
