@@ -892,6 +892,13 @@ Some useful keys to know are:
 | H     | Mark a message as ham                                   |
 
 ** K9 email client
+
+#+BEGIN_VERSE
+/The surveillance state is robust. It is robust politically, legally, and technically./
+
+-- Bruce Schneier
+#+END_VERSE
+
 *** Incoming server settings
  * Select settings/account settings
  * Select Fetching mail/incoming server
