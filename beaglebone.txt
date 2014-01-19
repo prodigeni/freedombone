@@ -1,7 +1,7 @@
 #+TITLE: FreedomBone
 #+AUTHOR: Bob Mottram
 #+EMAIL: bob@robotics.uk.to
-#+KEYWORDS: freedombox, debian, beaglebone, friendica, email, web server, home server, internet, censorship, surveillance
+#+KEYWORDS: freedombox, debian, beaglebone, friendica, email, web server, home server, internet, censorship, surveillance, social network, irc, jabber, chat
 #+DESCRIPTION: Turn the Beaglebone Black into a personal communications server
 
 #+BEGIN_CENTER
@@ -2484,30 +2484,65 @@ rm /var/www/$HOSTNAME/htdocs/install.php
 
 ** Install Owncloud
 
-First create an apache configuration for your Owncloud site.  You will need to create a new subdomain via FreeDNS.  See the earlier section on [[Setting up a web site]] for details.
+#+BEGIN_VERSE
+/It's not water vapour/
 
-#+BEGIN_SRC: bash
-emacs /etc/php5/apache2filter/php.ini
-#+END_SRC
+-- Larry Ellison
+#+END_VERSE
 
-Set the following:
+Owncloud will allow you to upload and download files, share photos, collaboratively edit documents, have a calendar and more.
 
-#+BEGIN_SRC: bash
-post_max_size = 32M
-upload_max_filesize = 32M
-#+END_SRC
-
-Restart apache.
-
-#+BEGIN_SRC: bash
-service apache2 restart
-#+END_SRC
+*** Server Installation
 
 Install some dependencies:
 
 #+BEGIN_SRC: bash
 apt-get install apache2 php5 php5-gd php-xml-parser php5-intl
 apt-get install php5-sqlite php5-mysql smbclient curl libcurl3 php5-curl
+#+END_SRC
+
+It's very important that /mod_php5/ and not /mod_php5filter/ be installed.  If you have /mod_php5filter/ installed then Owncloud will always fail to install.
+
+#+BEGIN_SRC: bash
+a2dismod php5filter
+apt-get install libapache2-mod-php5
+#+END_SRC
+
+Ensure that the size of files which may be uploaded or downloaded is large enough.
+
+#+BEGIN_SRC: bash
+emacs /etc/php5/apache2/php.ini
+#+END_SRC
+
+Set the following:
+
+#+BEGIN_SRC: bash
+upload_max_filesize = 32M
+post_max_size = 32M
+#+END_SRC
+
+Save and exit, then edit your Apache configuration.
+
+#+BEGIN_SRC: bash
+export HOSTNAME=mydomainname.com
+emacs /etc/apache2/sites-available/$HOSTNAME
+#+END_SRC
+
+And add the following, both to the 80 section and the 443 VirtualHost sections.
+
+#+BEGIN_SRC: bash
+  <Directory /var/www/mydomainname.com/htdocs/owncloud>
+    Options Indexes FollowSymLinks MultiViews
+    AllowOverride All
+    Order allow,deny
+    allow from all
+  </Directory>
+#+END_SRC
+
+Save and exit, then restart apache.
+
+#+BEGIN_SRC: bash
+service apache2 restart
 #+END_SRC
 
 Download owncloud.
@@ -2520,30 +2555,45 @@ wget http://freedombone.uk.to/owncloud.tar.bz2
 Verify the download:
 
 #+BEGIN_SRC: bash
-md5 owncloud.tar.bz2
+md5sum owncloud.tar.bz2
 f43eabb746b5e339ee70d0a6aaf4a49c
 #+END_SRC
 
 Extract the archive.  This may take a couple of minutes, so don't be alarmed that the system has crashed.
 
 #+BEGIN_SRC: bash
-export HOSTNAME=myownclouddomainname.com
+export HOSTNAME=mydomainname.com
 tar -xjf owncloud.tar.bz2
 #+END_SRC
 
-Move the extracted files to your site.
+Move the extracted files to your site and set file permissions.
 
 #+BEGIN_SRC: bash
-cp -r owncloud /var/www/$HOSTNAME
-rm -rf /var/www/$HOSTNAME/htdocs
-mv /var/www/$HOSTNAME/owncloud /var/www/$HOSTNAME/htdocs
-chown -R www-data:www-data /var/www/$HOSTNAME/htdocs/
-chmod 775 /var/www/$HOSTNAME/htdocs
-chmod 664 /var/www/$HOSTNAME/htdocs/*
-chmod g+s /var/www/$HOSTNAME/htdocs
+cp -r owncloud /var/www/$HOSTNAME/htdocs
+chown -R www-data:www-data /var/www/$HOSTNAME/htdocs/owncloud/apps
+chown -R www-data:www-data /var/www/$HOSTNAME/htdocs/owncloud/config
+chown www-data:www-data /var/www/$HOSTNAME/htdocs/owncloud
 #+END_SRC
 
-With a web browser visit your domain and enter an administrator username and password.
+Edit the htaccess file for Owncloud.
+
+#+BEGIN_SRC: bash
+emacs /var/www/$HOSTNAME/htdocs/owncloud/.htaccess
+#+END_SRC
+
+Set the following.
+
+#+BEGIN_SRC: bash
+php_value upload_max_filesize 32M
+php_value post_max_size 32M
+php_value memory_limit 128M
+#+END_SRC
+
+Save and exit.
+
+With a web browser visit your domain (mydomainname.com/owncloud) and enter an administrator username and password.
+
+*** Owncloud on Android
 
 ** Install Bitmessage
 
