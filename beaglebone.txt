@@ -259,6 +259,18 @@ apt-get update
 apt-get install emacs
 #+END_SRC
 
+** Random number generation
+
+The security of encryption depends upon how random the pseudo-random number generation on your system is.  If it isn't very random then it may be far more vulnerable to cryptanalysis, and it's known that in the past some dubious agencies have encouraged the use of flawed random number generators to assist with their prurient activities.  Randomness - typically referred to as /entropy/ - is often gathered from factors such as the timing of key presses or mouse movements, but since the BBB won't have such devices plugged into it this reduces the amount of entropy available.
+
+To improve entropy generation there are two options.  One is to install a kernel module which enables the hardware crypto available on the BBB, but that's a bit complicated and might have some stability implications.  The other option is to install [[http://www.issihosts.com/haveged/][havegd]].  While not as good as a true hardware random number generator, havegd is better than the default pseudo-random number generation within the Linux kernel.  To install it:
+
+#+BEGIN_SRC: bash
+apt-get install haveged
+#+END_SRC
+
+At the time of writing there is also some hardware called [[http://beagleboard.org/project/CryptoCape/][cryptocape]] being developed, with the intention of adding extra random number generation capabilities to the BBB.
+
 ** Alter ssh configuration
 
 Altering the ssh configuration will make it a little more secure than the standard Debian settings.
