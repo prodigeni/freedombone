@@ -261,6 +261,12 @@ apt-get install emacs
 
 ** Random number generation
 
+#+BEGIN_VERSE
+/Near as I can tell, the answer on what has been requested is everything: deliberate weakenings of encryption algorithms, deliberate weakenings of random number generations, copies of master keys, encryption of the session key with an NSA-specific key … everything./
+
+-- Bruce Schneier, on the 2013 leaked NSA documents
+#+END_VERSE
+
 The security of encryption depends upon how random the pseudo-random number generation on your system is.  If it isn't very random then it may be far more vulnerable to cryptanalysis, and it's known that in the past some dubious agencies have encouraged the use of flawed random number generators to assist with their prurient activities.  Randomness - typically referred to as /entropy/ - is often gathered from factors such as the timing of key presses or mouse movements, but since the BBB won't have such devices plugged into it this reduces the amount of entropy available.
 
 To improve entropy generation there are two options.  One is to install a kernel module which enables the hardware crypto available on the BBB, but that's a bit complicated and might have some stability implications.  The other option is to install [[http://www.issihosts.com/haveged/][havegd]].  While not as good as a true hardware random number generator, havegd is better than the default pseudo-random number generation within the Linux kernel.  To install it:
