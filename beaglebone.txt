@@ -1903,8 +1903,6 @@ Install it.
 dpkg -i hybserv_1.9.4-1_armhf.deb
 #+END_SRC
 
-Edit the configuration.
-
 Make a md5 version of the password for the IRC server operator.
 
 #+BEGIN_SRC: bash
