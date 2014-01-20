@@ -1221,7 +1221,29 @@ If all has gone well then there should be no warnings or errors after you run th
 *** Friendica
 **** Installation
 
-See [[Setting up a web site]] for details of how to update the Apache configuration for your Friendica site.
+See [[Setting up a web site]] for details of how to update the Apache configuration for your Friendica site.  You should have a separate domain name specifically to run Friendica on.  It can't be installed in a subdirectory on a domain used for something else.
+
+Edit your Apache configuration and disable the port 80 (HTTP) version of the site.  We only want to log into Friendica via HTTPS, so to prevent anyone from accidentally logging in insecurely:
+
+#+BEGIN_SRC: bash
+emacs /etc/apache2/sites-available/mydomainname.com
+#+END_SRC
+
+Within the section which begins with *<VirtualHost *:80>* change the following:
+
+#+BEGIN_SRC: bash
+  <Directory /var/www/mydomainname.com/htdocs/>
+    deny from all
+  </Directory>
+#+END_SRC
+
+Save and exit, then restart the apache server.
+
+#+BEGIN_SRC: bash
+service apache2 restart
+#+END_SRC
+
+Now install some dependencies.
 
 #+BEGIN_SRC: bash
 apt-get install mysql-server php5-common php5-cli php5-curl php5-gd php5-mysql php5-mcrypt
@@ -1404,7 +1426,29 @@ You could join some other Red Matrix server, but this suffers from "/The Levison
 
 **** Installation
 
-See [[Setting up a web site]] for details of how to update the Apache configuration for your Red Matrix site.
+See [[Setting up a web site]] for details of how to update the Apache configuration for your Red Matrix site.  You should have a separate domain name specifically to run Red Matrix on.  It can't be installed in a subdirectory on a domain used for something else.
+
+Edit your Apache configuration and disable the port 80 (HTTP) version of the site.  We only want to log into Red Matrix via HTTPS, so to prevent anyone from accidentally logging in insecurely:
+
+#+BEGIN_SRC: bash
+emacs /etc/apache2/sites-available/mydomainname.com
+#+END_SRC
+
+Within the section which begins with *<VirtualHost *:80>* change the following:
+
+#+BEGIN_SRC: bash
+  <Directory /var/www/mydomainname.com/htdocs/>
+    deny from all
+  </Directory>
+#+END_SRC
+
+Save and exit, then restart the apache server.
+
+#+BEGIN_SRC: bash
+service apache2 restart
+#+END_SRC
+
+Now install some dependencies.
 
 #+BEGIN_SRC: bash
 apt-get install mysql-server php5-common php5-cli php5-curl php5-gd php5-mysql php5-mcrypt
