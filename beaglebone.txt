@@ -931,6 +931,8 @@ Some useful keys to know are:
  * Set SMTP server to your domain name
  * Set Security to SSL/TLS (always)
  * Set port to 465
+** Webmail
+TODO
 ** Setting up a web site
 
 #+BEGIN_VERSE
@@ -1210,378 +1212,6 @@ chmod +x makecert
 Enter some trivial password for the key file.  The password will be removed as part of the makecert script.  Note that leaving a password on the key file would mean that after a power cycle the apache server will not be able to boot properly (it would wait indefinitely for a password to be manually entered) and would look as if it had crashed.
 
 If all has gone well then there should be no warnings or errors after you run the service restart command.  After that you should enable ports 80 (HTTP) and 443 (HTTPS) on your internet router/firewall, such that they are redirected to the BBB.
-** Social Networking
-
-#+BEGIN_VERSE
-/Facebook is not your friend, it is a surveillance engine./
-
--- Richard Stallman, Free Software Foundation
-#+END_VERSE
-
-*** Friendica
-**** Installation
-
-See [[Setting up a web site]] for details of how to update the Apache configuration for your Friendica site.  You should have a separate domain name specifically to run Friendica on.  It can't be installed in a subdirectory on a domain used for something else.
-
-Edit your Apache configuration and disable the port 80 (HTTP) version of the site.  We only want to log into Friendica via HTTPS, so to prevent anyone from accidentally logging in insecurely:
-
-#+BEGIN_SRC: bash
-emacs /etc/apache2/sites-available/mydomainname.com
-#+END_SRC
-
-Within the section which begins with *<VirtualHost *:80>* change the following:
-
-#+BEGIN_SRC: bash
-  <Directory /var/www/mydomainname.com/htdocs/>
-    deny from all
-  </Directory>
-#+END_SRC
-
-Save and exit, then restart the apache server.
-
-#+BEGIN_SRC: bash
-service apache2 restart
-#+END_SRC
-
-Now install some dependencies.
-
-#+BEGIN_SRC: bash
-apt-get install mysql-server php5-common php5-cli php5-curl php5-gd php5-mysql php5-mcrypt
-#+END_SRC
-
-Enter an admin password for MySQL.
-
-Create a mysql database.
-
-#+BEGIN_SRC: bash
-mysql -u root -p
-create database friendica;
-CREATE USER 'friendicaadmin'@'localhost' IDENTIFIED BY 'password';
-GRANT ALL PRIVILEGES ON friendica.* TO 'friendicaadmin'@'localhost';
-quit
-#+END_SRC
-
-You may need to fix Git SSL problems.
-
-#+BEGIN_SRC: bash
-git config --global http.sslVerify true
-apt-get install ca-certificates
-cd ~/
-emacs .gitconfig
-#+END_SRC
-
-The .gitconfig file should look something like this:
-
-#+BEGIN_SRC: bash
-[http]
-        sslVerify = true
-        sslCAinfo = /etc/ssl/certs/ca-certificates.crt
-[user]
-        email = myusername@mydomainname.com
-        name = yourname
-#+END_SRC
-
-Get the source code.
-
-#+BEGIN_SRC: bash
-export HOSTNAME=mydomainname.com
-cd /var/www/$HOSTNAME
-mv htdocs htdocs_old
-git clone https://github.com/friendica/friendica.git htdocs
-chmod -R 755 htdocs
-chown -R www-data:www-data htdocs
-chown -R www-data:www-data htdocs/view/smarty3
-git clone https://github.com/friendica/friendica-addons.git htdocs/addon
-#+END_SRC
-
-Now visit the URL of your site and you should be taken through the rest of the installation procedure.  If you have trouble with "allow override" ensure that "AllowOverride" is set to "all" in your Apache settings for the site (within /etc/apache2/sites-available) and then restart the apache2 service.
-
-Install the poller.
-
-#+BEGIN_SRC: bash
-emacs /etc/crontab
-#+END_SRC
-
-and append the following, changing mydomainname.com to whatever your domain is.
-
-#+BEGIN_SRC: bash
-*/10 *  * * *	root	cd /var/www/mydomainname.com/htdocs; /usr/bin/php include/poller.php
-#+END_SRC
-
-Save and exit, then restart cron.
-
-#+BEGIN_SRC: bash
-service cron restart
-#+END_SRC
-
-You can improve the speed of Friendica database searches by adding the following indexes:
-
-#+BEGIN_SRC: bash
-mysql -u root -p
-use friendica;
-CREATE INDEX `uri_received` ON item(`uri`, `received`);
-CREATE INDEX `received_uri` ON item(`received`, `uri`);
-CREATE INDEX `contact-id_created` ON item(`contact-id`, created);
-CREATE INDEX `uid_network_received` ON item(`uid`, `network`, `received`);
-CREATE INDEX `uid_parent` ON item(`uid`, `parent`);
-CREATE INDEX `uid_received` ON item(`uid`, `received`);
-CREATE INDEX `uid_network_commented` ON item(`uid`, `network`, `commented`);
-CREATE INDEX `uid_title` ON item(uid, `title`);
-CREATE INDEX `created_contact-id` ON item(`created`, `contact-id`);
-quit
-#+END_SRC
-
-**** Backups
-
-Make sure that the database gets backed up.  By using cron if anything goes wrong then you should be able to recover the database either from the previous day or the previous week.
-
-#+BEGIN_SRC: bash
-emacs /etc/cron.daily/friendicabackup
-#+END_SRC
-
-Enter the following
-
-#+BEGIN_SRC: bash
-#!/bin/sh
-
-MYSQL_PASSWORD=<mysql root password>
-
-umask 0077
-
-# Backup the database
-mysqldump --password=$MYSQL_PASSWORD friendica > /var/backups/friendica_daily.sql
-
-# Make the backup readable only by root
-chmod 600 /var/backups/friendica_daily.sql
-#+END_SRC
-
-Save and exit.
-
-#+BEGIN_SRC: bash
-chmod 600 /etc/cron.daily/friendicabackup
-chmod +x /etc/cron.daily/friendicabackup
-emacs /etc/cron.weekly/friendicabackup
-#+END_SRC
-
-Enter the following
-
-#+BEGIN_SRC: bash
-#!/bin/sh
-
-MYSQL_PASSWORD=<mysql root password>
-
-umask 0077
-
-# Backup the database
-mysqldump --password=$MYSQL_PASSWORD friendica > /var/backups/friendica_weekly.sql
-
-# Make the backup readable only by root
-chmod 600 /var/backups/friendica_weekly.sql
-#+END_SRC
-
-Save and exit.
-
-#+BEGIN_SRC: bash
-chmod 600 /etc/cron.weekly/friendicabackup
-chmod +x /etc/cron.weekly/friendicabackup
-#+END_SRC
-
-**** Recommended configuration
-***** Admin
-To get to the admin settings you will need to be logged in with the admin email address which you specified at the beginning of the installation procedure.  Depending upon the theme which you're using "/admin/" will be available either as an icon or on a drop down menu.
-
-Under the *plugins* section the main one which you may wish to enable is the NSFW plugin.  With that enabled if a post contans the #NSFW tag then it will appear minimised by default and you will need to click a button to open it.
-
-Under the *themes* section select a few themes, including mobile themes which are suitable for phones or tablets.
-
-Under the *site* section give your Friendica node a name other than "/my friend network/", you can change the icon and banner text and set the default mobile theme typically to /frost-mobile/.  If you don't want your node to host a lot of accounts for people you don't know then you may want to set the register policy to "/requires approval/".  For security it's probably a good idea only to host accounts for people who you actually know, rather than random strangers.  Also be aware that the Beaglebone does not have a great deal of computational power or bandwidth and will not function well if there are hundreds of users using your node.  If you're not federating with Diaspora or other sites then you may wish to select "/only allow Friendica contacts/".  That improves the security of the system, since communication between Friendica nodes is always encrypted separately and in addition to the usual SSL encryption layer - which makes life interesting for the Surveillance State and at least keeps those cryptanalysts employed.
-
-It's probably a good idea to enable "/private posts by default for new users/" and also "/don't include post content in email notifications/".  Since traditional email isn't a secure system and is easily vulnerable to attack by systems such as [[https://en.wikipedia.org/wiki/XKeyscore][Xkeyscore]].
-
-***** Settings
-Each user has their own customisable settings, typically available either via an icon or by an entry on a drop down menu.
-
-Under *additional features* enable "/richtext editor/", "/post preview/", "/group filter/", "/network filter/", "/edit sent posts/" and "/dislike posts/".
-
-Under *display settings* select your desktop and mobile themes.
-
-Once you have connected to enough friends it's also a good idea to use the "/export personal data/" option from here.  This will save a file to your local system, which you can import into another friendica node if necessary.
-**** To access from an Android device
-***** App
-Open a browser on your device and go to https://f-droid.org/ then download and install the F-Droid apk.  If you then open F-Droid you can search for and install the Friendica app.
-
-If you are using a self-signed certificate then at the login screen scroll down to the bottom, select the SSL settings then scroll down and disable SSL certificate checks.  You will then be able to log in using https, which at least gives you some protection via the encryption.
-
-More information about the Friendica app can be found on http://friendica-for-android.wiki-lab.net/
-***** Mobile Theme
-Another way to access Friendica from a mobile device is to just use the web browser.  If you have selected a mobile theme within your settings then when viewing from an Android system the mobile theme will be displayed.
-*** Red Matrix
-**** Introduction
-Red Matrix is the current version of the Friendica social networking system.  It's more general than Friendica in that it's designed as a generic communication system based around a protocol called "zot".  At the time of writing in early 2014 Red Matrix remains at an alpha stage of development and so it's not advised that you install it unless you're willing to put up with bugs and frustrations.  In the large majority of cases it's better to stick with Friendica for now.
-
-**** Prerequisites
-The main problem with Red Matrix is that in order to install it you will need to have purchased a domain name (i.e. not a FreeDNS subdomain) and a SSL certificate for it.
-
-You could join some other Red Matrix server, but this suffers from "/The Levison Problem/" in which some goons show up with a gagging order demanding coppies of the SSL private key.  In that scenario unless the owner of the server is exceptionally brave users may never be informed that the site has been compromised or that there is interception hardware attached to the server.  Joining another server defeats the object of being digitally self-sufficient and raises legal question marks about the ownership of data which you might upload to a server which doesn't belong to you.
-
-**** Installation
-
-See [[Setting up a web site]] for details of how to update the Apache configuration for your Red Matrix site.  You should have a separate domain name specifically to run Red Matrix on.  It can't be installed in a subdirectory on a domain used for something else.
-
-Edit your Apache configuration and disable the port 80 (HTTP) version of the site.  We only want to log into Red Matrix via HTTPS, so to prevent anyone from accidentally logging in insecurely:
-
-#+BEGIN_SRC: bash
-emacs /etc/apache2/sites-available/mydomainname.com
-#+END_SRC
-
-Within the section which begins with *<VirtualHost *:80>* change the following:
-
-#+BEGIN_SRC: bash
-  <Directory /var/www/mydomainname.com/htdocs/>
-    deny from all
-  </Directory>
-#+END_SRC
-
-Save and exit, then restart the apache server.
-
-#+BEGIN_SRC: bash
-service apache2 restart
-#+END_SRC
-
-Now install some dependencies.
-
-#+BEGIN_SRC: bash
-apt-get install mysql-server php5-common php5-cli php5-curl php5-gd php5-mysql php5-mcrypt
-#+END_SRC
-
-Enter an admin password for MySQL.
-
-Create a mysql database.
-
-#+BEGIN_SRC: bash
-mysql -u root -p
-create database redmatrix;
-CREATE USER 'redmatrixadmin'@'localhost' IDENTIFIED BY 'password';
-GRANT ALL PRIVILEGES ON redmatrix.* TO 'redmatrixadmin'@'localhost';
-quit
-#+END_SRC
-
-You may need to fix Git SSL problems.
-
-#+BEGIN_SRC: bash
-git config --global http.sslVerify true
-apt-get install ca-certificates
-cd ~/
-emacs .gitconfig
-#+END_SRC
-
-The .gitconfig file should look something like this:
-
-#+BEGIN_SRC: bash
-[http]
-        sslVerify = true
-        sslCAinfo = /etc/ssl/certs/ca-certificates.crt
-[user]
-        email = myusername@mydomainname.com
-        name = yourname
-#+END_SRC
-
-Get the source code.
-
-#+BEGIN_SRC: bash
-export HOSTNAME=mydomainname.com
-cd /var/www/$HOSTNAME
-mv htdocs htdocs_old
-git clone https://github.com/friendica/red.git htdocs
-chmod -R 755 htdocs
-chown -R www-data:www-data htdocs
-mkdir htdocs/view/tpl/smarty3
-chmod 777 htdocs/view/tpl
-chmod 777 htdocs/view/tpl/smarty3
-git clone https://github.com/friendica/red-addons.git htdocs/addon
-#+END_SRC
-
-Now visit the URL of your site and you should be taken through the rest of the installation procedure.  Note that this may take a few minutes so don't be concerned if it looks as if it has crashed - just leave it running.  If you have trouble with "allow override" ensure that "AllowOverride" is set to "all" in your Apache settings for the site (within /etc/apache2/sites-available) and then restart the apache2 service.
-
-Install the poller.
-
-#+BEGIN_SRC
-emacs /etc/crontab
-#+END_SRC
-
-and append the following, changing mydomainname.com to whatever your domain is.
-
-#+BEGIN_SRC
-*/10 *  * * *	root	cd /var/www/mydomainname.com/htdocs; /usr/bin/php include/poller.php
-#+END_SRC
-
-Save and exit, then restart cron.
-
-#+BEGIN_SRC: bash
-service cron restart
-#+END_SRC
-
-**** Backups
-
-Make sure that the database gets backed up.  By using cron if anything goes wrong then you should be able to recover the database either from the previous day or the previous week.
-
-#+BEGIN_SRC: bash
-emacs /etc/cron.daily/redmatrixbackup
-#+END_SRC
-
-Enter the following
-
-#+BEGIN_SRC: bash
-#!/bin/sh
-
-MYSQL_PASSWORD=<mysql root password>
-
-umask 0077
-
-# Backup the database
-mysqldump --password=$MYSQL_PASSWORD redmatrix > /var/backups/redmatrix_daily.sql
-
-# Make the backup readable only by root
-chmod 600 /var/backups/redmatrix_daily.sql
-#+END_SRC
-
-Save and exit.
-
-#+BEGIN_SRC: bash
-chmod 600 /etc/cron.daily/redmatrixbackup
-chmod +x /etc/cron.daily/redmatrixbackup
-emacs /etc/cron.weekly/redmatrixbackup
-#+END_SRC
-
-Enter the following
-
-#+BEGIN_SRC: bash
-#!/bin/sh
-
-MYSQL_PASSWORD=<mysql root password>
-
-umask 0077
-
-# Backup the database
-mysqldump --password=$MYSQL_PASSWORD redmatrix > /var/backups/redmatrix_weekly.sql
-
-# Make the backup readable only by root
-chmod 600 /var/backups/redmatrix_weekly.sql
-#+END_SRC
-
-Save and exit.
-
-#+BEGIN_SRC: bash
-chmod 600 /etc/cron.weekly/redmatrixbackup
-chmod +x /etc/cron.weekly/redmatrixbackup
-#+END_SRC
-**** To access from an Android device
-***** App
-Open a browser on your device and go to https://f-droid.org/ then download and install the F-Droid apk.  If you then open F-Droid you can search for and install the Friendica app.
-
-If you are using a self-signed certificate then at the login screen scroll down to the bottom, select the SSL settings then scroll down and disable SSL certificate checks.  You will then be able to log in using https, which at least gives you some protection via the encryption.
-
-More information about the Friendica app can be found on http://friendica-for-android.wiki-lab.net/
 ** Install a Blog
 
 #+BEGIN_VERSE
@@ -2047,6 +1677,14 @@ Set the ssl section to:
 		}
 #+END_SRC
 
+And also append the following:
+
+#+BEGIN_SRC: bash
+modules_enabled = {
+  "bosh"; -- Enable mod_bosh
+}
+#+END_SRC
+
 Save and exit.  Create a symbolic link.
 
 #+BEGIN_SRC: bash
@@ -2065,7 +1703,7 @@ Restart the server
 service prosody restart
 #+END_SRC
 
-On your internet router/firewall open ports 5222, 5223 and 5269 and forward them to the BBB.
+On your internet router/firewall open ports 5222, 5223, 5269, 5280 and 5281 and forward them to the BBB.
 
 It's possible to test that your XMPP server is working at https://xmpp.net.  It may take several minutes and you'll get a low score because of the self-signed certificate, but it will at least verify that your server is capable of communicating.
 
@@ -2131,6 +1769,485 @@ Done
 Accept unknown certificate? Select *Always*
 
 Go back to the initial screen and then using the menu you can add contacts and begin chatting.
+
+** Social Networking
+
+#+BEGIN_VERSE
+/Facebook is not your friend, it is a surveillance engine./
+
+-- Richard Stallman, Free Software Foundation
+#+END_VERSE
+
+*** Friendica
+**** Installation
+
+See [[Setting up a web site]] for details of how to update the Apache configuration for your Friendica site.  You should have a separate domain name specifically to run Friendica on.  It can't be installed in a subdirectory on a domain used for something else.
+
+Edit your Apache configuration and disable the port 80 (HTTP) version of the site.  We only want to log into Friendica via HTTPS, so to prevent anyone from accidentally logging in insecurely:
+
+#+BEGIN_SRC: bash
+emacs /etc/apache2/sites-available/mydomainname.com
+#+END_SRC
+
+Within the section which begins with *<VirtualHost *:80>* change the following:
+
+#+BEGIN_SRC: bash
+  <Directory /var/www/mydomainname.com/htdocs/>
+    deny from all
+  </Directory>
+#+END_SRC
+
+Save and exit, then restart the apache server.
+
+#+BEGIN_SRC: bash
+service apache2 restart
+#+END_SRC
+
+Now install some dependencies.
+
+#+BEGIN_SRC: bash
+apt-get install mysql-server php5-common php5-cli php5-curl php5-gd php5-mysql php5-mcrypt
+#+END_SRC
+
+Enter an admin password for MySQL.
+
+Create a mysql database.
+
+#+BEGIN_SRC: bash
+mysql -u root -p
+create database friendica;
+CREATE USER 'friendicaadmin'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON friendica.* TO 'friendicaadmin'@'localhost';
+quit
+#+END_SRC
+
+You may need to fix Git SSL problems.
+
+#+BEGIN_SRC: bash
+git config --global http.sslVerify true
+apt-get install ca-certificates
+cd ~/
+emacs .gitconfig
+#+END_SRC
+
+The .gitconfig file should look something like this:
+
+#+BEGIN_SRC: bash
+[http]
+        sslVerify = true
+        sslCAinfo = /etc/ssl/certs/ca-certificates.crt
+[user]
+        email = myusername@mydomainname.com
+        name = yourname
+#+END_SRC
+
+Get the source code.
+
+#+BEGIN_SRC: bash
+export HOSTNAME=mydomainname.com
+cd /var/www/$HOSTNAME
+mv htdocs htdocs_old
+git clone https://github.com/friendica/friendica.git htdocs
+chmod -R 755 htdocs
+chown -R www-data:www-data htdocs
+chown -R www-data:www-data htdocs/view/smarty3
+git clone https://github.com/friendica/friendica-addons.git htdocs/addon
+#+END_SRC
+
+Now visit the URL of your site and you should be taken through the rest of the installation procedure.  If you have trouble with "allow override" ensure that "AllowOverride" is set to "all" in your Apache settings for the site (within /etc/apache2/sites-available) and then restart the apache2 service.
+
+Install the poller.
+
+#+BEGIN_SRC: bash
+emacs /etc/crontab
+#+END_SRC
+
+and append the following, changing mydomainname.com to whatever your domain is.
+
+#+BEGIN_SRC: bash
+*/10 *  * * *	root	cd /var/www/mydomainname.com/htdocs; /usr/bin/php include/poller.php
+#+END_SRC
+
+Save and exit, then restart cron.
+
+#+BEGIN_SRC: bash
+service cron restart
+#+END_SRC
+
+You can improve the speed of Friendica database searches by adding the following indexes:
+
+#+BEGIN_SRC: bash
+mysql -u root -p
+use friendica;
+CREATE INDEX `uri_received` ON item(`uri`, `received`);
+CREATE INDEX `received_uri` ON item(`received`, `uri`);
+CREATE INDEX `contact-id_created` ON item(`contact-id`, created);
+CREATE INDEX `uid_network_received` ON item(`uid`, `network`, `received`);
+CREATE INDEX `uid_parent` ON item(`uid`, `parent`);
+CREATE INDEX `uid_received` ON item(`uid`, `received`);
+CREATE INDEX `uid_network_commented` ON item(`uid`, `network`, `commented`);
+CREATE INDEX `uid_title` ON item(uid, `title`);
+CREATE INDEX `created_contact-id` ON item(`created`, `contact-id`);
+quit
+#+END_SRC
+
+**** Backups
+
+Make sure that the database gets backed up.  By using cron if anything goes wrong then you should be able to recover the database either from the previous day or the previous week.
+
+#+BEGIN_SRC: bash
+emacs /etc/cron.daily/friendicabackup
+#+END_SRC
+
+Enter the following
+
+#+BEGIN_SRC: bash
+#!/bin/sh
+
+MYSQL_PASSWORD=<mysql root password>
+
+umask 0077
+
+# Backup the database
+mysqldump --password=$MYSQL_PASSWORD friendica > /var/backups/friendica_daily.sql
+
+# Make the backup readable only by root
+chmod 600 /var/backups/friendica_daily.sql
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+chmod 600 /etc/cron.daily/friendicabackup
+chmod +x /etc/cron.daily/friendicabackup
+emacs /etc/cron.weekly/friendicabackup
+#+END_SRC
+
+Enter the following
+
+#+BEGIN_SRC: bash
+#!/bin/sh
+
+MYSQL_PASSWORD=<mysql root password>
+
+umask 0077
+
+# Backup the database
+mysqldump --password=$MYSQL_PASSWORD friendica > /var/backups/friendica_weekly.sql
+
+# Make the backup readable only by root
+chmod 600 /var/backups/friendica_weekly.sql
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+chmod 600 /etc/cron.weekly/friendicabackup
+chmod +x /etc/cron.weekly/friendicabackup
+#+END_SRC
+
+**** Recommended configuration
+***** Admin
+To get to the admin settings you will need to be logged in with the admin email address which you specified at the beginning of the installation procedure.  Depending upon the theme which you're using "/admin/" will be available either as an icon or on a drop down menu.
+
+Under the *plugins* section the main one which you may wish to enable is the NSFW plugin.  With that enabled if a post contans the #NSFW tag then it will appear minimised by default and you will need to click a button to open it.
+
+Under the *themes* section select a few themes, including mobile themes which are suitable for phones or tablets.
+
+Under the *site* section give your Friendica node a name other than "/my friend network/", you can change the icon and banner text and set the default mobile theme typically to /frost-mobile/.  If you don't want your node to host a lot of accounts for people you don't know then you may want to set the register policy to "/requires approval/".  For security it's probably a good idea only to host accounts for people who you actually know, rather than random strangers.  Also be aware that the Beaglebone does not have a great deal of computational power or bandwidth and will not function well if there are hundreds of users using your node.  If you're not federating with Diaspora or other sites then you may wish to select "/only allow Friendica contacts/".  That improves the security of the system, since communication between Friendica nodes is always encrypted separately and in addition to the usual SSL encryption layer - which makes life interesting for the Surveillance State and at least keeps those cryptanalysts employed.
+
+It's probably a good idea to enable "/private posts by default for new users/" and also "/don't include post content in email notifications/".  Since traditional email isn't a secure system and is easily vulnerable to attack by systems such as [[https://en.wikipedia.org/wiki/XKeyscore][Xkeyscore]].
+
+***** Settings
+Each user has their own customisable settings, typically available either via an icon or by an entry on a drop down menu.
+
+Under *additional features* enable "/richtext editor/", "/post preview/", "/group filter/", "/network filter/", "/edit sent posts/" and "/dislike posts/".
+
+Under *display settings* select your desktop and mobile themes.
+
+Once you have connected to enough friends it's also a good idea to use the "/export personal data/" option from here.  This will save a file to your local system, which you can import into another friendica node if necessary.
+**** To access from an Android device
+***** App
+Open a browser on your device and go to https://f-droid.org/ then download and install the F-Droid apk.  If you then open F-Droid you can search for and install the Friendica app.
+
+If you are using a self-signed certificate then at the login screen scroll down to the bottom, select the SSL settings then scroll down and disable SSL certificate checks.  You will then be able to log in using https, which at least gives you some protection via the encryption.
+
+More information about the Friendica app can be found on http://friendica-for-android.wiki-lab.net/
+***** Mobile Theme
+Another way to access Friendica from a mobile device is to just use the web browser.  If you have selected a mobile theme within your settings then when viewing from an Android system the mobile theme will be displayed.
+*** Movim
+
+#+BEGIN_VERSE
+/The way we communicate with others and with ourselves ultimately determines the quality of our lives/
+
+-- Anthony Robbins
+#+END_VERSE
+
+Movim is another social networking system based around the XMPP protocol.
+
+You will need to have previously [[Install a Jabber/XMPP server][installed the Jabber/XMPP server]].
+
+Edit your Apache configuration and disable the port 80 (HTTP) version of the site.  We only want to log into Movim via HTTPS, so to prevent anyone from accidentally logging in insecurely:
+
+#+BEGIN_SRC: bash
+emacs /etc/apache2/sites-available/mydomainname.com
+#+END_SRC
+
+Within the section which begins with *<VirtualHost *:80>* add the following:
+
+#+BEGIN_SRC: bash
+  <Directory /var/www/mydomainname.com/htdocs/movim>
+    deny from all
+  </Directory>
+#+END_SRC
+
+Within the section which begins with *<VirtualHost *:443>* add the following:
+
+#+BEGIN_SRC: bash
+  <Directory /var/www/mydomainname.com/htdocs/movim>
+    Options Indexes FollowSymLinks MultiViews
+    AllowOverride All
+    Order allow,deny
+    allow from all
+  </Directory>
+#+END_SRC
+
+Save and exit, then restart the apache server.
+
+#+BEGIN_SRC: bash
+service apache2 restart
+#+END_SRC
+
+Download the source.
+
+#+BEGIN_SRC: bash
+cd /tmp
+wget http://freedombone.uk.to/movim.tar.gz
+#+END_SRC
+
+Verify it.
+
+#+BEGIN_SRC: bash
+md5sum movim.tar.gz
+311f66d5a3d70d14a8c05da38b08d7e5
+#+END_SRC
+
+Install it.
+
+#+BEGIN_SRC: bash
+tar -xzvf movim.tar.gz
+export HOSTNAME=mydomainname.com
+cp -r movim-* /var/www/$HOSTNAME/htdocs/movim
+chmod 755 /var/www/$HOSTNAME/htdocs/movim
+chown -R www-data:www-data /var/www/$HOSTNAME/htdocs/movim
+#+END_SRC
+
+Install some MySql prerequisites.
+
+#+BEGIN_SRC: bash
+apt-get install mysql-server php5-common php5-cli php5-curl php5-gd php5-mysql php5-mcrypt
+#+END_SRC
+
+If necessary, enter an admin password for MySQL.
+
+Create a mysql database.
+
+#+BEGIN_SRC: bash
+mysql -u root -p
+create database movim;
+CREATE USER 'movimadmin'@'localhost' IDENTIFIED BY 'movimadminpassword';
+GRANT ALL PRIVILEGES ON movim.* TO 'movimadmin'@'localhost';
+quit
+#+END_SRC
+
+With a web browser navigate to:
+
+https://mydomainname.com/movim/admin
+
+Enter /admin/ as the username and /password/ as the password.
+
+Click on /General Settings/ and alter the administrator username to /movimadmin/ and password to some long random string (using a password manager such as KeepassX).
+
+Change the /Environment/ from /Development/ to /Production/.
+
+The /BOSH URL/ should be http://localhost:5280/http-bind (TODO: should this be https://localhost:5281/http-bind and if so do certificate warnings need to be disabled?)
+
+Click /Submit/ followed by /Resend/.
+
+Click on /Database Settings/ and alter the MySql movim database username to /movimadmin/ and password to the password you specified in the previous step.
+
+Click /Submit/ followed by /Resend/.  If you get a lot of orange warnings about database fields being created then hit /Submit/ again until you see "Movim database is up to date".
+
+If everything on all three tabs looks green then you are ready to go.  Click on the Movim logo at the top left and then log in with your Jabber ID (JID).
+
+*** Red Matrix
+**** Introduction
+Red Matrix is the current version of the Friendica social networking system.  It's more general than Friendica in that it's designed as a generic communication system based around a protocol called "zot".  At the time of writing in early 2014 Red Matrix remains at an alpha stage of development and so it's not advised that you install it unless you're willing to put up with bugs and frustrations.  In the large majority of cases it's better to stick with Friendica for now.
+
+**** Prerequisites
+The main problem with Red Matrix is that in order to install it you will need to have purchased a domain name (i.e. not a FreeDNS subdomain) and a SSL certificate for it.
+
+You could join some other Red Matrix server, but this suffers from "/The Levison Problem/" in which some goons show up with a gagging order demanding coppies of the SSL private key.  In that scenario unless the owner of the server is exceptionally brave users may never be informed that the site has been compromised or that there is interception hardware attached to the server.  Joining another server defeats the object of being digitally self-sufficient and raises legal question marks about the ownership of data which you might upload to a server which doesn't belong to you.
+
+**** Installation
+
+See [[Setting up a web site]] for details of how to update the Apache configuration for your Red Matrix site.  You should have a separate domain name specifically to run Red Matrix on.  It can't be installed in a subdirectory on a domain used for something else.
+
+Edit your Apache configuration and disable the port 80 (HTTP) version of the site.  We only want to log into Red Matrix via HTTPS, so to prevent anyone from accidentally logging in insecurely:
+
+#+BEGIN_SRC: bash
+emacs /etc/apache2/sites-available/mydomainname.com
+#+END_SRC
+
+Within the section which begins with *<VirtualHost *:80>* change the following:
+
+#+BEGIN_SRC: bash
+  <Directory /var/www/mydomainname.com/htdocs/>
+    deny from all
+  </Directory>
+#+END_SRC
+
+Save and exit, then restart the apache server.
+
+#+BEGIN_SRC: bash
+service apache2 restart
+#+END_SRC
+
+Now install some dependencies.
+
+#+BEGIN_SRC: bash
+apt-get install mysql-server php5-common php5-cli php5-curl php5-gd php5-mysql php5-mcrypt
+#+END_SRC
+
+Enter an admin password for MySQL.
+
+Create a mysql database.
+
+#+BEGIN_SRC: bash
+mysql -u root -p
+create database redmatrix;
+CREATE USER 'redmatrixadmin'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON redmatrix.* TO 'redmatrixadmin'@'localhost';
+quit
+#+END_SRC
+
+You may need to fix Git SSL problems.
+
+#+BEGIN_SRC: bash
+git config --global http.sslVerify true
+apt-get install ca-certificates
+cd ~/
+emacs .gitconfig
+#+END_SRC
+
+The .gitconfig file should look something like this:
+
+#+BEGIN_SRC: bash
+[http]
+        sslVerify = true
+        sslCAinfo = /etc/ssl/certs/ca-certificates.crt
+[user]
+        email = myusername@mydomainname.com
+        name = yourname
+#+END_SRC
+
+Get the source code.
+
+#+BEGIN_SRC: bash
+export HOSTNAME=mydomainname.com
+cd /var/www/$HOSTNAME
+mv htdocs htdocs_old
+git clone https://github.com/friendica/red.git htdocs
+chmod -R 755 htdocs
+chown -R www-data:www-data htdocs
+mkdir htdocs/view/tpl/smarty3
+chmod 777 htdocs/view/tpl
+chmod 777 htdocs/view/tpl/smarty3
+git clone https://github.com/friendica/red-addons.git htdocs/addon
+#+END_SRC
+
+Now visit the URL of your site and you should be taken through the rest of the installation procedure.  Note that this may take a few minutes so don't be concerned if it looks as if it has crashed - just leave it running.  If you have trouble with "allow override" ensure that "AllowOverride" is set to "all" in your Apache settings for the site (within /etc/apache2/sites-available) and then restart the apache2 service.
+
+Install the poller.
+
+#+BEGIN_SRC
+emacs /etc/crontab
+#+END_SRC
+
+and append the following, changing mydomainname.com to whatever your domain is.
+
+#+BEGIN_SRC
+*/10 *  * * *	root	cd /var/www/mydomainname.com/htdocs; /usr/bin/php include/poller.php
+#+END_SRC
+
+Save and exit, then restart cron.
+
+#+BEGIN_SRC: bash
+service cron restart
+#+END_SRC
+
+**** Backups
+
+Make sure that the database gets backed up.  By using cron if anything goes wrong then you should be able to recover the database either from the previous day or the previous week.
+
+#+BEGIN_SRC: bash
+emacs /etc/cron.daily/redmatrixbackup
+#+END_SRC
+
+Enter the following
+
+#+BEGIN_SRC: bash
+#!/bin/sh
+
+MYSQL_PASSWORD=<mysql root password>
+
+umask 0077
+
+# Backup the database
+mysqldump --password=$MYSQL_PASSWORD redmatrix > /var/backups/redmatrix_daily.sql
+
+# Make the backup readable only by root
+chmod 600 /var/backups/redmatrix_daily.sql
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+chmod 600 /etc/cron.daily/redmatrixbackup
+chmod +x /etc/cron.daily/redmatrixbackup
+emacs /etc/cron.weekly/redmatrixbackup
+#+END_SRC
+
+Enter the following
+
+#+BEGIN_SRC: bash
+#!/bin/sh
+
+MYSQL_PASSWORD=<mysql root password>
+
+umask 0077
+
+# Backup the database
+mysqldump --password=$MYSQL_PASSWORD redmatrix > /var/backups/redmatrix_weekly.sql
+
+# Make the backup readable only by root
+chmod 600 /var/backups/redmatrix_weekly.sql
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+chmod 600 /etc/cron.weekly/redmatrixbackup
+chmod +x /etc/cron.weekly/redmatrixbackup
+#+END_SRC
+**** To access from an Android device
+***** App
+Open a browser on your device and go to https://f-droid.org/ then download and install the F-Droid apk.  If you then open F-Droid you can search for and install the Friendica app.
+
+If you are using a self-signed certificate then at the login screen scroll down to the bottom, select the SSL settings then scroll down and disable SSL certificate checks.  You will then be able to log in using https, which at least gives you some protection via the encryption.
+
+More information about the Friendica app can be found on http://friendica-for-android.wiki-lab.net/
+
 ** Install Gopher
 Gopher is an old internet protocol which originated a few years before the web and is purely text based.  It can be quite fun to build a gopher site and browse the gopherverse.  One thing to keep in mind is that there is no security with gopher, so any text transmitted is trivially interceptable by systems such as [[https://en.wikipedia.org/wiki/XKeyscore][Xkeyscore]] or deep packet inspection.
 
@@ -2920,6 +3037,7 @@ The following ports on your internet router/firewall should be forwarded to the 
 | SSH           |         22 |
 | XMPP          | 5222..5223 |
 | XMPP (server) |       5269 |
+| XMPP (BOSH)   | 5280..5281 |
 | Bitmessage    |       8444 |
 
 * Hints and Tips
