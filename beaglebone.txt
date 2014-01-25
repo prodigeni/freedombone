@@ -3,6 +3,7 @@
 #+EMAIL: bob@robotics.uk.to
 #+KEYWORDS: freedombox, debian, beaglebone, friendica, email, web server, home server, internet, censorship, surveillance, social network, irc, jabber, chat
 #+DESCRIPTION: Turn the Beaglebone Black into a personal communications server
+#+OPTIONS: ^:nil
 
 #+BEGIN_CENTER
 *How to turn the Beaglebone Black into a FreedomBox-like personal communications server*
@@ -815,124 +816,6 @@ mail_location = maildir:~/Maildir
 service dovecot restart
 #+END_SRC
 
-** Mutt email client
-
-#+BEGIN_VERSE
-/I dreamt last night that I was living in a surveillance state. I woke up and… I’m still in a surveillance state./
-
--- Conrad Kramer
-#+END_VERSE
-
-#+BEGIN_SRC: bash
-apt-get install mutt lynx abook
-exit
-mkdir ~/.mutt
-echo "text/html; lynx -dump -width=78 -nolist %s | sed ‘s/^ //’; copiousoutput; needsterminal; nametemplate=%s.html" > ~/.mutt/mailcap
-#+END_SRC
-
-Save and exit.
-
-#+BEGIN_SRC: bash
-su
-emacs /etc/Muttrc
-#+END_SRC
-
-Append the following:
-
-#+BEGIN_SRC: bash
-set mbox_type=Maildir
-set folder="~/Maildir"
-set mask="!^\\.[^.]"
-set mbox="~/Maildir"
-set record="+.Sent"
-set postponed="+.Drafts"
-set spoolfile="~/Maildir"
-auto_view text/x-vcard text/html text/enriched
-set editor="emacsclient %s"
-
-macro index S "<tag-prefix><save-message>=.learn-spam<enter>" "move to learn-spam"
-macro pager S "<save-message>=.learn-spam<enter>" "move to learn-spam"
-macro index H "<tag-prefix><copy-message>=.learn-ham<enter>" "copy to learn-ham"
-macro pager H "<copy-message>=.learn-ham<enter>" "copy to learn-ham"
-#+END_SRC
-
-Save and exit.
-
-#+BEGIN_SRC: bash
-emacs /etc/mail/spamassassin/local.cf
-#+END_SRC
-
-Uncomment *use_bayes*, *bayes_auto_learn*
-
-Save and exit, then run:
-
-#+BEGIN_SRC: bash
-service spamassassin restart
-#+END_SRC
-
-Now to add an address book:
-
-#+BEGIN_SRC: bash
-emacs ~/.muttrc
-#+END_SRC
-
-Append the following:
-
-#+BEGIN_SRC: bash
-set alias_file=~/.mutt-alias
-source ~/.mutt-alias
-set query_command= "abook --mutt-query '%s'"
-macro index,pager A "<pipe-message>abook --add-email-quiet<return>" "add the sender address to abook"
-#+END_SRC
-
-Then save and exit.
-
-#+BEGIN_SRC: bash
-touch ~/.mutt-alias
-#+END_SRC
-
-Finally you can then type *mutt* to get access to your email.  Hence as a fallback, or if you prefer as the primary way of accessing email, you can ssh into the BBB and use the mutt command line email client.  Ssh clients are available for all operating systems, and also you should be reasonably protected from passive surveillance between wherever you are and the BBB (although not between the BBB and the wider internet), which can be useful if you are for example using an Android tablet from a cafe or railway station.
-
-To use the address book system open an email and then to add the sender to the address list press the A key.  It will ask you for an alias which may be used the next time you want to send a mail.  Alternatively you may just edit the *~/.mutt-alias* file directly to add email addresses.
-
-Some useful keys to know are:
-
-| ESC / | Search for text within message contents                 |
-| "/"   | Search for text within headers                          |
-| *     | Move to the last message                                |
-| TAB   | Move to the next unread message                         |
-| d     | Delete a message                                        |
-| u     | Undelete a mail which is pending deletion               |
-| $     | Delete all messages selected and check for new messages |
-| a     | Add to the address book                                 |
-| m     | Send a new mail                                         |
-| S     | Mark a message as spam                                  |
-| H     | Mark a message as ham                                   |
-
-** K9 email client
-
-#+BEGIN_VERSE
-/The surveillance state is robust. It is robust politically, legally, and technically./
-
--- Bruce Schneier
-#+END_VERSE
-
-*** Incoming server settings
- * Select settings/account settings
- * Select Fetching mail/incoming server
- * Enter your username and password
- * IMAP server should be your domain name
- * Security: SSL/TLS (always)
- * Authentication: Plain
- * Port: 993
-*** Outgoing (SMTP) server settings
- * Select settings/account settings
- * Select Sending mail/outgoing server
- * Set SMTP server to your domain name
- * Set Security to SSL/TLS (always)
- * Set port to 465
-** Webmail
-TODO
 ** Setting up a web site
 
 #+BEGIN_VERSE
@@ -1212,6 +1095,244 @@ chmod +x makecert
 Enter some trivial password for the key file.  The password will be removed as part of the makecert script.  Note that leaving a password on the key file would mean that after a power cycle the apache server will not be able to boot properly (it would wait indefinitely for a password to be manually entered) and would look as if it had crashed.
 
 If all has gone well then there should be no warnings or errors after you run the service restart command.  After that you should enable ports 80 (HTTP) and 443 (HTTPS) on your internet router/firewall, such that they are redirected to the BBB.
+
+** Accessing your Email
+*** Mutt email client
+
+#+BEGIN_VERSE
+/I dreamt last night that I was living in a surveillance state. I woke up and… I’m still in a surveillance state./
+
+-- Conrad Kramer
+#+END_VERSE
+
+#+BEGIN_SRC: bash
+apt-get install mutt lynx abook
+exit
+mkdir ~/.mutt
+echo "text/html; lynx -dump -width=78 -nolist %s | sed ‘s/^ //’; copiousoutput; needsterminal; nametemplate=%s.html" > ~/.mutt/mailcap
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+su
+emacs /etc/Muttrc
+#+END_SRC
+
+Append the following:
+
+#+BEGIN_SRC: bash
+set mbox_type=Maildir
+set folder="~/Maildir"
+set mask="!^\\.[^.]"
+set mbox="~/Maildir"
+set record="+.Sent"
+set postponed="+.Drafts"
+set spoolfile="~/Maildir"
+auto_view text/x-vcard text/html text/enriched
+set editor="emacsclient %s"
+
+macro index S "<tag-prefix><save-message>=.learn-spam<enter>" "move to learn-spam"
+macro pager S "<save-message>=.learn-spam<enter>" "move to learn-spam"
+macro index H "<tag-prefix><copy-message>=.learn-ham<enter>" "copy to learn-ham"
+macro pager H "<copy-message>=.learn-ham<enter>" "copy to learn-ham"
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+emacs /etc/mail/spamassassin/local.cf
+#+END_SRC
+
+Uncomment *use_bayes*, *bayes_auto_learn*
+
+Save and exit, then run:
+
+#+BEGIN_SRC: bash
+service spamassassin restart
+#+END_SRC
+
+Now to add an address book:
+
+#+BEGIN_SRC: bash
+emacs ~/.muttrc
+#+END_SRC
+
+Append the following:
+
+#+BEGIN_SRC: bash
+set alias_file=~/.mutt-alias
+source ~/.mutt-alias
+set query_command= "abook --mutt-query '%s'"
+macro index,pager A "<pipe-message>abook --add-email-quiet<return>" "add the sender address to abook"
+#+END_SRC
+
+Then save and exit.
+
+#+BEGIN_SRC: bash
+touch ~/.mutt-alias
+#+END_SRC
+
+Finally you can then type *mutt* to get access to your email.  Hence as a fallback, or if you prefer as the primary way of accessing email, you can ssh into the BBB and use the mutt command line email client.  Ssh clients are available for all operating systems, and also you should be reasonably protected from passive surveillance between wherever you are and the BBB (although not between the BBB and the wider internet), which can be useful if you are for example using an Android tablet from a cafe or railway station.
+
+To use the address book system open an email and then to add the sender to the address list press the A key.  It will ask you for an alias which may be used the next time you want to send a mail.  Alternatively you may just edit the *~/.mutt-alias* file directly to add email addresses.
+
+Some useful keys to know are:
+
+| ESC / | Search for text within message contents                 |
+| "/"   | Search for text within headers                          |
+| *     | Move to the last message                                |
+| TAB   | Move to the next unread message                         |
+| d     | Delete a message                                        |
+| u     | Undelete a mail which is pending deletion               |
+| $     | Delete all messages selected and check for new messages |
+| a     | Add to the address book                                 |
+| m     | Send a new mail                                         |
+| S     | Mark a message as spam                                  |
+| H     | Mark a message as ham                                   |
+
+*** K9 Android client
+
+#+BEGIN_VERSE
+/The surveillance state is robust. It is robust politically, legally, and technically./
+
+-- Bruce Schneier
+#+END_VERSE
+
+**** Incoming server settings
+ * Select settings/account settings
+ * Select Fetching mail/incoming server
+ * Enter your username and password
+ * IMAP server should be your domain name
+ * Security: SSL/TLS (always)
+ * Authentication: Plain
+ * Port: 993
+**** Outgoing (SMTP) server settings
+ * Select settings/account settings
+ * Select Sending mail/outgoing server
+ * Set SMTP server to your domain name
+ * Set Security to SSL/TLS (always)
+ * Set port to 465
+*** Webmail
+
+#+BEGIN_VERSE
+/Most of the information extracted is "content", such as recordings of phone calls or the substance of email messages./
+
+-- From a 2013 Guardian article on GCHQ/NSA bulk internet data interception.
+#+END_VERSE
+
+Install dependencies.
+
+#+BEGIN_SRC: bash
+apt-get install libapache2-mod-authz-unixgroup
+#+END_SRC
+
+Create a mysql database, specifying a password which should be a long random string generated with a password manager such as KeepassX.
+
+#+BEGIN_SRC: bash
+mysql -u root -p
+create database roundcubemail;
+CREATE USER 'roundcube'@'localhost' IDENTIFIED BY 'roundcubepassword';
+GRANT ALL PRIVILEGES ON roundcubemail.* TO 'roundcube'@'localhost';
+quit
+#+END_SRC
+
+Download roundcube.
+
+#+BEGIN_SRC: bash
+cd /tmp
+wget http://freedombone.uk.to/roundcubemail.tar.gz
+#+END_SRC
+
+Verify it.
+
+#+BEGIN_SRC: bash
+md5sum roundcubemail.tar.gz
+1b1b4056f5fe3903124229427a3bbd1f
+#+END_SRC
+
+Extract the files.
+
+#+BEGIN_SRC: bash
+tar -xzvf roundcubemail.tar.gz
+export HOSTNAME=mydomainname.com
+cp -r roundcubemail-* /var/www/$HOSTNAME/htdocs/mail
+chown -R www-data:www-data /var/www/$HOSTNAME/htdocs/mail/temp
+chown -R www-data:www-data /var/www/$HOSTNAME/htdocs/mail/logs
+rm /var/www/$HOSTNAME/htdocs/mail/.htaccess
+#+END_SRC
+
+Edit your web site configuration.
+
+#+BEGIN_SRC: bash
+emacs /etc/apache2/sites-available/$HOSTNAME
+#+END_SRC
+
+Within the 80 VirtualHost section add the following:
+
+#+BEGIN_SRC: bash
+  <Directory /var/www/mydomainname.com/htdocs/mail>
+    deny from all
+  </Directory>
+#+END_SRC
+
+Within the 443 VirtualHost section add the following:
+
+#+BEGIN_SRC: bash
+  <Directory /var/www/mydomainname.com/htdocs/mail>
+    Options Indexes FollowSymLinks MultiViews
+    AllowOverride All
+    Order allow,deny
+    allow from all
+  </Directory>
+#+END_SRC
+
+Save and exit, then restart Apache.
+
+#+BEGIN_SRC: bash
+service apache2 restart
+#+END_SRC
+
+Now with a browser visit https://mydomainname.com/mail/installer.  Scroll down and click "next".  Give your webmail site a product name.
+
+The *spellcheck_engine* option being limited to Google is slightly concerning in terms of privacy and security, but seems not to be implemented.
+
+Change the *database password* to the password you gave when creating the MySql database above.
+
+Set *smtp_port* to 465.
+
+Click *create config*
+
+Click download to download the file.
+
+In a terminal on your local machine (not logged into the BBB):
+
+#+BEGIN_SRC: bash
+cd ~/Downloads
+scp config.inc.php myusername@mydomainname.com:/home/myusername
+#+END_SRC
+
+Then in a terminal ssh'd into the BBB:
+
+#+BEGIN_SRC: bash
+mv /home/myusername/config.inc.php /var/www/$HOSTNAME/htdocs/mail/config
+chmod 755 /var/www/$HOSTNAME/htdocs/mail/config/config.inc.php
+#+END_SRC
+
+Click *continue*.
+
+Click *initialize database*.
+
+Under *Test SMTP config* you can use a [[mailinator.com]] address to check that mail can be sent.
+
+Now we can delete the installer.
+
+#+BEGIN_SRC: bash
+rm -rf /var/www/$HOSTNAME/htdocs/mail/installer
+#+END_SRC
+
+Now with a browser navigate to https://mydomainname.com/mail and log in.
+
 ** Install a Blog
 
 #+BEGIN_VERSE
