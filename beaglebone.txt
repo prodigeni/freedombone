@@ -1221,6 +1221,8 @@ Some useful keys to know are:
 -- From a 2013 Guardian article on GCHQ/NSA bulk internet data interception.
 #+END_VERSE
 
+For maximum speed and efficiency the recommended email client is Mutt, accessed via ssh, but non-technical people who aren't using an Android app are unlikely to want to use email in that manner.  So it's a good idea to also have a webmail system installed, both for accessibility and as a fallback should ssh not be available due to port blocking.
+
 Install dependencies.
 
 #+BEGIN_SRC: bash
@@ -1332,6 +1334,8 @@ rm -rf /var/www/$HOSTNAME/htdocs/mail/installer
 #+END_SRC
 
 Now with a browser navigate to https://mydomainname.com/mail and log in.
+
+TODO: connect Sent and Draft folders.
 
 ** Install a Blog
 
