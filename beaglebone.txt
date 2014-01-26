@@ -831,7 +831,7 @@ su
 emacs /etc/apache2/apache2.conf
 #+END_SRC
 
-Search for MaxClients and replace the value with 20 then save and exit.
+Search for MaxClients and replace the value with 10 then save and exit.
 
 In the examples below replace mydomainname.com with your own domain.
 
@@ -2016,6 +2016,20 @@ CREATE INDEX `created_contact-id` ON item(`created`, `contact-id`);
 quit
 #+END_SRC
 
+Make sure that Friendica doesn't use too much memory.
+
+#+BEGIN_SRC: bash
+emacs /var/www/$HOSTNAME/htdocs/.htaccess
+#+END_SRC
+
+Append the following:
+
+#+BEGIN_SRC: bash
+php_value memory_limit 32M
+#+END_SRC
+
+The save ane exit.
+
 **** Backups
 
 Make sure that the database gets backed up.  By using cron if anything goes wrong then you should be able to recover the database either from the previous day or the previous week.
@@ -2921,7 +2935,7 @@ Set the following.
 #+BEGIN_SRC: bash
 php_value upload_max_filesize 512M
 php_value post_max_size 512M
-php_value memory_limit 128M
+php_value memory_limit 32M
 #+END_SRC
 
 Save and exit.
@@ -3109,6 +3123,235 @@ git clone https://github.com/Bitmessage/PyBitmessage.git
 cd PyBitmessage
 make install
 pybitmessage
+#+END_SRC
+
+** Collaborative Document Editing
+
+#+BEGIN_SRC: bash
+apt-get install gzip git-core curl python libssl-dev pkg-config build-essential python g++ make checkinstall apache2 mysql-server
+#+END_SRC
+
+Download nodejs.
+
+#+BEGIN_SRC: bash
+cd /usr/src/
+wget http://freedombone.uk.to/node.tar.gz
+#+END_SRC
+
+Verify it.
+
+#+BEGIN_SRC: bash
+md5sum node.tar.gz
+153bdbf77b4473df2600b8ce123ef331
+#+END_SRC
+
+Install it.
+
+#+BEGIN_SRC: bash
+tar xzvf node.tar.gz
+cd node-v*
+./configure && checkinstall
+#+END_SRC
+
+When the menu appears, select option 3 and remove the “v” in front of the version number, then press Enter to continue. Note that the previous step can take a considerable amount of time.
+
+Install nodejs with the following command:
+
+#+BEGIN_SRC: bash
+dpkg -i node_*
+#+END_SRC
+
+Create an etherpad database.
+
+#+BEGIN_SRC: bash
+mysql -p
+CREATE DATABASE etherpad CHARACTER SET utf8 COLLATE utf8_general_ci;
+GRANT ALL PRIVILEGES ON etherpad.* TO etherpad@localhost IDENTIFIED BY '__yourPasswd__';
+FLUSH PRIVILEGES;
+exit
+#+END_SRC
+
+Download etherpad.
+
+#+BEGIN_SRC: bash
+export HOSTNAME=mydomainname.com
+cd /var/www/$HOSTNAME/htdocs
+git clone git://github.com/ether/etherpad-lite.git etherpad
+#+END_SRC
+
+Edit the configuration file
+
+#+BEGIN_SRC: bash
+cd etherpad
+cp settings.json.template settings.json
+emacs settings.json
+#+END_SRC
+
+Change the following settings.  /rAnD0m5tRIng/ should be altered to a random string 10 characters in length.
+
+#+BEGIN_SRC: bash
+//IP and port which etherpad should bind at
+"ip": "127.0.0.1",
+// set a session key
+"sessionKey" : "rAnD0m5tRIng",
+//configure the connection settings
+ "dbType" : "mysql",
+ "dbSettings" : {
+   "user"    : "etherpad",
+   "host"    : "localhost",
+   "password": "__yourPassword__",
+   "database": "etherpad"
+ },
+// add admin user
+"users": {
+ "admin": {
+ "password": "__yourAdminPassword__",
+ "is_admin": true
+ }
+},
+#+END_SRC
+
+Save and exit, then create a system user.
+
+#+BEGIN_SRC: bash
+adduser --system --home=/var/www/$HOSTNAME/htdocs/etherpad/ --group etherpad
+chown -R etherpad: /var/www/$HOSTNAME/htdocs/etherpad/
+#+END_SRC
+
+Create an init script using your favorite editor, changing /mydomainname.com/ to your domain name.
+
+#+BEGIN_SRC: bash
+emacs /etc/init.d/etherpad
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          etherpad-lite
+# Required-Start:    $local_fs $remote_fs $network $syslog
+# Required-Stop:     $local_fs $remote_fs $network $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts etherpad lite
+# Description:       starts etherpad lite using start-stop-daemon
+### END INIT INFO
+
+PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/opt/node/bin"
+LOGFILE="/var/www/mydomainname.com/htdocs/etherpad/etherpad-lite.log"
+EPLITE_DIR="/var/www/mydomainname.com/htdocs/etherpad"
+EPLITE_BIN="bin/safeRun.sh"
+USER="etherpad"
+GROUP="etherpad"
+DESC="Etherpad Lite"
+NAME="etherpad-lite"
+
+set -e
+
+. /lib/lsb/init-functions
+
+start() {
+  echo "Starting $DESC... "
+
+    start-stop-daemon --start --chuid "$USER:$GROUP" --background --make-pidfile --pidfile /var/run/$NAME.pid --exec $EPLITE_DIR/$EPLITE_BIN -- $LOGFILE || true
+  echo "done"
+}
+
+#We need this function to ensure the whole process tree will be killed
+killtree() {
+    local _pid=$1
+    local _sig=${2-TERM}
+    for _child in $(ps -o pid --no-headers --ppid ${_pid}); do
+        killtree ${_child} ${_sig}
+    done
+    kill -${_sig} ${_pid}
+}
+
+stop() {
+  echo "Stopping $DESC... "
+   while test -d /proc/$(cat /var/run/$NAME.pid); do
+    killtree $(cat /var/run/$NAME.pid) 15
+    sleep 0.5
+  done
+  rm /var/run/$NAME.pid
+  echo "done"
+}
+
+status() {
+  status_of_proc -p /var/run/$NAME.pid "" "etherpad-lite" && exit 0 || exit $?
+}
+
+case "$1" in
+  start)
+      start
+      ;;
+  stop)
+    stop
+      ;;
+  restart)
+      stop
+      start
+      ;;
+  status)
+      status
+      ;;
+  *)
+      echo "Usage: $NAME {start|stop|restart|status}" >&2
+      exit 1
+      ;;
+esac
+
+exit 0
+#+END_SRC
+
+Save and exit, then enable the daemon.
+
+#+BEGIN_SRC: bash
+chmod +x /etc/init.d/etherpad
+update-rc.d etherpad defaults
+service etherpad start
+#+END_SRC
+
+Update your Apache configuration.
+
+#+BEGIN_SRC: bash
+emacs /etc/apache2/sites-available/$HOSTNAME
+#+END_SRC
+
+Within the 443 section add the following:
+
+#+BEGIN_SRC: bash
+    <Location /var/www/mydomainname.com/htdocs/etherpad/>
+        AuthType Basic
+        AuthName "Welcome to Etherpad"
+        AuthUserFile /path/to/svn.passwd
+        AuthGroupFile /path/to/svn.group
+        Require group etherpad
+    </Location>
+
+    <IfModule mod_proxy.c>
+        ProxyVia On
+        ProxyRequests Off
+        ProxyPass / http://127.0.0.1:9001/
+        ProxyPassReverse / http://127.0.0.1:9001/
+        ProxyPreserveHost on
+        <Proxy *>
+            Options FollowSymLinks MultiViews
+            AllowOverride All
+            Order allow,deny
+            allow from all
+        </Proxy>
+    </IfModule>
+#+END_SRC
+
+Save and exit, then restart Apache.
+
+#+BEGIN_SRC: bash
+apt-get install libapache2-mod-proxy-html
+a2enmod proxy proxy_http headers deflate
+service apache2 restart
 #+END_SRC
 
 ** Install Tripwire
