@@ -3182,9 +3182,9 @@ git clone git://github.com/ether/etherpad-lite.git etherpad
 Edit the configuration file
 
 #+BEGIN_SRC: bash
-cd etherpad
+cd /var/www/$HOSTNAME/htdocs/etherpad
 cp settings.json.template settings.json
-emacs settings.json
+emacs /var/www/$HOSTNAME/htdocs/etherpad/settings.json
 #+END_SRC
 
 Change the following settings.  /rAnD0m5tRIng/ should be altered to a random string 10 characters in length.
@@ -3216,6 +3216,18 @@ Save and exit, then create a system user.
 #+BEGIN_SRC: bash
 adduser --system --home=/var/www/$HOSTNAME/htdocs/etherpad/ --group etherpad
 chown -R etherpad: /var/www/$HOSTNAME/htdocs/etherpad/
+#+END_SRC
+
+Chick that it runs.
+
+#+BEGIN_SRC: bash
+su -c "/var/www/$HOSTNAME/htdocs/etherpad/bin/run.sh" -s /bin/bash etherpad
+#+END_SRC
+
+If it ran without exiting abnormally then kill the process.
+
+#+BEGIN_SRC: bash
+pkill -u etherpad
 #+END_SRC
 
 Create an init script using your favorite editor, changing /mydomainname.com/ to your domain name.
@@ -3323,27 +3335,27 @@ emacs /etc/apache2/sites-available/$HOSTNAME
 Within the 443 section add the following:
 
 #+BEGIN_SRC: bash
-    <Location /var/www/mydomainname.com/htdocs/etherpad/>
-        AuthType Basic
-        AuthName "Welcome to Etherpad"
-        AuthUserFile /path/to/svn.passwd
-        AuthGroupFile /path/to/svn.group
-        Require group etherpad
-    </Location>
+  <Location /etherpad>
+      AuthType Basic
+      AuthName "Welcome to Etherpad"
+      AuthUserFile /home/mydomainname.com/public_html/.htpasswd
+      AuthGroupFile /home/mydomainname.com/public_html/.htgroup
+      Require group etherpad
+  </Location>
 
-    <IfModule mod_proxy.c>
-        ProxyVia On
-        ProxyRequests Off
-        ProxyPass / http://127.0.0.1:9001/
-        ProxyPassReverse / http://127.0.0.1:9001/
-        ProxyPreserveHost on
-        <Proxy *>
-            Options FollowSymLinks MultiViews
-            AllowOverride All
-            Order allow,deny
-            allow from all
-        </Proxy>
-    </IfModule>
+  <IfModule mod_proxy.c>
+      ProxyVia On
+      ProxyRequests Off
+      ProxyPass /etherpad http://192.168.1.60:9001/
+      ProxyPassReverse /etherpad 192.168.1.60:9001/
+      ProxyPreserveHost on
+      <Proxy *>
+          Options FollowSymLinks MultiViews
+          AllowOverride All
+          Order allow,deny
+          allow from all
+      </Proxy>
+  </IfModule>
 #+END_SRC
 
 Save and exit, then restart Apache.
@@ -3353,6 +3365,28 @@ apt-get install libapache2-mod-proxy-html
 a2enmod proxy proxy_http headers deflate
 service apache2 restart
 #+END_SRC
+
+Create some passwords for users.
+
+#+BEGIN_SRC: bash
+mkdir /home/$HOSTNAME
+mkdir /home/$HOSTNAME/public_html
+htpasswd -c /home/$HOSTNAME/public_html/.htpasswd myusername
+#+END_SRC
+
+Create a user group.
+
+#+BEGIN_SRC: bash
+emacs /home/$HOSTNAME/public_html/.htgroup
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+etherpad: myusername
+#+END_SRC
+
+Save and exit.
 
 ** Install Tripwire
 
