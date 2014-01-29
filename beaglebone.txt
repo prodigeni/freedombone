@@ -260,6 +260,34 @@ apt-get update
 apt-get install emacs
 #+END_SRC
 
+** Create a swap file
+
+Without a swap file the system may occasionally run out of memory and crash, since the Beaglebone only has 512MB of RAM.  The following commands will create a 1 GB file:
+
+#+BEGIN_SRC: bash
+mkdir -p /var/cache/swap/
+dd if=/dev/zero of=/var/cache/swap/swapfile bs=1M count=1024
+chmod 600 /var/cache/swap/swapfile
+mkswap /var/cache/swap/swapfile
+swapon /var/cache/swap/swapfile
+#+END_SRC
+
+To tell the OS to load this swapfile on each start up.
+
+#+BEGIN_SRC: bash
+emacs /etc/fstab
+#+END_SRC
+
+Append the following line:
+
+#+BEGIN_SRC: bash
+/var/cache/swap/swapfile    none    swap    sw    0   0
+#+END_SRC
+
+Then save and exit.
+
+To verify that the swapfile is accessilble type /top/ and look for the line which begins with "KiB Swap".  Probably there will be zero bytes used, but this might be non-zero when the system is under some load (for example getting a lot of web views or being crawled by a search engine).  CTRL-C exits from the /top/ command.
+
 ** Random number generation
 
 #+BEGIN_VERSE
@@ -3128,37 +3156,10 @@ pybitmessage
 ** Collaborative Document Editing
 
 #+BEGIN_SRC: bash
-apt-get install gzip git-core curl python libssl-dev pkg-config build-essential python g++ make checkinstall apache2 mysql-server
-#+END_SRC
-
-Download nodejs.
-
-#+BEGIN_SRC: bash
-cd /usr/src/
-wget http://freedombone.uk.to/node.tar.gz
-#+END_SRC
-
-Verify it.
-
-#+BEGIN_SRC: bash
-md5sum node.tar.gz
-153bdbf77b4473df2600b8ce123ef331
-#+END_SRC
-
-Install it.
-
-#+BEGIN_SRC: bash
-tar xzvf node.tar.gz
-cd node-v*
-./configure && checkinstall
-#+END_SRC
-
-When the menu appears, select option 3 and remove the “v” in front of the version number, then press Enter to continue. Note that the previous step can take a considerable amount of time.
-
-Install nodejs with the following command:
-
-#+BEGIN_SRC: bash
-dpkg -i node_*
+echo "deb http://ftp.us.debian.org/debian wheezy-backports main" >> /etc/apt/sources.list
+apt-get update
+apt-get install nodejs-legacy
+curl https://npmjs.org/install.sh | sh
 #+END_SRC
 
 Create an etherpad database.
@@ -3224,7 +3225,7 @@ Chick that it runs.
 su -c "/var/www/$HOSTNAME/htdocs/etherpad/bin/run.sh" -s /bin/bash etherpad
 #+END_SRC
 
-If it ran without exiting abnormally then kill the process.
+If it ran without exiting abnormally or complaining about node.js being missing then kill the process.
 
 #+BEGIN_SRC: bash
 pkill -u etherpad
