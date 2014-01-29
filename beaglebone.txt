@@ -260,6 +260,12 @@ apt-get update
 apt-get install emacs
 #+END_SRC
 
+Some basic Emacs keys which will be useful to new users are:
+
+| Load a file | CTRL-x CTRL-f |
+| Save        | CTRL-x CTRL-s |
+| Exit        | CTRL-x CTRL-c |
+
 ** Create a swap file
 
 Without a swap file the system may occasionally run out of memory and crash, since the Beaglebone only has 512MB of RAM.  The following commands will create a 1 GB file:
