@@ -268,7 +268,7 @@ Some basic Emacs keys which will be useful to new users are:
 
 ** Create a swap file
 
-Without a swap file the system may occasionally run out of memory and crash, since the Beaglebone only has 512MB of RAM.  The following commands will create a 1 GB file:
+Without a swap file the system may occasionally run out of memory and crash, since the Beaglebone only has 512MB of RAM.  The following commands will create a 1GB swap file:
 
 #+BEGIN_SRC: bash
 mkdir -p /var/cache/swap/
