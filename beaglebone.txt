@@ -301,6 +301,7 @@ To enable some newer packages add backports to the repositories.
 #+BEGIN_SRC
 echo "deb http://ftp.us.debian.org/debian wheezy-backports main" >> /etc/apt/sources.list
 apt-get update
+apt-get dist-upgrade
 #+END_SRC
 
 ** Random number generation
