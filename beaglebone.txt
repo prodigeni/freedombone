@@ -1257,6 +1257,9 @@ Some useful keys to know are:
  * Set SMTP server to your domain name
  * Set Security to SSL/TLS (always)
  * Set port to 465
+ * Set authentication to PLAIN
+ * Enter your username and password
+ * Accept the SSL certificate
 *** Webmail
 
 #+BEGIN_VERSE
