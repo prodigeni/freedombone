@@ -1409,189 +1409,6 @@ rm -f flatpress.tar.gz
 
 Now visit your blog and follow the setup instructions, which are quite minimal.  Various themes and addons are available from the Flatpress web site, http://www.flatpress.org
 
-** Install a VoIP server
-
-#+BEGIN_VERSE
-/Our core principles, whether in software or sovereignty, have always been about freedom and dignity, for all people, on an equal basis/
-
--- David Sugar, GNU Telephony
-#+END_VERSE
-
-*** The server
-Sipwitch is like an introduction service or phone book for SIP VoIP clients.  Once introduced the clients can then talk directly, and this means that sipwitch is very lightweight and can run on low power systems such as the BBB.
-
-Edit your package sources:
-
-#+BEGIN_SRC: bash
-emacs /etc/apt/sources.list
-#+END_SRC
-
-Append the following line:
-
-#+BEGIN_SRC: bash
-deb http://dev.gnutelephony.org/archive/ wheezy/
-#+END_SRC
-
-Save and exit.
-
-To load the repository the first time after adding it to the sources.list, since you do not have the verification keys already installed yet. Then do
-
-#+BEGIN_SRC: bash
-apt-get install gnutelephony-keyring
-#+END_SRC
-
-After that it will be happy to accept it as a signed repository. The verification keys can also be directly fetched with
-
-#+BEGIN_SRC: bash
-cd /tmp
-wget http://dev.gnutelephony.org/archive/wheezy/public.key
-#+END_SRC
-
-and manually added instead with
-
-#+BEGIN_SRC: bash
-apt-key add public.key
-#+END_SRC
-
-To make sure you have all dependencies, do
-
-#+BEGIN_SRC: bash
-apt-get update;apt-get dist-upgrade
-#+END_SRC
-
-Before we install anything, let's inspect what is available to us by using
-
-#+BEGIN_SRC: bash
-dpkg -l sipwitch
-#+END_SRC
-
-To see the main application. The columns will indicate if the package is installed, which version and a description of the package. Then do
-
-#+BEGIN_SRC: bash
-dpkg -l sipwitch-*
-#+END_SRC
-
-to see available supporting applications and plugins. Again, the columns will indicate if the package is installed, which version and a description of each of these.
-
-To install only the main application, do
-
-#+BEGIN_SRC: bash
-apt-get install sipwitch
-#+END_SRC
-
-and to install all supporting plugins:
-
-#+BEGIN_SRC: bash
-apt-get install sipwitch-plugin-scripting sipwitch-plugin-subscriber sipwitch-plugin-forward sipwitch-plugin-zeroconf
-#+END_SRC
-
-Add your user into the sipwitch group
-
-#+BEGIN_SRC: bash
-groupadd sipwitch
-groupadd sipusers
-usermod -aG sipwitch myusername
-usermod -aG sipusers myusername
-#+END_SRC
-
-Then edit the configuration
-
-#+BEGIN_SRC: bash
-emacs /etc/sipwitch.conf
-#+END_SRC
-
-Change the *mapped* value from 200 to 20, since we don't want to be serving huge numbers of calls.
-
-Alter the *range* value to 10, since we don't need a large number of extensions.  This will mean that exension numbers 200 to 209 are available.
-
-Do not set the *realm* value, as doing so seems to prevent the server from working.
-
-Save and exit.
-
-Create a digest string for your username:
-
-#+BEGIN_SRC: bash
-sipwitch digest myusername
-#+END_SRC
-
-Make a note of the resulting string because you're going to use it in the users file you'll now create.
-
-#+BEGIN_SRC: bash
-export HOSTNAME=mydomainname.com
-touch /etc/sipwitch.d/$HOSTNAME.xml
-chmod 600 /etc/sipwitch.d/$HOSTNAME.xml
-emacs /etc/sipwitch.d/$HOSTNAME.xml
-#+END_SRC
-
-It should look something like the following:
-
-#+BEGIN_SRC: bash
-<provision>
-    <user id="myusername">
-        <digest>yourdigeststring</digest>
-		<extension>201</extension>
-		<display>Your full name</display>
-    </user>
-</provision>
-#+END_SRC
-
-Save and exit.  Now edit the configuration.
-
-#+BEGIN_SRC: bash
-emacs /etc/default/sipwitch
-#+END_SRC
-
-Change "desktop" to "server", then save and exit.
-
-Update the IP settings:
-
-#+BEGIN_SRC: bash
-iptables -A INPUT -p tcp --dport 5060 -j ACCEPT
-iptables -A INPUT -p udp --dport 5060 -j ACCEPT
-iptables -A INPUT -p tcp --dport 5061 -j ACCEPT
-iptables -A INPUT -p udp --dport 5061 -j ACCEPT
-iptables-save
-#+END_SRC
-
-Test that it's working:
-
-#+BEGIN_SRC: bash
-pkill -9 sipw
-sipw -x9 -f
-#+END_SRC
-
-Then try to register with the server using a SIP client (such as Jitsi). If everything worked then use CTRL-C to exit.  Then start the service.
-
-#+BEGIN_SRC: bash
-service sipwitch start
-#+END_SRC
-
-*** Clients
-**** Jitsi
-Download the latst version from https://jitsi.org/index.php/Main/Download
-
-TODO
-**** Twinkle client
-
-The client should have a user profile as following:
-
-The "user name" is the xxx id used in the <user id="xxx"> entry of /etc/sipwitch.conf
-
-The "domain" is the yyy domain in the main config <stack><domain>yyy entry of /etc/sipwitch.conf
-
-The SIP Authentication should have:
-
-realm = realm as set in <registry><realm> of /etc/sipwitch.conf
-
-authentication name = <user id="xx"> entry, same as "User Name" field.
-
-password = value of <secret>zzz in <user> entry of /etc/sipwitch.conf
-
-Under security tab, set "Enable ZRTP/SRTP encryption"
-**** Android
-TODO
-
-CSipSimple?
 ** Install an IRC server
 
 #+BEGIN_VERSE
@@ -3159,7 +2976,121 @@ make install
 pybitmessage
 #+END_SRC
 
+** Install Tripwire
+
+#+BEGIN_VERSE
+/...by the time you get done with all of that, we have a freedom box/
+
+-- Eben Moglen
+#+END_VERSE
+
+Tripwire will try to detect any intrusions into your system. It's a good idea to install it after you have installed all of the other programs which you intend to use.
+
+#+BEGIN_SRC: bash
+apt-get install tripwire
+export HOSTNAME=mydomainname.com
+cd /etc/tripwire
+cp arm-local.key $HOSTNAME-local.key
+cp site.key $HOSTNAME-site.key
+tripwire --init
+tripwire --update-policy --secure-mode low /etc/tripwire/twpol.txt
+tripwire --check --interactive
+#+END_SRC
+
+you will be asked for two passphrases ("site" and "local").  Make a note of these.
+
+If you subsequently install any more packages or make configuration changes then update the policy again with:
+
+#+BEGIN_SRC: bash
+tripwire --update-policy --secure-mode low /etc/tripwire/twpol.txt
+#+END_SRC
+
+Also, to look for any rootkits.
+
+#+BEGIN_SRC: bash
+apt-get install rkhunter
+#+END_SRC
+
+* Router/Firewall ports
+The following ports on your internet router/firewall should be forwarded to the BBB.
+
+| Protocol      |     Port/s |
+|---------------+------------|
+| Gopher        |         70 |
+| HTTP          |         80 |
+| HTTPS         |        443 |
+| IMAP          |        143 |
+| IRC SSL       |       6670 |
+| SIP           | 5060..5061 |
+| SMTP          |         25 |
+| SMTPS         |        465 |
+| SSH           |         22 |
+| XMPP          | 5222..5223 |
+| XMPP (server) |       5269 |
+| XMPP (BOSH)   | 5280..5281 |
+| Bitmessage    |       8444 |
+
+* Hints and Tips
+** Messaging security
+If you're connected to other friends via Friendica then the preferred way to send private messages is via Friendica's built-in messaging system.  This is a lot more convenient than using GPG with ordinary email and yet still provides a similar level of protection from unwarranted interception.
+** Restrictive/hostile user environments
+If you are typically operating within a restrictive of hostile environment where using ssh is not an option because everything other than web ports are blocked then you may wish to try installing oterm:
+
+http://www.coralbits.com/oterm/
+
+https://github.com/davidmoreno/onion
+** Moving Domains
+If you're moving servers and using a different domain name or path then you can search and replace URLs within files in the following way:
+
+#+BEGIN_SRC: bash
+find /var/www/mynewdomain/htdocs -type f -exec sed -i 's@myolddomain@mynewdomain@g' {} \;
+#+END_SRC
+
+** MySql foo
+*** Backup all databases
+To back up all mysql databases:
+
+#+BEGIN_SRC: bash
+mysqldump -u root -p --all-databases --events > /var/backups/databasebackup.sql
+#+END_SRC
+*** Restoring a particular mysql database
+To restore yesterday's friendica backup:
+
+#+BEGIN_SRC: bash
+mysql -D friendica -o < /var/backups/friendica_daily.sql
+#+END_SRC
+
+To restore yesterday's mediawiki backup:
+
+#+BEGIN_SRC: bash
+mysql -D wikidb -o < /var/backups/wikidb_daily.sql
+#+END_SRC
+*** Removing mysql server
+
+If you manage to screw up sql server completely then it can be fully deleted with:
+
+#+BEGIN_SRC: bash
+ps aux | grep mysql
+#+END_SRC
+
+and use /kill -9 <pid>/ to kill all mysql processes.
+
+#+BEGIN_SRC: bash
+apt-get remove --purge mysql\*
+apt-get clean
+updatedb
+#+END_SRC
+* Deprecated
+
+The following items have been deprecated until such time as a successful installation is achieved.
+
 ** Collaborative Document Editing
+
+#+BEGIN_VERSE
+/Openness and participation are antidotes to surveillance and control./
+
+-- Howard Rheingold
+#+END_VERSE
 
 #+BEGIN_SRC: bash
 echo "deb http://ftp.us.debian.org/debian wheezy-backports main" >> /etc/apt/sources.list
@@ -3395,107 +3326,187 @@ etherpad: myusername
 
 Save and exit.
 
-** Install Tripwire
+
+** Install a VoIP server
 
 #+BEGIN_VERSE
-/...by the time you get done with all of that, we have a freedom box/
+/Our core principles, whether in software or sovereignty, have always been about freedom and dignity, for all people, on an equal basis/
 
--- Eben Moglen
+-- David Sugar, GNU Telephony
 #+END_VERSE
 
-Tripwire will try to detect any intrusions into your system. It's a good idea to install it after you have installed all of the other programs which you intend to use.
+*** The server
+Sipwitch is like an introduction service or phone book for SIP VoIP clients.  Once introduced the clients can then talk directly, and this means that sipwitch is very lightweight and can run on low power systems such as the BBB.
+
+Edit your package sources:
 
 #+BEGIN_SRC: bash
-apt-get install tripwire
+emacs /etc/apt/sources.list
+#+END_SRC
+
+Append the following line:
+
+#+BEGIN_SRC: bash
+deb http://dev.gnutelephony.org/archive/ wheezy/
+#+END_SRC
+
+Save and exit.
+
+To load the repository the first time after adding it to the sources.list, since you do not have the verification keys already installed yet. Then do
+
+#+BEGIN_SRC: bash
+apt-get install gnutelephony-keyring
+#+END_SRC
+
+After that it will be happy to accept it as a signed repository. The verification keys can also be directly fetched with
+
+#+BEGIN_SRC: bash
+cd /tmp
+wget http://dev.gnutelephony.org/archive/wheezy/public.key
+#+END_SRC
+
+and manually added instead with
+
+#+BEGIN_SRC: bash
+apt-key add public.key
+#+END_SRC
+
+To make sure you have all dependencies, do
+
+#+BEGIN_SRC: bash
+apt-get update;apt-get dist-upgrade
+#+END_SRC
+
+Before we install anything, let's inspect what is available to us by using
+
+#+BEGIN_SRC: bash
+dpkg -l sipwitch
+#+END_SRC
+
+To see the main application. The columns will indicate if the package is installed, which version and a description of the package. Then do
+
+#+BEGIN_SRC: bash
+dpkg -l sipwitch-*
+#+END_SRC
+
+to see available supporting applications and plugins. Again, the columns will indicate if the package is installed, which version and a description of each of these.
+
+To install only the main application, do
+
+#+BEGIN_SRC: bash
+apt-get install sipwitch
+#+END_SRC
+
+and to install all supporting plugins:
+
+#+BEGIN_SRC: bash
+apt-get install sipwitch-plugin-scripting sipwitch-plugin-subscriber sipwitch-plugin-forward sipwitch-plugin-zeroconf
+#+END_SRC
+
+Add your user into the sipwitch group
+
+#+BEGIN_SRC: bash
+groupadd sipwitch
+groupadd sipusers
+usermod -aG sipwitch myusername
+usermod -aG sipusers myusername
+#+END_SRC
+
+Then edit the configuration
+
+#+BEGIN_SRC: bash
+emacs /etc/sipwitch.conf
+#+END_SRC
+
+Change the *mapped* value from 200 to 20, since we don't want to be serving huge numbers of calls.
+
+Alter the *range* value to 10, since we don't need a large number of extensions.  This will mean that exension numbers 200 to 209 are available.
+
+Do not set the *realm* value, as doing so seems to prevent the server from working.
+
+Save and exit.
+
+Create a digest string for your username:
+
+#+BEGIN_SRC: bash
+sipwitch digest myusername
+#+END_SRC
+
+Make a note of the resulting string because you're going to use it in the users file you'll now create.
+
+#+BEGIN_SRC: bash
 export HOSTNAME=mydomainname.com
-cd /etc/tripwire
-cp arm-local.key $HOSTNAME-local.key
-cp site.key $HOSTNAME-site.key
-tripwire --init
-tripwire --update-policy --secure-mode low /etc/tripwire/twpol.txt
-tripwire --check --interactive
+touch /etc/sipwitch.d/$HOSTNAME.xml
+chmod 600 /etc/sipwitch.d/$HOSTNAME.xml
+emacs /etc/sipwitch.d/$HOSTNAME.xml
 #+END_SRC
 
-you will be asked for two passphrases ("site" and "local").  Make a note of these.
-
-If you subsequently install any more packages or make configuration changes then update the policy again with:
+It should look something like the following:
 
 #+BEGIN_SRC: bash
-tripwire --update-policy --secure-mode low /etc/tripwire/twpol.txt
+<provision>
+    <user id="myusername">
+        <digest>yourdigeststring</digest>
+		<extension>201</extension>
+		<display>Your full name</display>
+    </user>
+</provision>
 #+END_SRC
 
-Also, to look for any rootkits.
+Save and exit.  Now edit the configuration.
 
 #+BEGIN_SRC: bash
-apt-get install rkhunter
+emacs /etc/default/sipwitch
 #+END_SRC
 
-* Router/Firewall ports
-The following ports on your internet router/firewall should be forwarded to the BBB.
+Change "desktop" to "server", then save and exit.
 
-| Protocol      |     Port/s |
-|---------------+------------|
-| Gopher        |         70 |
-| HTTP          |         80 |
-| HTTPS         |        443 |
-| IMAP          |        143 |
-| IRC SSL       |       6670 |
-| SIP           | 5060..5061 |
-| SMTP          |         25 |
-| SMTPS         |        465 |
-| SSH           |         22 |
-| XMPP          | 5222..5223 |
-| XMPP (server) |       5269 |
-| XMPP (BOSH)   | 5280..5281 |
-| Bitmessage    |       8444 |
-
-* Hints and Tips
-** Messaging security
-If you're connected to other friends via Friendica then the preferred way to send private messages is via Friendica's built-in messaging system.  This is a lot more convenient than using GPG with ordinary email and yet still provides a similar level of protection from unwarranted interception.
-** Restrictive/hostile user environments
-If you are typically operating within a restrictive of hostile environment where using ssh is not an option because everything other than web ports are blocked then you may wish to try installing oterm:
-
-http://www.coralbits.com/oterm/
-
-https://github.com/davidmoreno/onion
-** Moving Domains
-If you're moving servers and using a different domain name or path then you can search and replace URLs within files in the following way:
+Update the IP settings:
 
 #+BEGIN_SRC: bash
-find /var/www/mynewdomain/htdocs -type f -exec sed -i 's@myolddomain@mynewdomain@g' {} \;
+iptables -A INPUT -p tcp --dport 5060 -j ACCEPT
+iptables -A INPUT -p udp --dport 5060 -j ACCEPT
+iptables -A INPUT -p tcp --dport 5061 -j ACCEPT
+iptables -A INPUT -p udp --dport 5061 -j ACCEPT
+iptables-save
 #+END_SRC
 
-** MySql foo
-*** Backup all databases
-To back up all mysql databases:
+Test that it's working:
 
 #+BEGIN_SRC: bash
-mysqldump -u root -p --all-databases --events > /var/backups/databasebackup.sql
+pkill -9 sipw
+sipw -x9 -f
 #+END_SRC
-*** Restoring a particular mysql database
-To restore yesterday's friendica backup:
+
+Then try to register with the server using a SIP client (such as Jitsi). If everything worked then use CTRL-C to exit.  Then start the service.
 
 #+BEGIN_SRC: bash
-mysql -D friendica -o < /var/backups/friendica_daily.sql
+service sipwitch start
 #+END_SRC
 
-To restore yesterday's mediawiki backup:
+*** Clients
+**** Jitsi
+Download the latst version from https://jitsi.org/index.php/Main/Download
 
-#+BEGIN_SRC: bash
-mysql -D wikidb -o < /var/backups/wikidb_daily.sql
-#+END_SRC
-*** Removing mysql server
+TODO
+**** Twinkle client
 
-If you manage to screw up sql server completely then it can be fully deleted with:
+The client should have a user profile as following:
 
-#+BEGIN_SRC: bash
-ps aux | grep mysql
-#+END_SRC
+The "user name" is the xxx id used in the <user id="xxx"> entry of /etc/sipwitch.conf
 
-and use /kill -9 <pid>/ to kill all mysql processes.
+The "domain" is the yyy domain in the main config <stack><domain>yyy entry of /etc/sipwitch.conf
 
-#+BEGIN_SRC: bash
-apt-get remove --purge mysql\*
-apt-get clean
-updatedb
-#+END_SRC
+The SIP Authentication should have:
+
+realm = realm as set in <registry><realm> of /etc/sipwitch.conf
+
+authentication name = <user id="xx"> entry, same as "User Name" field.
+
+password = value of <secret>zzz in <user> entry of /etc/sipwitch.conf
+
+Under security tab, set "Enable ZRTP/SRTP encryption"
+**** Android
+TODO
+
+CSipSimple?
