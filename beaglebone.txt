@@ -294,6 +294,15 @@ Then save and exit.
 
 To verify that the swapfile is accessilble type /top/ and look for the line which begins with "KiB Swap".  Probably there will be zero bytes used, but this might be non-zero when the system is under some load (for example getting a lot of web views or being crawled by a search engine).  CTRL-C exits from the /top/ command.
 
+** Enable backports
+
+To enable some newer packages add backports to the repositories.
+
+#+BEGIN_SRC
+echo "deb http://ftp.us.debian.org/debian wheezy-backports main" >> /etc/apt/sources.list
+apt-get update
+#+END_SRC
+
 ** Random number generation
 
 #+BEGIN_VERSE
@@ -3093,8 +3102,6 @@ The following items have been deprecated until such time as a successful install
 #+END_VERSE
 
 #+BEGIN_SRC: bash
-echo "deb http://ftp.us.debian.org/debian wheezy-backports main" >> /etc/apt/sources.list
-apt-get update
 apt-get install nodejs-legacy
 curl https://npmjs.org/install.sh | sh
 #+END_SRC
@@ -3325,7 +3332,6 @@ etherpad: myusername
 #+END_SRC
 
 Save and exit.
-
 
 ** Install a VoIP server
 
