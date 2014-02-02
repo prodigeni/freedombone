@@ -2461,6 +2461,129 @@ gopher://mydomainname.com
 
 There is a browser addon for Gopher called "overbite".  Installing that should enable you to view your site.
 
+** Install Owncloud
+
+#+BEGIN_VERSE
+/It's not water vapour/
+
+-- Larry Ellison
+#+END_VERSE
+
+Owncloud will allow you to upload and download files, share photos, collaboratively edit documents, have a calendar and more.  You should be warned that Owncloud runs quite slowly via an ordinary web browser, but it can be a convenient way to access and share your data from any location in a reasonably secure manner.
+
+*** Server Installation
+
+Install some dependencies:
+
+#+BEGIN_SRC: bash
+apt-get install apache2 php5 php5-gd php-xml-parser php5-intl
+apt-get install php5-sqlite php5-mysql smbclient curl libcurl3 php5-curl
+#+END_SRC
+
+It's very important that /mod_php5/ and not /mod_php5filter/ be installed.  If you have /mod_php5filter/ installed then Owncloud will always fail to install.
+
+#+BEGIN_SRC: bash
+a2dismod php5filter
+apt-get install libapache2-mod-php5
+#+END_SRC
+
+Ensure that the size of files which may be uploaded or downloaded is large enough.
+
+#+BEGIN_SRC: bash
+emacs /etc/php5/apache2/php.ini
+#+END_SRC
+
+Set the following:
+
+#+BEGIN_SRC: bash
+upload_max_filesize = 512M
+post_max_size = 512M
+#+END_SRC
+
+Save and exit, then edit your Apache configuration.
+
+#+BEGIN_SRC: bash
+export HOSTNAME=mydomainname.com
+emacs /etc/apache2/sites-available/$HOSTNAME
+#+END_SRC
+
+And add the following, to the 443 VirtualHost section.  Really we only will want to be using Owncloud with HTTPS to ensure some level of security and avoidance of dragnet surveillance.
+
+#+BEGIN_SRC: bash
+  <Directory /var/www/mydomainname.com/htdocs/owncloud>
+    Options Indexes FollowSymLinks MultiViews
+    AllowOverride All
+    Order allow,deny
+    allow from all
+  </Directory>
+#+END_SRC
+
+To ensure that nobody logs in insecurely add the following to the 80 VirtualHost section.
+
+#+BEGIN_SRC: bash
+  <Directory /var/www/mydomainname.com/htdocs/owncloud>
+    deny from all
+  </Directory>
+#+END_SRC
+
+Save and exit, then restart apache.
+
+#+BEGIN_SRC: bash
+service apache2 restart
+#+END_SRC
+
+Download owncloud.
+
+#+BEGIN_SRC: bash
+cd /tmp
+wget http://freedombone.uk.to/owncloud.tar.bz2
+#+END_SRC
+
+Verify the download:
+
+#+BEGIN_SRC: bash
+md5sum owncloud.tar.bz2
+f43eabb746b5e339ee70d0a6aaf4a49c
+#+END_SRC
+
+Extract the archive.  This may take a couple of minutes, so don't be alarmed that the system has crashed.
+
+#+BEGIN_SRC: bash
+export HOSTNAME=mydomainname.com
+tar -xjf owncloud.tar.bz2
+#+END_SRC
+
+Move the extracted files to your site and set file permissions.
+
+#+BEGIN_SRC: bash
+cp -r owncloud /var/www/$HOSTNAME/htdocs
+chown -R www-data:www-data /var/www/$HOSTNAME/htdocs/owncloud/apps
+chown -R www-data:www-data /var/www/$HOSTNAME/htdocs/owncloud/config
+chown www-data:www-data /var/www/$HOSTNAME/htdocs/owncloud
+#+END_SRC
+
+Edit the htaccess file for Owncloud.
+
+#+BEGIN_SRC: bash
+emacs /var/www/$HOSTNAME/htdocs/owncloud/.htaccess
+#+END_SRC
+
+Set the following.
+
+#+BEGIN_SRC: bash
+php_value upload_max_filesize 512M
+php_value post_max_size 512M
+php_value memory_limit 32M
+#+END_SRC
+
+Save and exit.
+
+With a web browser visit your domain (mydomainname.com/owncloud) and enter an administrator username and password.
+
+*** Owncloud on Android
+
+First install [[https://f-droid.org/][F-Droid]] and then search for the current Owncloud app.  Once it's installed you'll then be able to log into the BBB with the URL https://mydomainname.com/opencloud, supplying your username and password.
+
 ** Install a Wiki
 
 #+BEGIN_VERSE
@@ -2500,7 +2623,7 @@ Edit the Apache configuration for your wiki site.
 emacs /etc/apache2/sites-available/$HOSTNAME
 #+END_SRC
 
-The settings should look something like the following.
+The settings should look something like the following.  Replace /mywikidomainname.com/ with your wiki domain name.
 
 #+BEGIN_SRC: bash
 <VirtualHost *:80>
@@ -2708,129 +2831,6 @@ Save and exit.
 If you need to be able to upload large files to the wiki then edit */etc/php5/apache2/php.ini* and set *upload_max_filesize* accordingly.  If the directory */etc/php5/apache2* doesn't exist then you will need to install the package *libapache2-mod-php5*.
 
 Now you can visit your wiki and begin editing.
-
-** Install Owncloud
-
-#+BEGIN_VERSE
-/It's not water vapour/
-
--- Larry Ellison
-#+END_VERSE
-
-Owncloud will allow you to upload and download files, share photos, collaboratively edit documents, have a calendar and more.  You should be warned that Owncloud runs quite slowly via an ordinary web browser, but it can be a convenient way to access and share your data from any location in a reasonably secure manner.
-
-*** Server Installation
-
-Install some dependencies:
-
-#+BEGIN_SRC: bash
-apt-get install apache2 php5 php5-gd php-xml-parser php5-intl
-apt-get install php5-sqlite php5-mysql smbclient curl libcurl3 php5-curl
-#+END_SRC
-
-It's very important that /mod_php5/ and not /mod_php5filter/ be installed.  If you have /mod_php5filter/ installed then Owncloud will always fail to install.
-
-#+BEGIN_SRC: bash
-a2dismod php5filter
-apt-get install libapache2-mod-php5
-#+END_SRC
-
-Ensure that the size of files which may be uploaded or downloaded is large enough.
-
-#+BEGIN_SRC: bash
-emacs /etc/php5/apache2/php.ini
-#+END_SRC
-
-Set the following:
-
-#+BEGIN_SRC: bash
-upload_max_filesize = 512M
-post_max_size = 512M
-#+END_SRC
-
-Save and exit, then edit your Apache configuration.
-
-#+BEGIN_SRC: bash
-export HOSTNAME=mydomainname.com
-emacs /etc/apache2/sites-available/$HOSTNAME
-#+END_SRC
-
-And add the following, to the 443 VirtualHost section.  Really we only will want to be using Owncloud with HTTPS to ensure some level of security and avoidance of dragnet surveillance.
-
-#+BEGIN_SRC: bash
-  <Directory /var/www/mydomainname.com/htdocs/owncloud>
-    Options Indexes FollowSymLinks MultiViews
-    AllowOverride All
-    Order allow,deny
-    allow from all
-  </Directory>
-#+END_SRC
-
-To ensure that nobody logs in insecurely add the following to the 80 VirtualHost section.
-
-#+BEGIN_SRC: bash
-  <Directory /var/www/mydomainname.com/htdocs/owncloud>
-    deny from all
-  </Directory>
-#+END_SRC
-
-Save and exit, then restart apache.
-
-#+BEGIN_SRC: bash
-service apache2 restart
-#+END_SRC
-
-Download owncloud.
-
-#+BEGIN_SRC: bash
-cd /tmp
-wget http://freedombone.uk.to/owncloud.tar.bz2
-#+END_SRC
-
-Verify the download:
-
-#+BEGIN_SRC: bash
-md5sum owncloud.tar.bz2
-f43eabb746b5e339ee70d0a6aaf4a49c
-#+END_SRC
-
-Extract the archive.  This may take a couple of minutes, so don't be alarmed that the system has crashed.
-
-#+BEGIN_SRC: bash
-export HOSTNAME=mydomainname.com
-tar -xjf owncloud.tar.bz2
-#+END_SRC
-
-Move the extracted files to your site and set file permissions.
-
-#+BEGIN_SRC: bash
-cp -r owncloud /var/www/$HOSTNAME/htdocs
-chown -R www-data:www-data /var/www/$HOSTNAME/htdocs/owncloud/apps
-chown -R www-data:www-data /var/www/$HOSTNAME/htdocs/owncloud/config
-chown www-data:www-data /var/www/$HOSTNAME/htdocs/owncloud
-#+END_SRC
-
-Edit the htaccess file for Owncloud.
-
-#+BEGIN_SRC: bash
-emacs /var/www/$HOSTNAME/htdocs/owncloud/.htaccess
-#+END_SRC
-
-Set the following.
-
-#+BEGIN_SRC: bash
-php_value upload_max_filesize 512M
-php_value post_max_size 512M
-php_value memory_limit 32M
-#+END_SRC
-
-Save and exit.
-
-With a web browser visit your domain (mydomainname.com/owncloud) and enter an administrator username and password.
-
-*** Owncloud on Android
-
-First install [[https://f-droid.org/][F-Droid]] and then search for the current Owncloud app.  Once it's installed you'll then be able to log into the BBB with the URL https://mydomainname.com/opencloud, supplying your username and password.
 
 ** Install Bitmessage
 
