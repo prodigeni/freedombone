@@ -1733,6 +1733,8 @@ Click *Add* to add a new user, then enter the Jabber ID which you previously spe
 
 From the *File* menu you can add contacts, then select the chat icon to begin a chat.  Click on the lock icon on the right hand side and this will initiate an authentication procedure in which you can specify a question and answer to verify the identity of the person you're communicating with.  Once authentication is complete then you'll be chating using OTR, which provides an additional layer of security.
 
+When opening Jitsi initially you will get a certificate warning for your domain name (assuming that you're using a self-signed certificate). If this happens then select *View Certificate* and enable the checkbox to trust the certificate, then select *Continue Anyway*.  Once you've done this then the certificate warning will not appear again unless you reinstall Jitsi or use a different computer.
+
 You can also [[https://www.youtube.com/watch?v=vgx7VSrDGjk][see this video]] as an example of using OTR.
 *** Using with Ubuntu
 The default XMPP client in Ubuntu is Empathy.  Using Empathy isn't as secure as using Jitsi, since it doesn't include the /off the record/ feature, but since it's the default it's what many users will have easy access to.
