@@ -2689,6 +2689,26 @@ Open a browser and visit http://$HOSTNAME/install.php, then fill out the details
 rm /var/www/$HOSTNAME/htdocs/install.php
 #+END_SRC
 
+Add a few extra mime types:
+
+#+BEGIN_SRC: bash
+emacs /var/www/$HOSTNAME/htdocs/conf/mime.conf
+#+END_SRC
+
+Append the following:
+
+#+BEGIN_SRC: bash
+ogv     video/ogg
+mp4     video/mp4
+webm    video/webm
+#+END_SRC
+
+Save and exit.
+
+If you need to be able to upload large files to the wiki then edit */etc/php5/apache2/php.ini* and set *upload_max_filesize* accordingly.  If the directory */etc/php5/apache2* doesn't exist then you will need to install the package *libapache2-mod-php5*.
+
+Now you can visit your wiki and begin editing.
+
 ** Install Owncloud
 
 #+BEGIN_VERSE
