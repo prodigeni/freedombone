@@ -3034,6 +3034,14 @@ tripwire --check --interactive
 
 you will be asked for two passphrases ("site" and "local").  Make a note of these.
 
+Turn off reporting of changes to system logs.
+
+#+BEGIN_SRC: bash
+emacs /etc/tripwire/twcfg.txt
+#+END_SRC
+
+Set *SYSLOGREPORTING* to false, then save and exit.
+
 If you subsequently install any more packages or make configuration changes then update the policy again with:
 
 #+BEGIN_SRC: bash
