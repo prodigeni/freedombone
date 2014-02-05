@@ -397,6 +397,49 @@ apt-get install ntp
 apt-get install fail2ban
 #+END_SRC
 
+** Set up a firewall
+
+#+BEGIN_VERSE
+/The documents, from a PowerPoint presentation prepared for a 2012 NSA conference called SIGDEV, show that the unit known as the Joint Threat Research Intelligence Group, or JTRIG, boasted of using the DDOS attack – which it dubbed Rolling Thunder/
+
+-- NBC News article: /War on Anonymous: British Spies Attacked Hackers, Snowden Docs Show/
+#+END_VERSE
+
+A basic firewall limits the maximum rate at which connections can be made, and this helps to defend against various kinds of DDOS attack.
+
+#+BEGIN_SRC: bash
+emacs /tmp/firewall.sh
+#+END_SRC
+
+Enter the following:
+
+#+BEGIN_SRC: bash
+#!/bin/bash
+# Limit the number of incoming tcp connections
+# Interface 0 incoming syn-flood protection
+iptables -N syn_flood
+iptables -A INPUT -p tcp --syn -j syn_flood
+iptables -A syn_flood -m limit --limit 1/s --limit-burst 3 -j RETURN
+iptables -A syn_flood -j DROP
+#Limiting the incoming icmp ping request:
+iptables -A INPUT -p icmp -m limit --limit  1/s --limit-burst 1 -j ACCEPT
+iptables -A INPUT -p icmp -m limit --limit 1/s --limit-burst 1 -j LOG --log-prefix PING-DROP:
+iptables -A INPUT -p icmp -j DROP
+iptables -A OUTPUT -p icmp -j ACCEPT
+#+END_SRC
+
+Save and exit
+
+#+BEGIN_SRC: bash
+chmod +x /tmp/firewall.sh
+. /tmp/firewall.sh
+iptables-save > /etc/firewall.conf
+echo "#!/bin/sh" > /etc/network/if-up.d/iptables
+echo "iptables-restore < /etc/firewall.conf" >> /etc/network/if-up.d/iptables
+chmod +x /etc/network/if-up.d/iptables
+rm /tmp/firewall.sh
+#+END_SRC
+
 ** Getting onto the web
 Create a subdomain on [[http://freedns.afraid.org][freeDNS]].  You may need to click on "/subdomains/" a couple of times.  FreeDNS is preferred because it is one of the few domain name providers which supports genuinely free (as in beer) accounts.  So if your budget is tiny or non-existent you can still participate as a first class citizen of the internet.  If you do have money to spend there is also a premium option.
 
@@ -3551,3 +3594,79 @@ Under security tab, set "Enable ZRTP/SRTP encryption"
 TODO
 
 CSipSimple?
+** Install Medagoblin
+
+#+BEGIN_SRC: bash
+apt-get install git-core python python-dev python-lxml python-imaging python-virtualenv apache2-suexec libapache2-mod-fcgid
+#+END_SRC
+
+#+BEGIN_SRC: bash
+adduser --system mediagoblin
+addgroup mediagoblin
+adduser mediagoblin mediagoblin
+export HOSTNAME=mydomainname.com
+cd /var/www/$HOSTNAME/htdocs
+git clone git://gitorious.org/mediagoblin/mediagoblin.git mediagoblin
+chown -hR mediagoblin:mediagoblin /var/www/$HOSTNAME/htdocs/mediagoblin
+cd /var/www/$HOSTNAME/htdocs/mediagoblin
+git submodule init && git submodule update
+cp mediagoblin.ini mediagoblin_local.ini
+emacs mediagoblin.ini
+#+END_SRC
+
+Set email_sender_address to the address you wish to be used as the sender for system-generated emails
+
+Edit direct_remote_path, base_dir, and base_url if your mediagoblin directory is not the root directory of your vhost.
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+a2enmod suexec
+a2enmod fcgid
+emacs /etc/apache2/sites-available/$HOSTNAME
+#+END_SRC
+
+Add the following to the 80 virtual host, replacing mydomainname.com with your domain name.
+
+#+BEGIN_SRC: bash
+  <Directory /var/www/mydomainname.com/htdocs/mediagoblin>
+    deny from all
+  </Directory>
+#+END_SRC
+
+Add the following to the 443 virtual host.
+
+#+BEGIN_SRC: bash
+  # Serve static and media files via alias
+  Alias /mgoblin_static/ /var/www/mydomainname.com/htdocs/mediagoblin/mediagoblin/static/
+  Alias /mgoblin_media/ /var/www/mydomainname.com/htdocs/mediagoblin/user_dev/media/public/
+
+  # Rewrite all URLs to fcgi, except for static and media urls
+  RewriteEngine On
+  RewriteRule ^(mgoblin_static|mgoblin_media)($|/) - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^/(.*)$ /mg.fcgi/$1 [QSA,L]
+
+  # Allow access to static and media directories
+  <Directory /var/www/mydomainname.com/htdocs/mediagoblin/mediagoblin/static>
+    Order allow,deny
+    Allow from all
+  </Directory>
+  <Directory /var/www/mydomainname.com/htdocs/mediagoblin/mediagoblin/user_dev/media/public>
+    Order allow,deny
+    Allow from all
+  </Directory>
+
+  # Connect to fcgi server
+  FastCGIExternalServer /var/www/mg.fcgi -host 127.0.0.1:26543
+#+END_SRC
+
+Save and exit
+
+#+BEGIN_SRC: bash
+cd /var/www/$HOSTNAME/htdocs/mediagoblin
+./lazyserver.sh --server-name=fcgi fcgi_host=127.0.0.1 fcgi_port=26543
+#+END_SRC
+
+https://github.com/joar/mediagoblin-init-scripts
+
