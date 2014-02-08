@@ -1477,11 +1477,25 @@ Select "*yes*" to change default settings.
 
 **** If you have existing GPG key
 
-Select "I have existing public and private keys"
+Export your GPG public and private keys.
 
-Select your public and private GPG exported key files
+#+BEGIN_SRC: bash
+gpg --output ~/public_key.txt --armor --export KEY_ID
+gpg --output ~/private_key.txt --armor --export-secret-key KEY_ID
+#+END_SRC
+
+Select "*I have existing public and private keys*".
+
+Select your public and private GPG exported key files.
 
 Select the account which you want to use and click *Next*, *Next* and *Finish*.
+
+Remove your exported key files.
+
+#+BEGIN_SRC: bash
+shred -zu ~/public_key.txt
+shred -zu ~/private_key.txt
+#+END_SRC
 
 **** If you don't have any existing GPG or PGP key
 TODO
