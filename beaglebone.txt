@@ -3692,3 +3692,8 @@ cd /var/www/$HOSTNAME/htdocs/mediagoblin
 
 https://github.com/joar/mediagoblin-init-scripts
 
+
+* Related projects
+
+  * [[https://freedomboxfoundation.org/][Freedombox]]
+  * [[https://arkos.io/][ArkOS]]
