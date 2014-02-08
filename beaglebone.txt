@@ -1473,7 +1473,7 @@ Select "*Yes, I want to sign all of my email*"
 
 Select "*No, I will create per-recipient rules*"
 
-Select "*yes*" yo change default settings.
+Select "*yes*" to change default settings.
 
 **** If you have existing GPG key
 
