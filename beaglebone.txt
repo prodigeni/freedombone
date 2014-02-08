@@ -460,7 +460,7 @@ Edit /etc/crontab and append that to the end of the file.
 
 Via your router's firewall settings you should now open port 22 (secure shell).  This will allow you to ssh into your BBB from any location - not just your own local network.
 
-** install Email
+** Install Email
 
 #+BEGIN_VERSE
 /If you knew what I know about email, you might not use it/
@@ -1432,6 +1432,70 @@ rm -rf /var/www/$HOSTNAME/htdocs/mail/installer
 Now with a browser navigate to https://mydomainname.com/mail and log in.
 
 TODO: connect Sent and Draft folders.
+
+*** Thunderbird
+
+#+BEGIN_VERSE
+/Towards the end of 2012, we heard from the National Technical Assistance Centre (NTAC), a division of GCHQ and a liaison with the Home Office, [that] they wanted the keys to decrypt the customer data./
+
+-- Brian Spector, on the shutting down of the PrivateSky encrypted email service
+#+END_VERSE
+
+Another common way in which you may want to access email is via Thunderbird.  This may be especially useful if you're trying to convert former Windows users who may previously have been using some version of Outlook.
+
+The following instructions should be carried out on the client machines (laptop, etc), not on the BBB itself.
+
+**** Initial setup
+
+Install *Thunderbird* and *Enigmail*.  How you do this just depends upon your distro and software manager or "app store".
+
+Open Thinderbird
+
+Select "*Skip this and use existing email*"
+
+Enter your name, email address (myusername@mydomainname.com) and the password for your user (the one from [[Add a user]]).
+
+You'll get a message saying "/Thunderbird failed to find the settings/"
+
+The settings should be as follows, substituting /mydomainname.com/ for your domain name and /myusername/ for the username given previously in [[Add a user]].
+
+  * Incoming: IMAP, mydomainname.com, 993, SSL/TLS, Normal Password
+  * Outgoing: SMTP, mydomainname.com, 465, SSL/TLS, Normal Password
+  * Username: myusername
+
+Click *Done*.
+
+Click *Get Certificate* and make sure "*permanently store this exception*" is selected", then click *Store Security Exception*.
+
+From OpenPGP setup select "*Yes, I would like the wizard to get me started*"
+
+Select "*Yes, I want to sign all of my email*"
+
+Select "*No, I will create per-recipient rules*"
+
+Select "*yes*" yo change default settings.
+
+**** If you have existing GPG key
+
+Select "I have existing public and private keys"
+
+Select your public and private GPG exported key files
+
+Select the account which you want to use and click *Next*, *Next* and *Finish*.
+
+**** If you don't have any existing GPG or PGP key
+TODO
+**** Using for the first time
+
+Click on the Thunderbird menu, which looks like three horizontal bars on the right hand side.
+
+Hover over *preferences* and then *Account settings*.
+
+Select *Synchronization & Storage*.
+
+Make sure that *Keep messages for this account on this computer* is unticked, then click *Ok*.
+
+Click on *Inbox*.  Depending upon how much email you have it may take a while to import the subject lines.
 
 ** Install a Blog
 
