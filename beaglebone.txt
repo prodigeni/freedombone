@@ -46,7 +46,7 @@ So long as the hardware is ok the amount of maintenance needed should be very sm
 ** Is it secure?
 Nothing is totally secure or infallible.  You could have the most secure technology and yet still use easy to guess passwords.  This system will not defend you from an attacker who is actively trying to block or corrupt your communications, but I assume that doesn't apply in the majority of cases.  Another thing to be aware of is that running a FreedomBone could make you more vulnerable to traffic analysis, since the server is associated with your home address and isn't a giant aggregation of users somewhere in the cloud.  You need to weigh this alongside the additional legal protection which owning the server and having it in your own home gives you.
 
-FreedomBone should be far more secure than using popular cloud-based services which have spying built into them as a core feature (although not one which is typically advertised), but it is not necessarily an impenetrable information fortress.
+FreedomBone should be far more secure than using popular cloud-based services which have spying built into them as a core feature (although not one which is typically advertised), but it is not necessarily an impenetrable information fortress.  This project is at least as much about achieving communications independence as it is about being able to do that securely.
 ** Will running a server all the time affect my electricity bill?
 Hardly at all.  The BeagleBone Black consumes very little power - less than 5W.  It would even be potentially possible to run it from a solar panel.
 * Inventory
@@ -1794,9 +1794,26 @@ Enter your username (myusername@mydomainname.com) and password.
 
 Click on *Advanced* and make sure that *Encryption required* and *Ignore SSL certificate errors* are checked.  Ignoring the certificate errors will allow you to use the self-signed certificate created earlier.  Then click *Done* and set your Jabber account and Empathy to *On*.
 *** Using with Android
+
+There are a few XMPP clients available on Android.  Ideally choose ones which support off-the-record messaging.  Here are some examples.
+
+**** Xabber
 Install [[https://f-droid.org/][F-Droid]]
 
-Search for and install Gibberbot
+Search for and install Xabber.
+
+Add an account and enter your Jabber/XMPP ID and password.
+
+From the menu select *Settings* then *Security* then *OTR mode*.  Set the mode to *Required*.
+
+Make sure that *Check server certificate* is not checked.
+
+Go back to the initial screen and then using the menu you can add contacts and begin chatting.  Both parties will need to go through the off-the-record question and answer verification before the chat can begin, but that only needs to be done once for each person you're chatting with.
+
+**** Gibberbot
+Install [[https://f-droid.org/][F-Droid]]
+
+Search for and install Gibberbot, otherwise known as ChatSecure.
 
 From the menu open *Accounts*
 
@@ -3599,7 +3616,7 @@ Under security tab, set "Enable ZRTP/SRTP encryption"
 TODO
 
 CSipSimple?
-** Install Medagoblin
+** Install Mediagoblin
 
 #+BEGIN_SRC: bash
 apt-get install git-core python python-dev python-lxml python-imaging python-virtualenv apache2-suexec libapache2-mod-fcgid
