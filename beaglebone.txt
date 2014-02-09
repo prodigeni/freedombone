@@ -1467,7 +1467,7 @@ Click *Done*.
 
 Click *Get Certificate* and make sure "*permanently store this exception*" is selected", then click *Store Security Exception*.
 
-From OpenPGP setup select "*Yes, I would like the wizard to get me started*"
+From OpenPGP setup select "*Yes, I would like the wizard to get me started*".  If the wizard doesn't start automatically then "setup wizard" can be selected from OpenPGP on the menu bar.
 
 Select "*Yes, I want to sign all of my email*"
 
@@ -1498,7 +1498,20 @@ shred -zu ~/private_key.txt
 #+END_SRC
 
 **** If you don't have any existing GPG or PGP key
-TODO
+Select "*I want to create a new key pair*"
+
+Enter a passphrase and click *Next* a couple of times.
+
+Click *Generate Certificate* to generate a revocation certificate.
+
+Enter the passphrase which you gave previously.
+
+Click *Finish*
+
+From the menu select *OpenPGP* and then *Key Management*.  Make sure that *Display all keys* is selected and then select your key. Select *Keyserver* on the menu and then *Upload Public Keys*.  This will upload your public key to a key server so that others can find it.
+
+Select *File* from the menu then *Export keys to file*.  Click on *Export Secret keys* and select a location to save them to.  It's a good idea to save them to a USB stick which can then be removed from the computer and carried around on a keyring together with your physical keys.  If you need to set up GPG or Thunderbird/Enigmail on others then this file will be used to import your keys.
+
 **** Using for the first time
 
 Click on the Thunderbird menu, which looks like three horizontal bars on the right hand side.
@@ -1510,6 +1523,10 @@ Select *Synchronization & Storage*.
 Make sure that *Keep messages for this account on this computer* is unticked, then click *Ok*.
 
 Click on *Inbox*.  Depending upon how much email you have it may take a while to import the subject lines.
+
+Note that when sending an email for the first time you will also need to accept the SSL certificate.
+
+Get into the habit of using email encryption and encourage others to do so.  Remember that you may not think that your emails are very interesting but the Surveillance State is highly interested in them and will be actively trying to data mine your private life looking for "suspicious" patterns, regardless of whether you are guilty of any crime or not.
 
 ** Install a Blog
 
@@ -3769,7 +3786,6 @@ cd /var/www/$HOSTNAME/htdocs/mediagoblin
 #+END_SRC
 
 https://github.com/joar/mediagoblin-init-scripts
-
 
 * Related projects
 
