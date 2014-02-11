@@ -872,39 +872,57 @@ service exim4 restart
 service cron restart
 #+END_SRC
 
-** Install dovecot
+** Install Dovecot
+
+Install the required packages.
 
 #+BEGIN_SRC: bash
 aptitude -y install dovecot-common dovecot-pop3d dovecot-imapd
 #+END_SRC
 
+Edit the configuration file.
+
 #+BEGIN_SRC: bash
 emacs /etc/dovecot/dovecot.conf
 #+END_SRC
 
-# line 26: change ( if not listen IPv6 port )
+Line 26: change:
 
+#+BEGIN_SRC: bash
 listen = *
+#+END_SRC
+
+Save and exit.
 
 #+BEGIN_SRC: bash
 emacs /etc/dovecot/conf.d/10-auth.conf
 #+END_SRC
 
-# line 9: uncomment and change ( allow plain text auth )
+Line 9: uncomment and change (allow plain text auth)
 
+#+BEGIN_SRC: bash
 disable_plaintext_auth = no
+#+END_SRC
 
-# line 99: add
+Line 99: add:
 
+#+BEGIN_SRC: bash
 auth_mechanisms = plain login
+#+END_SRC
+
+Save and exit.
 
 #+BEGIN_SRC: bash
 emacs /etc/dovecot/conf.d/10-mail.conf
 #+END_SRC
 
-# line 30: uncomment and add
+Line 30: uncomment and add:
 
+#+BEGIN_SRC: bash
 mail_location = maildir:~/Maildir
+#+END_SRC
+
+Save and exit, then start the dovecot service.
 
 #+BEGIN_SRC: bash
 service dovecot restart
