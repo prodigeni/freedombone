@@ -96,8 +96,8 @@ wget http://freedombone.uk.to/debian-7.2-console-armhf-2013-11-15.tar.xz
 Verify it.
 
 #+BEGIN_SRC: bash
-md5sum debian-7.2-console-armhf-2013-11-15.tar.xz
-0a448f55d14f64c5a7eb3d7cb2c54185  debian-7.2-console-armhf-2013-11-15.tar.xz
+sha256sum debian-7.2-console-armhf-2013-11-15.tar.xz
+262ea96d6bff530ad545e001eb2aa50b26a999c02f0c0e2e5f8536edf21c973a  debian-7.2-console-armhf-2013-11-15.tar.xz
 #+END_SRC
 
 Uncompress it.
@@ -1347,8 +1347,8 @@ wget http://freedombone.uk.to/roundcubemail.tar.gz
 Verify it.
 
 #+BEGIN_SRC: bash
-md5sum roundcubemail.tar.gz
-1b1b4056f5fe3903124229427a3bbd1f
+sha256sum roundcubemail.tar.gz
+e8a311b22a8e1f70abb72ed9551cc9233cf6c5221f1eebf1ae64974117e3148b  roundcubemail.tar.gz
 #+END_SRC
 
 Extract the files.
@@ -1552,8 +1552,8 @@ wget http://freedombone.uk.to/flatpress.tar.gz
 Verify the download:
 
 #+BEGIN_SRC: bash
-md5sum flatpress.tar.gz
-6ad5c230a5cb1ac096ff657f1b138cc7  flatpress.tar.gz
+sha256sum flatpress.tar.gz
+6312a49aab5aabd6371518dcaf081f489dff04d001bc34b4fe3f2a81170bbd4e  flatpress.tar.gz
 #+END_SRC
 
 Extract and install it.
@@ -1658,8 +1658,8 @@ wget http://freedombone.uk.to/hybserv_1.9.4-1_armhf.deb
 Verify it.
 
 #+BEGIN_SRC: bash
-md5sum hybserv_1.9.4-1_armhf.deb
-5b66551ceabb679bdeda1859d23ca6ac  hybserv_1.9.4-1_armhf.deb
+sha256sum hybserv_1.9.4-1_armhf.deb
+41bf4eb6e24c87610a80bc14db1103a57484835510eea7e4ba9709c523318615  hybserv_1.9.4-1_armhf.deb
 #+END_SRC
 
 Install it.
@@ -2200,8 +2200,8 @@ wget http://freedombone.uk.to/movim.tar.gz
 Verify it.
 
 #+BEGIN_SRC: bash
-md5sum movim.tar.gz
-311f66d5a3d70d14a8c05da38b08d7e5
+sha256sum movim.tar.gz
+2740ddbedf6cefcc2934759374376643b6cdea4fb7f944ec25098a6868cb499e  movim.tar.gz
 #+END_SRC
 
 Install it.
@@ -2434,8 +2434,8 @@ wget http://freedombone.uk.to/geomyidae-current.tgz
 Verify the download:
 
 #+BEGIN_SRC: bash
-md5sum geomyidae-current.tgz
-3d8bb8601f37ca953b00fc2445ab5abe  geomyidae-current.tgz
+sha256sum geomyidae-current.tgz
+162f55ab059ab0a9be8e840497795293bbd51c34b1f4564dcdf3f0ddd5c0db31  geomyidae-current.tgz
 #+END_SRC
 
 Then extract and install it.
@@ -2709,8 +2709,8 @@ wget http://freedombone.uk.to/owncloud.tar.bz2
 Verify the download:
 
 #+BEGIN_SRC: bash
-md5sum owncloud.tar.bz2
-f43eabb746b5e339ee70d0a6aaf4a49c
+sha256sum owncloud.tar.bz2
+92b53fdfa7c4165b83dd2f8447f63928454a5815d08ff2d6165dd1a8969ecbe1  owncloud.tar.bz2
 #+END_SRC
 
 Extract the archive.  This may take a couple of minutes, so don't be alarmed that the system has crashed.
@@ -2771,8 +2771,8 @@ wget http://freedombone.uk.to/dokuwiki.tgz
 Verify it.
 
 #+BEGIN_SRC: bash
-md5sum dokuwiki.tgz
-9f35055848429659fd63cda1cfea5a48  dokuwiki.tgz
+sha256sum dokuwiki.tgz
+6b126f90979463d9ddaa74acc6f96aa230cfdc789946f241c3646086d9574be8  dokuwiki.tgz
 #+END_SRC
 
 Then extract and install it.
