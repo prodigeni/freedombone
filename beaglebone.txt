@@ -441,8 +441,8 @@ Save and exit
 chmod +x /tmp/firewall.sh
 . /tmp/firewall.sh
 iptables-save > /etc/firewall.conf
-echo "#!/bin/sh" > /etc/network/if-up.d/iptables
-echo "iptables-restore < /etc/firewall.conf" >> /etc/network/if-up.d/iptables
+echo '#!/bin/sh' > /etc/network/if-up.d/iptables
+echo 'iptables-restore < /etc/firewall.conf' >> /etc/network/if-up.d/iptables
 chmod +x /etc/network/if-up.d/iptables
 rm /tmp/firewall.sh
 #+END_SRC
