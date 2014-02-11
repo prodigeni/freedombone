@@ -304,7 +304,7 @@ To verify that the swapfile is accessilble type /top/ and look for the line whic
 
 To enable some newer packages add backports to the repositories.
 
-#+BEGIN_SRC
+#+BEGIN_SRC: bash
 echo "deb http://ftp.us.debian.org/debian wheezy-backports main" >> /etc/apt/sources.list
 apt-get update
 apt-get dist-upgrade
