@@ -4,14 +4,15 @@
 #+KEYWORDS: freedombox, debian, beaglebone, friendica, email, web server, home server, internet, censorship, surveillance, social network, irc, jabber, chat
 #+DESCRIPTION: Turn the Beaglebone Black into a personal communications server
 #+OPTIONS: ^:nil
+#+STYLE: <link rel="stylesheet" type="text/css" href="index.css" />
 
 #+BEGIN_CENTER
 *How to turn the Beaglebone Black into a FreedomBox-like personal communications server*
 #+END_CENTER
 
-#+BEGIN_CENTER
-[[[[file:images/freedombone.jpg]]]]
-#+END_CENTER
+#+CAPTION: BeagleBone Black
+#+ATTR_HTML: :alt BeagleBone Black image :align center
+[[[[./images/freedombone.jpg]]]]
 
 #+BEGIN_CENTER
 Copyright (C)  2014  Bob Mottram

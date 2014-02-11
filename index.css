@@ -1,0 +1,51 @@
+a {
+    color: #427fed;
+    color: #1e6b8c;
+    text-decoration: none;
+}
+
+a:visited {
+    color: #6f32ad;
+
+}
+
+a:hover {
+    text-decoration: underline;
+    background: #f0f0ff;
+}
+
+a:active {
+    background-color: #427fed;
+    color: #fffff6;
+}
+
+body {
+    background-color: #fffff6;
+    background-image: none;
+    color: #330;
+    font-family: georgia;
+    font-size: 15pt;
+    margin: 2em auto;
+    padding: 0 2em;
+    max-width: 45em;
+    width: auto;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #703820;
+    line-height: 1.2em;
+}
+
+img {
+    float: right;
+    clear: right;
+    padding: 10px;
+    margin: 20px;
+    border: solid 1px #888;
+    box-shadow: 6px 10px 8px rgba(128, 128, 96, 0.7);
+}
+
+p, li, dd, dt, blockquote, span {
+    font-size: 15pt;
+    line-height: 1.4em;
+}
