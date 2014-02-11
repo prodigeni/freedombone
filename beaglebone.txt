@@ -1815,7 +1815,11 @@ And also append the following:
 #+BEGIN_SRC: bash
 modules_enabled = {
   "bosh"; -- Enable mod_bosh
+  "tls"; -- Enable mod_tls
 }
+
+c2s_require_encryption = true
+s2s_require_encryption = true
 #+END_SRC
 
 Save and exit.  Create a symbolic link.
@@ -2141,6 +2145,92 @@ If you are using a self-signed certificate then at the login screen scroll down 
 More information about the Friendica app can be found on http://friendica-for-android.wiki-lab.net/
 ***** Mobile Theme
 Another way to access Friendica from a mobile device is to just use the web browser.  If you have selected a mobile theme within your settings then when viewing from an Android system the mobile theme will be displayed.
+*** Kune
+Kune is a collaboration tool aimed at not just socialising but also getting stuff done within a community.  It's based upon Apache Wave (formerly Google Wave).
+
+#+BEGIN_SRC: bash
+apt-get install openjdk-6-jdk openjdk-7-jre mysql-server adduser dbconfig-common libjmagick6-jni
+#+END_SRC
+
+Add the Kune repository:
+
+#+BEGIN_SRC: bash
+emacs /etc/apt/sources.list
+#+END_SRC
+
+Append the following:
+
+#+BEGIN_SRC: bash
+deb ftp://ftp.kune.ourproject.org/pub/kune/debian/ stable/
+#+END_SRC
+
+Save and exit, then install the Kune package.
+
+#+BEGIN_SRC: bash
+gpg --keyserver pgp.mit.edu --recv-keys 9E358A05
+gpg --armor --export 9E358A05 | apt-key add -
+apt-get update
+apt-get install kune
+#+END_SRC
+
+You will be asked for the MySql root password and another password to be used with the Kune database.
+
+Allow the system to start automatically at boot.
+
+#+BEGIN_SRC: bash
+emacs /etc/default/kune
+#+END_SRC
+
+Set /START=yes/, then save and exit.
+
+#+BEGIN_SRC: bash
+service kune start
+#+END_SRC
+
+Now configure Apache.
+
+#+BEGIN_SRC: bash
+a2enmod expires
+a2enmod proxy
+a2enmod proxy_connect
+a2enmod proxy_http
+#+END_SRC
+
+mysql -p kune_prod < /usr/share/dbconfig-common/data/kune/upgrade/mysql/0.2.0+b25
+
+emacs /etc/apache2/sites-available/$HOSTNAME
+
+<VirtualHost *:80>
+    ServerName YOURSERVERNAME
+
+    ProxyRequests Off
+    <Proxy *>
+        Order deny,allow
+        Allow from all
+    </Proxy>
+
+    <Files *.cache.*>
+        ExpiresActive On
+        ExpiresDefault "modification plus 2 years"
+    </Files>
+
+    <Files *.nocache.*>
+        ExpiresActive Off
+    </Files>
+
+    ProxyPass /kune/ http://localhost:8888/
+    ProxyPassReverse /kune/ http://localhost:8888/
+    <Location /var/www/mydomainname.com/htdocs/kune/>
+        Order allow,deny
+        Allow from all
+    </Location>
+</VirtualHost>
+
+
+Within a browser open https://mydomainname.com:8888
+
+See documentation in /usr/share/doc/kune/INSTALL.gz
+
 *** Movim
 
 #+BEGIN_VERSE
