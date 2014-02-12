@@ -3198,6 +3198,12 @@ pybitmessage
 
 ** Overcome restrictive environments
 
+#+BEGIN_VERSE
+/Censorship reflects a society's lack of confidence in itself. It is a hallmark of an authoritarian regime./
+
+-- Potter Stewart
+#+END_VERSE
+
 In some environments, such as behind corporate firewalls or under regimes hostile towards the idea of open access to knowledge and information you may find that you're not able to use tools such as /ssh/ to get access to the BBB.  In the worst case all ports other than 80 and 443 may be blocked.
 
 In that scenario you can use a tool called [[http://code.google.com/p/shellinabox/][shellinabox]] to log into your BBB via your web site rather than via a terminal.  This means that you can administrate your system from any device which has a web browser and keyboard.
