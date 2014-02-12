@@ -3196,6 +3196,71 @@ make install
 pybitmessage
 #+END_SRC
 
+** Overcome restrictive environments
+
+In some environments, such as behind corporate firewalls or under regimes hostile towards the idea of open access to knowledge and information you may find that you're not able to use tools such as /ssh/ to get access to the BBB.  In the worst case all ports other than 80 and 443 may be blocked.
+
+In that scenario you can use a tool called [[http://code.google.com/p/shellinabox/][shellinabox]] to log into your BBB via your web site rather than via a terminal.  This means that you can administrate your system from any device which has a web browser and keyboard.
+
+#+BEGIN_SRC: bash
+apt-get install shellinabox libapache2-mod-proxy-html
+#+END_SRC
+
+Update your Apache configuration.
+
+#+BEGIN_SRC: bash
+export HOSTNAME=mydomainname.com
+emacs /etc/apache2/sites-available/$HOSTNAME
+#+END_SRC
+
+Within the section which begins with *<VirtualHost *:443>* add the following, replacing /mydomainname.com/ with your domain name and /myusername/ with your username.
+
+#+BEGIN_SRC: bash
+  <Location /shell>
+    ProxyPass http://localhost:4200/
+    Order allow,deny
+    Allow from all
+
+    AuthName "Authentication for shellinabox"
+    AuthUserFile /home/mydomainname.com/public_html/.htpasswd
+    AuthGroupFile /home/mydomainname.com/public_html/.htgroup
+    AuthType Basic
+    Require group shellinabox
+    Require user myusername
+  </Location>
+#+END_SRC
+
+Save and exit, then create a login password.  It's recommended that the password be a long random string and that you then access it using a password manager such as KeepassX.
+
+#+BEGIN_SRC: bash
+mkdir /home/$HOSTNAME
+mkdir /home/$HOSTNAME/public_html
+htpasswd -c /home/$HOSTNAME/public_html/.htpasswd myusername
+#+END_SRC
+
+Create a user group.
+
+#+BEGIN_SRC: bash
+emacs /home/$HOSTNAME/public_html/.htgroup
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+shellinabox: myusername
+#+END_SRC
+
+Save and exit, then restart Apache.
+
+#+BEGIN_SRC: bash
+a2enmod proxy_http
+service apache2 restart
+#+END_SRC
+
+Now with a web browser navigate to https://mydomainname.com/shell and log in.
+
+If you're in a very locked down environment where access to web sites is severely restricted then as a last resort you may be able to use a command line browser, such as [[https://en.wikipedia.org/wiki/Lynx_%28web_browser%29][lynx]] from within /shellinabox/.
+
 ** Install Tripwire
 
 #+BEGIN_VERSE
@@ -3261,12 +3326,6 @@ The following ports on your internet router/firewall should be forwarded to the 
 * Hints and Tips
 ** Messaging security
 If you're connected to other friends via Friendica then the preferred way to send private messages is via Friendica's built-in messaging system.  This is a lot more convenient than using GPG with ordinary email and yet still provides a similar level of protection from unwarranted interception.
-** Restrictive/hostile user environments
-If you are typically operating within a restrictive of hostile environment where using ssh is not an option because everything other than web ports are blocked then you may wish to try installing oterm:
-
-http://www.coralbits.com/oterm/
-
-https://github.com/davidmoreno/onion
 ** Moving Domains
 If you're moving servers and using a different domain name or path then you can search and replace URLs within files in the following way:
 
