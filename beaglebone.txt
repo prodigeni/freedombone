@@ -3267,6 +3267,157 @@ Now with a web browser navigate to https://mydomainname.com/shell and log in.
 
 If you're in a very locked down environment where access to web sites is severely restricted then as a last resort you may be able to use a command line browser, such as [[https://en.wikipedia.org/wiki/Lynx_%28web_browser%29][lynx]] from within /shellinabox/.
 
+** Set up a mailing list
+
+#+BEGIN_VERSE
+/All over the world there are many people who are united in creating software, content, and culture that is freely available for others to share, enjoy and enrich their lives. Together we believe that freedom is good. We believe it helps people do good things, make better choices, and lead safer and more secure lives. Together we are a community united by this belief./
+
+-- Jono Bacon
+#+END_VERSE
+
+Mailing lists are old skool but still a common and easy way of communicating on the internet.  If you're running a public organisation such as an open source project or community group then you may want to set one up.
+
+#+BEGIN_SRC: bash
+apt-get install mailman
+newlist mailman
+#+END_SRC
+
+Enter an email address for the list administrator and a password.
+
+Add some settings.
+
+#+BEGIN_SRC: bash
+emacs /etc/exim4/conf.d/main/04_mailman_options
+#+END_SRC
+
+Add the following, replacing /mydomainname.com/ with your domain name.
+
+#+BEGIN_SRC: bash
+# Mailman macro definitions
+
+# Home dir for the Mailman installation
+MM_HOME=/var/lib/mailman
+
+# User and group for Mailman
+MM_UID=list
+MM_GID=list
+
+#
+# Domains that your lists are in - colon separated list
+# you may wish to add these into local_domains as well
+domainlist mm_domains=mydomainname.com
+
+# The path of the Mailman mail wrapper script
+MM_WRAP=MM_HOME/mail/mailman
+#
+# The path of the list config file (used as a required file when
+# verifying list addresses)
+MM_LISTCHK=MM_HOME/lists/${lc::$local_part}/config.pck
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+emacs
+/etc/exim4/conf.d/router/450_mailman_aliases
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+mailman_router:
+  driver = accept
+  domains = +mm_domains
+  require_files = MM_LISTCHK
+  local_part_suffix_optional
+  local_part_suffix = -admin : \
+    -bounces   : -bounces+*  : \
+    -confirm   : -confirm+*  : \
+    -join      : -leave      : \
+    -owner     : -request    : \
+    -subscribe : -unsubscribe
+  transport = mailman_transport
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+emacs /etc/exim4/conf.d/transport/40_mailman_pipe
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+mailman_transport:
+  driver = pipe
+  command = MM_WRAP \
+    '${if def:local_part_suffix \
+    {${sg{$local_part_suffix}{-(\\w+)(\\+.*)?}{\$1}}} \
+    {post}}' \
+    $local_part
+  current_directory = MM_HOME
+  home_directory = MM_HOME
+  user = MM_UID
+  group = MM_GID
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+update-exim4.conf
+service exim4 restart
+emacs /etc/apache2/conf.d/mailman
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+Alias /pipermail /var/lib/mailman/archives/public
+Alias /images/mailman /usr/share/images/mailman
+<directory /var/lib/mailman/archives/public>
+    DirectoryIndex index.html
+</directory>
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+emacs /etc/apache2/sites-available/$HOSTNAME
+#+END_SRC
+
+Add the following to the 443 section.
+
+#+BEGIN_SRC: bash
+  <Location /mailman>
+    Options Indexes FollowSymLinks MultiViews
+    Order allow,deny
+    Allow from all
+
+    RedirectMatch ^/$ /cgi-bin/mailman/listinfo
+  </Location>
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+service apache2 restart
+#+END_SRC
+
+Now add your mailing list.  The list name should not include any spaces.
+
+#+BEGIN_SRC: bash
+newlist mymailinglistname
+/var/lib/mailman/bin/genaliases -q
+#+END_SRC
+
+With a browser visit https://$HOSTNAME/cgi-bin/mailman/admin/mymailinglistname to configure the mailing list.
+
+Under *General Options* add an email address for a moderator (could be the same as the administrator) and click *Submit your changes*.
+
+Under *Privacy Options* set steps required for subscription to *Confirm and approve* and click *Submit your changes*.
+
+Also change these settings for the account within https://$HOSTNAME/cgi-bin/mailman/admin/mailman
+
 ** Install Tripwire
 
 #+BEGIN_VERSE
@@ -3447,25 +3598,13 @@ adduser --system --home=/var/www/$HOSTNAME/htdocs/etherpad/ --group etherpad
 chown -R etherpad: /var/www/$HOSTNAME/htdocs/etherpad/
 #+END_SRC
 
-Chick that it runs.
-
-#+BEGIN_SRC: bash
-su -c "/var/www/$HOSTNAME/htdocs/etherpad/bin/run.sh" -s /bin/bash etherpad
-#+END_SRC
-
-If it ran without exiting abnormally or complaining about node.js being missing then kill the process.
-
-#+BEGIN_SRC: bash
-pkill -u etherpad
-#+END_SRC
-
-Create an init script using your favorite editor, changing /mydomainname.com/ to your domain name.
+Create an init script using your favorite editor.
 
 #+BEGIN_SRC: bash
 emacs /etc/init.d/etherpad
 #+END_SRC
 
-Add the following:
+Add the following, replacing /mydomainname.com/ with your domain name:
 
 #+BEGIN_SRC: bash
 #!/bin/sh
@@ -3561,30 +3700,22 @@ Update your Apache configuration.
 emacs /etc/apache2/sites-available/$HOSTNAME
 #+END_SRC
 
-Within the 443 section add the following:
+Within the section which begins with *<VirtualHost *:443>* add the following:
 
 #+BEGIN_SRC: bash
   <Location /etherpad>
-      AuthType Basic
-      AuthName "Welcome to Etherpad"
-      AuthUserFile /home/mydomainname.com/public_html/.htpasswd
-      AuthGroupFile /home/mydomainname.com/public_html/.htgroup
-      Require group etherpad
-  </Location>
+    ProxyPass http://localhost:9001/
+    ProxyPassReverse http://localhost:9001/
 
-  <IfModule mod_proxy.c>
-      ProxyVia On
-      ProxyRequests Off
-      ProxyPass /etherpad http://192.168.1.60:9001/
-      ProxyPassReverse /etherpad 192.168.1.60:9001/
-      ProxyPreserveHost on
-      <Proxy *>
-          Options FollowSymLinks MultiViews
-          AllowOverride All
-          Order allow,deny
-          allow from all
-      </Proxy>
-  </IfModule>
+    Order allow,deny
+    allow from all
+
+    AuthName "Welcome to Etherpad"
+    AuthUserFile /home/mydomainname.com/public_html/.htpasswd
+    AuthGroupFile /home/mydomainname.com/public_html/.htgroup
+    AuthType Basic
+    Require group etherpad
+  </Location>
 #+END_SRC
 
 Save and exit, then restart Apache.
@@ -3927,9 +4058,21 @@ a2enmod proxy_connect
 a2enmod proxy_http
 #+END_SRC
 
-mysql -p kune_prod < /usr/share/dbconfig-common/data/kune/upgrade/mysql/0.2.0+b25
+Upgrade the database.
 
+#+BEGIN_SRC: bash
+mysql -p kune_prod < /usr/share/dbconfig-common/data/kune/upgrade/mysql/0.1.0+b5
+mysql -p kune_prod < /usr/share/dbconfig-common/data/kune/upgrade/mysql/0.1.0+b6
+mysql -p kune_prod < /usr/share/dbconfig-common/data/kune/upgrade/mysql/0.2.0+b12
+mysql -p kune_prod < /usr/share/dbconfig-common/data/kune/upgrade/mysql/0.2.0+b23
+mysql -p kune_prod < /usr/share/dbconfig-common/data/kune/upgrade/mysql/0.2.0+b25
+#+END_SRC
+
+Edit the Apache configuration.
+
+#+BEGIN_SRC: bash
 emacs /etc/apache2/sites-available/$HOSTNAME
+#+END_SRC
 
 <VirtualHost *:80>
     ServerName YOURSERVERNAME
