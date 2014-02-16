@@ -3275,7 +3275,7 @@ If you're in a very locked down environment where access to web sites is severel
 -- Jono Bacon
 #+END_VERSE
 
-Mailing lists are old skool but still a common and easy way of communicating on the internet.  If you're running a public organisation such as an open source project or community group then you may want to set one up.
+Mailing lists are old skool but still remain as a common and easy way of communicating on the internet.  If you're running a public organisation such as an open source project or community group then you may want to set one up.
 
 #+BEGIN_SRC: bash
 apt-get install mailman
@@ -3283,6 +3283,12 @@ newlist mailman
 #+END_SRC
 
 Enter an email address for the list administrator and a password.
+
+#+BEGIN_SRC: bash
+emacs /etc/mailman/mm_cfg.py
+#+END_SRC
+
+Set *MTA=None*, then save and exit.
 
 Add some settings.
 
@@ -3313,6 +3319,20 @@ MM_WRAP=MM_HOME/mail/mailman
 # The path of the list config file (used as a required file when
 # verifying list addresses)
 MM_LISTCHK=MM_HOME/lists/${lc::$local_part}/config.pck
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+emacs /etc/exim4/conf.d/acl/30_exim4-config_check_rcpt
+#+END_SRC
+
+Append the following, before the final /accept/:
+
+#+BEGIN_SRC: bash
+  # Do callback verification unless Mailman incoming bounce
+  deny !local_parts = *-bounces : *-bounces+*
+     !verify = sender/callout=30s,defer_ok
 #+END_SRC
 
 Save and exit.
@@ -3417,6 +3437,14 @@ Under *General Options* add an email address for a moderator (could be the same 
 Under *Privacy Options* set steps required for subscription to *Confirm and approve* and click *Submit your changes*.
 
 Also change these settings for the account within https://$HOSTNAME/cgi-bin/mailman/admin/mailman
+
+To test that the mailing list works:
+
+#+BEGIN_SRC: bash
+exim -d -bt mymailinglistname@$HOSTNAME
+#+END_SRC
+
+If everything is working then this shouldn't show any problems.
 
 ** Install Tripwire
 
