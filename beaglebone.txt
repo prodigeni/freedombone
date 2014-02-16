@@ -3297,7 +3297,10 @@ If you're in a very locked down environment where access to web sites is severel
 
 Mailing lists are old skool but still remain as a common and easy way of communicating on the internet.  If you're running a public organisation such as an open source project or community group then you may want to set one up.
 
+*** Installation
+
 #+BEGIN_SRC: bash
+export HOSTNAME=mydomainname.com
 apt-get install mailman
 newlist mailman
 #+END_SRC
@@ -3339,6 +3342,20 @@ MM_WRAP=MM_HOME/mail/mailman
 # The path of the list config file (used as a required file when
 # verifying list addresses)
 MM_LISTCHK=MM_HOME/lists/${lc::$local_part}/config.pck
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+emacs /etc/exim4/conf.d/main/000_localmacros
+#+END_SRC
+
+Append the following:
+
+#+BEGIN_SRC: bash
+SYSTEM_ALIASES_PIPE_TRANSPORT = address_pipe
+SYSTEM_ALIASES_USER = list
+SYSTEM_ALIASES_GROUP = list
 #+END_SRC
 
 Save and exit.
@@ -3404,6 +3421,8 @@ mailman_transport:
 Save and exit.
 
 #+BEGIN_SRC: bash
+chown root:list /var/lib/mailman/mail/mailman
+update-exim4.conf.template -r
 update-exim4.conf
 service exim4 restart
 emacs /etc/apache2/conf.d/mailman
@@ -3447,7 +3466,6 @@ Now add your mailing list.  The list name should not include any spaces.
 
 #+BEGIN_SRC: bash
 newlist mymailinglistname
-/var/lib/mailman/bin/genaliases -q
 #+END_SRC
 
 With a browser visit https://$HOSTNAME/cgi-bin/mailman/admin/mymailinglistname to configure the mailing list.
@@ -3458,13 +3476,57 @@ Under *Privacy Options* set steps required for subscription to *Confirm and appr
 
 Also change these settings for the account within https://$HOSTNAME/cgi-bin/mailman/admin/mailman
 
-To test that the mailing list works:
+#+BEGIN_SRC: bash
+emacs /etc/aliases
+#+END_SRC
+
+Append the following, replacing /mymailinglistname/ with your mailing list name:
 
 #+BEGIN_SRC: bash
-exim -d -bt mymailinglistname@$HOSTNAME
+mymailinglistname:              "|/var/lib/mailman/mail/mailman post mymailinglistname"
+mymailinglistname-admin:        "|/var/lib/mailman/mail/mailman admin mymailinglistname"
+mymailinglistname-bounces:      "|/var/lib/mailman/mail/mailman bounces mymailinglistname"
+mymailinglistname-confirm:      "|/var/lib/mailman/mail/mailman confirm mymailinglistname"
+mymailinglistname-join:         "|/var/lib/mailman/mail/mailman join mymailinglistname"
+mymailinglistname-leave:        "|/var/lib/mailman/mail/mailman leave mymailinglistname"
+mymailinglistname-owner:        "|/var/lib/mailman/mail/mailman owner mymailinglistname"
+mymailinglistname-request:      "|/var/lib/mailman/mail/mailman request mymailinglistname"
+mymailinglistname-subscribe:    "|/var/lib/mailman/mail/mailman subscribe mymailinglistname"
+mymailinglistname-unsubscribe:  "|/var/lib/mailman/mail/mailman unsubscribe mymailinglistname"
+#+END_SRC
+
+Save and exit.  Then to test that the mailing list works:
+
+#+BEGIN_SRC: bash
+exim -d+route -bt mymailinglistname@$HOSTNAME
 #+END_SRC
 
 If everything is working then this shouldn't show any problems.
+
+*** Using the mailing list
+Direct subscribers towards:
+
+#+BEGIN_SRC: bash
+https://mydomainname.com/cgi-bin/mailman/listinfo/mymailinglistname
+#+END_SRC
+
+To administrate the list visit:
+
+#+BEGIN_SRC: bash
+https://mydomainname.com/cgi-bin/mailman/admin/mymailinglistname
+#+END_SRC
+
+To add another mailing list:
+
+#+BEGIN_SRC: bash
+newlist mymailinglistname
+#+END_SRC
+
+To delete a mailing list:
+
+#+BEGIN_SRC: bash
+rmlist -a mymailinglistname
+#+END_SRC
 
 ** Install Tripwire
 
