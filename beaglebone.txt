@@ -374,21 +374,56 @@ and check that some number of bits are set within a 4096 bit sized key:
 debug2: bits set: */4096
 #+END_SRC
 
+** Getting onto the web
+Create a subdomain on [[http://freedns.afraid.org][freeDNS]].  You may need to click on "/subdomains/" a couple of times.  FreeDNS is preferred because it is one of the few domain name providers which supports genuinely free (as in beer) accounts.  So if your budget is tiny or non-existent you can still participate as a first class citizen of the internet.  If you do have money to spend there is also a premium option.
+
+Select "/dynamic DNS/" then click "/quick cron example/"
+
+An example would look like:
+
+#+BEGIN_SRC: bash
+4,9,14,19,24,29,34,39,44,49,54,59 * * * * root sleep 29 ; wget -O - http://free\ dns.afraid.org/dynamic/update.php?ABCKDNRCLFHENSLKNFEGSBFLFF== >> /\ tmp/freedns_mysubdomain_us_to.log 2>&1 &
+#+END_SRC
+
+Edit */etc/crontab* and append that to the end of the file.
+
+Via your router's firewall settings you should now open port 22 (secure shell).  This will allow you to ssh into your BBB from any location - not just your own local network.
+
+The freeDNS subdomain which you just created will hereafter just be refered to as "/your domain name/".
+
 ** Set the host name
 
 #+BEGIN_SRC: bash
 emacs /etc/hostname
 #+END_SRC
 
-CTRL-X CTRL-S to save, then CTRL-X CTRL-C to exit.
+CTRL-x CTRL-s to save, then CTRL-x CTRL-c to exit.
 
-also issue the command
+Also issue the command, replacing /mydomainname.com/ with your domain name.
 
 #+BEGIN_SRC: bash
-hostname /myhostname/
+hostname mydomainname.com
 #+END_SRC
 
 You may also need to assign the same hostname separately via your router's web interface.
+
+#+BEGIN_SRC: bash
+emacs /etc/hosts
+#+END_SRC
+
+Append the following, replacing /mydomainname.com/ with your domain name.
+
+#+BEGIN_SRC: bash
+127.0.1.1       mydomainname.com
+#+END_SRC
+
+If you then run the command:
+
+#+BEGIN_SRC: bash
+hostname -f
+#+END_SRC
+
+it should return your domain name.
 
 ** Install NTP
 
@@ -446,21 +481,6 @@ echo 'iptables-restore < /etc/firewall.conf' >> /etc/network/if-up.d/iptables
 chmod +x /etc/network/if-up.d/iptables
 rm /tmp/firewall.sh
 #+END_SRC
-
-** Getting onto the web
-Create a subdomain on [[http://freedns.afraid.org][freeDNS]].  You may need to click on "/subdomains/" a couple of times.  FreeDNS is preferred because it is one of the few domain name providers which supports genuinely free (as in beer) accounts.  So if your budget is tiny or non-existent you can still participate as a first class citizen of the internet.  If you do have money to spend there is also a premium option.
-
-Select "/dynamic DNS/" then click "/quick cron example/"
-
-An example would look like:
-
-#+BEGIN_SRC: bash
-4,9,14,19,24,29,34,39,44,49,54,59 * * * * root sleep 29 ; wget -O - http://free\ dns.afraid.org/dynamic/update.php?ABCKDNRCLFHENSLKNFEGSBFLFF== >> /\ tmp/freedns_mysubdomain_us_to.log 2>&1 &
-#+END_SRC
-
-Edit /etc/crontab and append that to the end of the file.
-
-Via your router's firewall settings you should now open port 22 (secure shell).  This will allow you to ssh into your BBB from any location - not just your own local network.
 
 ** Install Email
 
@@ -3288,7 +3308,7 @@ Enter an email address for the list administrator and a password.
 emacs /etc/mailman/mm_cfg.py
 #+END_SRC
 
-Set *MTA=None*, then save and exit.
+Set *MTA=None* and change *http:* to *https:*, then save and exit.
 
 Add some settings.
 
