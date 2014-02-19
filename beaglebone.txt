@@ -483,7 +483,7 @@ chmod +x /etc/network/if-up.d/iptables
 rm /tmp/firewall.sh
 #+END_SRC
 
-Also disable ping.  This may be inconvenient to some extent, but it seems common for malicious systems to try to disable the machine by flooding it with pings.
+Also disable ping.  This may be inconvenient to some extent, but it seems common for malicious systems, including but not limited to the [[http://www.nbcnews.com/news/investigations/snowden-docs-british-spies-used-sex-dirty-tricks-n23091][JTRIG "EFFECTS" team]], to try to disable the machine by flooding it with pings.  These days there seems to be not much difference between "cybercrime" and nefarious state-sponsored internet activities.
 
 #+BEGIN_SRC: bash
 emacs /etc/sysctl.conf
