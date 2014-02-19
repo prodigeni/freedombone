@@ -463,6 +463,7 @@ iptables -N syn_flood
 iptables -A INPUT -p tcp --syn -j syn_flood
 iptables -A syn_flood -m limit --limit 1/s --limit-burst 3 -j RETURN
 iptables -A syn_flood -j DROP
+
 #Limiting the incoming icmp ping request:
 iptables -A INPUT -p icmp -m limit --limit  1/s --limit-burst 1 -j ACCEPT
 iptables -A INPUT -p icmp -m limit --limit 1/s --limit-burst 1 -j LOG --log-prefix PING-DROP:
@@ -480,6 +481,37 @@ echo '#!/bin/sh' > /etc/network/if-up.d/iptables
 echo 'iptables-restore < /etc/firewall.conf' >> /etc/network/if-up.d/iptables
 chmod +x /etc/network/if-up.d/iptables
 rm /tmp/firewall.sh
+#+END_SRC
+
+Also disable ping.  This may be inconvenient to some extent, but it seems common for malicious systems to try to disable the machine by flooding it with pings.
+
+#+BEGIN_SRC: bash
+emacs /etc/sysctl.conf
+#+END_SRC
+
+Uncomment or change the following:
+
+#+BEGIN_SRC: bash
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv6.conf.all.accept_redirects = 0
+net.ipv4.conf.all.send_redirects = 0
+net.ipv4.conf.all.accept_source_route = 0
+net.ipv6.conf.all.accept_source_route = 0
+net.ipv4.conf.default.rp_filter=1
+net.ipv4.conf.all.rp_filter=1
+#+END_SRC
+
+And append the following:
+
+#+BEGIN_SRC: bash
+# ignore pings
+net.ipv4.icmp_echo_ignore_all = 1
+#+END_SRC
+
+Save and exit.  It may be a good idea to reboot at this point and then log back into the BBB using ssh.  You can do a safe reboot of the system by typing:
+
+#+BEGIN_SRC: bash
+reboot
 #+END_SRC
 
 ** Install Email
