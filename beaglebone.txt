@@ -3327,9 +3327,10 @@ If you're in a very locked down environment where access to web sites is severel
 -- Jono Bacon
 #+END_VERSE
 
-Mailing lists are old skool but still remain as a common and easy way of communicating on the internet.  If you're running a public organisation such as an open source project or community group then you may want to set one up.
+*** With Email
+Email mailing lists are old skool but still remain as a common and easy way of communicating on the internet.  If you're running a public organisation such as an open source project or community group then you may want to set one up.
 
-*** Installation
+**** Installation
 
 #+BEGIN_SRC: bash
 export HOSTNAME=mydomainname.com
@@ -3535,7 +3536,7 @@ exim -d+route -bt mymailinglistname@$HOSTNAME
 
 If everything is working then this shouldn't show any problems.
 
-*** Using the mailing list
+**** Using the mailing list
 Direct subscribers towards:
 
 #+BEGIN_SRC: bash
@@ -3560,6 +3561,36 @@ To delete a mailing list:
 rmlist -a mymailinglistname
 #+END_SRC
 
+*** With Bitmessage
+On your local machine (not the BBB) you can make a private mailing list which is difficult to censor and where there is no single point of failure.  This type of mailing list is known as a "chan".
+
+On a Debian based system:
+
+#+BEGIN_SRC: bash
+sudo apt-get install makepasswd
+#+END_SRC
+
+or on an RPM based system:
+
+#+BEGIN_SRC: bash
+sudo yum install makepasswd
+#+END_SRC
+
+Create a name for your mailing list.  This will be a random string.
+
+#+BEGIN_SRC: bash
+makepasswd -c 40
+#+END_SRC
+
+Keep a note of this.
+
+Run the Bitmessage client and on the menu select *File/Join-Create Chan/Create new chan*
+
+Enter the random string which you created as the name of the mailing list.  Also take a note of the BM address which is created.
+
+You can hand out the random string used to generate the mailing list and its corresponding BM address to fellow members, either on paper or via [[https://en.wikipedia.org/wiki/Sneakernet][sneakernet]] or in a GPG/PGP encrypted email or via an XMPP+OTR or Friendica private message.  Once others have those two pieces of data then they will be able to join.
+
+The disadvantage of this type of mailing list is that it's not possible for any one participant to act as a list moderator, or in other words each participant must do their own moderation.  That's ok if the size of the group is small, but if it's larger then anyone spamming or trolling the list can make things miserable for the others.
 ** Install Tripwire
 
 #+BEGIN_VERSE
