@@ -3590,6 +3590,8 @@ Enter the random string which you created as the name of the mailing list.  Also
 
 You can hand out the random string used to generate the mailing list and its corresponding BM address to fellow members, either on paper or via [[https://en.wikipedia.org/wiki/Sneakernet][sneakernet]] or in a GPG/PGP encrypted email or via an XMPP+OTR or Friendica private message.  Once others have those two pieces of data then they will be able to join.
 
+To make the list easier to identiy, rather than just appearing as a random string, then under the *Your Identities* tab right click on it and select *Set Avatar* and assign a suitable icon.
+
 The disadvantage of this type of mailing list is that it's not possible for any one participant to act as a list moderator, or in other words each participant must do their own moderation.  That's ok if the size of the group is small, but if it's larger then anyone spamming or trolling the list can make things miserable for the others.
 ** Install Tripwire
 
