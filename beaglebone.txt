@@ -462,8 +462,8 @@ Set the following properties:
 TCP_PORTS="1,7,9,11,15,79,109,110,111,119,138,139,512,513,514,515,540,635,1080,1524,2000,2001,4000,4001,5742,6000,6001,6667,12345,12346,20034,27665,30303,32771,32772,32773,32774,31337,40421,40425,49724,54320"
 UDP_PORTS="1,7,9,66,67,68,69,111,137,138,161,162,474,513,517,518,635,640,641,666,700,2049,31335,27444,34555,32770,32771,32772,32773,32774,31337,54321"
 
-ADVANCED_EXCLUDE_TCP="113,139,70,80,443,143,6670,5060,5061,25,465,22,5222,5223,5269,5280,5281,8444"
-ADVANCED_EXCLUDE_UDP="520,138,137,67,70,80,443,143,6670,5060,5061,25,465,22,5222,5223,5269,5280,5281,8444"
+ADVANCED_EXCLUDE_TCP="113,139,70,80,443,143,6670,993,5060,5061,25,465,22,5222,5223,5269,5280,5281,8444"
+ADVANCED_EXCLUDE_UDP="520,138,137,67,70,80,443,143,6670,993, 5060,5061,25,465,22,5222,5223,5269,5280,5281,8444"
 
 SCAN_TRIGGER="2"
 
@@ -511,10 +511,14 @@ iptables -A INPUT -p tcp --tcp-flags ALL SYN,RST,ACK,FIN,URG -j DROP
 # Incoming malformed NULL packets:
 iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
 
-# limit ssh logins to no more than 3 per min
+# drop UDP to used ports
+iptables -A INPUT -p udp --match multiport --dports 70,80,443,143,6670,993,5060,5061,25 -j DROP
+iptables -A INPUT -p udp --match multiport --dports 465,22,5222,5223,5269,5280,5281,8444 -j DROP
+
+# limit ssh logins
 iptables -A INPUT -p tcp --dport 22 -m limit --limit 3/minute --limit-burst 1 -j ACCEPT
 
-# Limit web connections to 20 per min
+# Limit web connections
 iptables -A INPUT -p tcp --dport 80 -m limit --limit 10/minute --limit-burst 1 -j ACCEPT
 iptables -A INPUT -p tcp --dport 443 -m limit --limit 10/minute --limit-burst 1 -j ACCEPT
 
@@ -529,6 +533,7 @@ iptables -A INPUT -p tcp --dport 70 -m limit --limit 10/minute --limit-burst 1 -
 
 # Limit IMAP connections
 iptables -A INPUT -p tcp --dport 143 -m limit --limit 10/minute --limit-burst 1 -j ACCEPT
+iptables -A INPUT -p tcp --dport 993 -m limit --limit 10/minute --limit-burst 1 -j ACCEPT
 
 # Limit SIP connections
 iptables -A INPUT -p tcp --dport 5060:5061 -m limit --limit 10/minute --limit-burst 1 -j ACCEPT
