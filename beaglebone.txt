@@ -534,6 +534,7 @@ iptables -A INPUT -p udp --destination-port 2000:2001 -j DROP
 iptables -A INPUT -p udp --destination-port 12345 -j DROP
 iptables -A INPUT -p udp --destination-port 32771:32774 -j DROP
 iptables -A INPUT -p udp --destination-port 4000 -j DROP
+iptables -A INPUT -p udp --destination-port 119 -j DROP
 
 # Make sure NEW incoming tcp connections are SYN packets
 iptables -A INPUT -p tcp ! --syn -m state --state NEW -j DROP
@@ -562,9 +563,6 @@ iptables -A INPUT -p tcp --dport 443 -m limit --limit 10/minute --limit-burst 1 
 
 # Limit number of XMPP connections
 iptables -A INPUT -p tcp --match multiport --dports 5222:5223,5269,5280:5281 -m limit --limit 10/minute --limit-burst 1 -j ACCEPT
-
-# Limit NNTP connections
-iptables -A INPUT -p tcp --dport 119 -m limit --limit 5/minute --limit-burst 1 -j ACCEPT
 
 # Limit IRC connections
 iptables -A INPUT -p tcp --dport 6666:6670 -m limit --limit 10/minute --limit-burst 1 -j ACCEPT
