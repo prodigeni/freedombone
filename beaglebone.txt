@@ -3378,7 +3378,8 @@ pybitmessage
 #+END_SRC
 
 *** Connect to Email
-Surely Bitmessage is supposed to be a
+
+TODO: how to connect Bitmessage to an email client.
 
 #+BEGIN_SRC: bash
 cd /tmp
