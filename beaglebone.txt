@@ -1464,8 +1464,11 @@ bind pager \Cn sidebar-next
 bind pager \Co sidebar-open
 
 # ctrl-b toggles sidebar visibility
-macro index \Cb '<enter-command>toggle sidebar_visible<enter><refresh>'
-macro pager \Cb '<enter-command>toggle sidebar_visible<enter><redraw-screen>'
+macro index \Cb '<enter-command>toggle sidebar_visible<enter><refresh>' "toggle sidebar"
+macro pager \Cb '<enter-command>toggle sidebar_visible<enter><redraw-screen>' "toggle sidebar"
+
+# esc-m Mark new messages as read
+macro index <esc>m "T~N<enter>;WNT~O<enter>;WO\CT~T<enter>" "mark all messages read"
 #+END_SRC
 
 Save and exit.
@@ -1518,6 +1521,7 @@ Some useful keys to know are:
 | $      | Delete all messages selected and check for new messages |
 | a      | Add to the address book                                 |
 | m      | Send a new mail                                         |
+| ESC-m  | Mark all messages as having been read                   |
 | S      | Mark a message as spam                                  |
 | H      | Mark a message as ham                                   |
 | CTRL-b | Toggle side bar on/off                                  |
