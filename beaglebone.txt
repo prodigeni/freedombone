@@ -1158,7 +1158,7 @@ fi
 chown -R $MYUSERNAME:$MYUSERNAME $LISTDIR
 echo ":0" >> $PM
 echo "* ^Subject:.*[$SUBJECTTAG].*" >> $PM
-echo "$LISTDIR/cur" >> $PM
+echo "$LISTDIR/new" >> $PM
 chown $MYUSERNAME:$MYUSERNAME $PM
 if [ ! -f "$MUTTRC" ]; then
   cp /etc/Muttrc $MUTTRC
