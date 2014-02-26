@@ -50,6 +50,8 @@ Nothing is totally secure or infallible.  You could have the most secure technol
 FreedomBone should be far more secure than using popular cloud-based services which have spying built into them as a core feature (although not one which is typically advertised), but it is not necessarily an impenetrable information fortress.  This project is at least as much about achieving communications independence as it is about being able to do that securely.
 ** Will running a server all the time affect my electricity bill?
 Hardly at all.  The BeagleBone Black consumes very little power - less than 5W.  It would even be potentially possible to run it from a solar panel.
+** Can I use a Raspberry Pi instead?
+These instructions are not highly specific to the Beaglebone Black and so will likely also work on other single board computers (SBCs) such as the Raspberry Pi.  The original Raspberry Pi only had 256MB of RAM and so the performance of some services may be more limited.  The Beaglebone Black was chosen mainly because of its low cost, relatively good CPU performance for the price (by the standards of 2013) and also low electricity consumption.
 * Inventory
 
 #+BEGIN_VERSE
