@@ -858,7 +858,26 @@ save and exit
 adduser myusername sasl
 addgroup Debian-exim sasl
 /etc/init.d/exim4 restart
-mkdir /etc/skel/Maildir
+mkdir -m 700 /etc/skel/Maildir
+mkdir -m 700 /etc/skel/Maildir/sent
+mkdir -m 700 /etc/skel/Maildir/sent/tmp
+mkdir -m 700 /etc/skel/Maildir/sent/cur
+mkdir -m 700 /etc/skel/Maildir/sent/new
+#+END_SRC
+
+If you're starting from scratch and don't already have a /Maildir/ directory in your home directory, then create one as follows:
+
+#+BEGIN_SRC: bash
+export MYUSERNAME=myusername
+mkdir -m 700 /home/$MYUSERNAME/Maildir
+mkdir -m 700 /home/$MYUSERNAME/Maildir/cur
+mkdir -m 700 /home/$MYUSERNAME/Maildir/tmp
+mkdir -m 700 /home/$MYUSERNAME/Maildir/new
+mkdir -m 700 /home/$MYUSERNAME/Maildir/sent
+mkdir -m 700 /home/$MYUSERNAME/Maildir/sent/cur
+mkdir -m 700 /home/$MYUSERNAME/Maildir/sent/tmp
+mkdir -m 700 /home/$MYUSERNAME/Maildir/sent/new
+chown -R $MYUSERNAME:$MYUSERNAME /home/$MYUSERNAME/Maildir
 #+END_SRC
 
 ** Spam filtering
