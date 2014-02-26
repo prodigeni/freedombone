@@ -1111,6 +1111,68 @@ Save and exit, then start the dovecot service.
 service dovecot restart
 #+END_SRC
 
+** Create Email folders and rules
+A common situation with email is that you may be subscribed to various mailing lists and want incoming email from those to be automatically grouped into a separate folder for each list.
+
+We can make a script to make adding mailing list rules easy:
+
+#+BEGIN_SRC: bash
+emacs /usr/bin/mailinglistrule
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+#!/bin/bash
+MYUSERNAME=$1
+MAILINGLIST=$2
+SUBJECTTAG=$3
+MUTTRC=/home/$MYUSERNAME/.muttrc
+PM=/home/$MYUSERNAME/.procmailrc
+LISTDIR=/home/$MYUSERNAME/Maildir/$MAILINGLIST
+if [ ! -d "$LISTDIR" ]; then
+  mkdir -m 700 $LISTDIR
+  mkdir -m 700 $LISTDIR/tmp
+  mkdir -m 700 $LISTDIR/new
+  mkdir -m 700 $LISTDIR/cur
+fi
+chown -R $MYUSERNAME:$MYUSERNAME $LISTDIR
+echo ":0" >> $PM
+echo "* ^Subject:.*[$SUBJECTTAG].*" >> $PM
+echo "$LISTDIR/cur" >> $PM
+chown $MYUSERNAME:$MYUSERNAME $PM
+if [ ! -f "$MUTTRC" ]; then
+  cp /etc/Muttrc $MUTTRC
+  chown $MYUSERNAME:$MYUSERNAME $MUTTRC
+fi
+#+END_SRC
+
+Save and exit, then make the script executable.
+
+#+BEGIN_SRC: bash
+chmod +x /usr/bin/mailinglistrule
+#+END_SRC
+
+Now we can add a new mailing list rule with the following, where /myusername/ is your username, /mailinglistname/ is the name of the mailing list (with no spaces) and /subjecttag/ is the tag which usually appears within square brackets in the subject line of emails from the list.
+
+#+BEGIN_SRC: bash
+mailinglistrule myusername mailinglistname subjecttag
+#+END_SRC
+
+Repeat this command for as many mailing lists as you need.  Then edit your local Mutt configuration.
+
+#+BEGIN_SRC: bash
+emacs /home/myusername/.muttrc
+#+END_SRC
+
+Search for the *mailboxes* variable and add entries for the mailing lists you just created.  For example:
+
+#+BEGIN_SRC: bash
+mailboxes = =sent =mailinglistname
+#+END_SRC
+
+Then save and exit.
+
 ** Setting up a web site
 
 #+BEGIN_VERSE
