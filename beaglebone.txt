@@ -1401,7 +1401,7 @@ If all has gone well then there should be no warnings or errors after you run th
 #+END_VERSE
 
 #+BEGIN_SRC: bash
-apt-get install mutt lynx abook
+apt-get install mutt-patched lynx abook
 exit
 mkdir ~/.mutt
 echo "text/html; lynx -dump -width=78 -nolist %s | sed ‘s/^ //’; copiousoutput; needsterminal; nametemplate=%s.html" > ~/.mutt/mailcap
@@ -1432,6 +1432,40 @@ macro index S "<tag-prefix><save-message>=.learn-spam<enter>" "move to learn-spa
 macro pager S "<save-message>=.learn-spam<enter>" "move to learn-spam"
 macro index H "<tag-prefix><copy-message>=.learn-ham<enter>" "copy to learn-ham"
 macro pager H "<copy-message>=.learn-ham<enter>" "copy to learn-ham"
+
+# set up the sidebar
+set sidebar_width=12
+set sidebar_visible=yes
+set sidebar_delim='|'
+set sidebar_sort=yes
+
+set rfc2047_parameters
+
+# Show inbox and sent items
+mailboxes = =sent
+
+# Alter these colours as needed for maximum bling
+color sidebar_new yellow default
+color normal white default
+color hdrdefault brightcyan default
+color signature green default
+color attachment brightyellow default
+color quoted green default
+color quoted1 white default
+color tilde blue default
+
+# ctrl-n, ctrl-p to select next, prev folder
+# ctrl-o to open selected folder
+bind index \Cp sidebar-prev
+bind index \Cn sidebar-next
+bind index \Co sidebar-open
+bind pager \Cp sidebar-prev
+bind pager \Cn sidebar-next
+bind pager \Co sidebar-open
+
+# ctrl-b toggles sidebar visibility
+macro index \Cb '<enter-command>toggle sidebar_visible<enter><refresh>'
+macro pager \Cb '<enter-command>toggle sidebar_visible<enter><redraw-screen>'
 #+END_SRC
 
 Save and exit.
@@ -1475,17 +1509,21 @@ To use the address book system open an email and then to add the sender to the a
 
 Some useful keys to know are:
 
-| ESC / | Search for text within message contents                 |
-| "/"   | Search for text within headers                          |
-| *     | Move to the last message                                |
-| TAB   | Move to the next unread message                         |
-| d     | Delete a message                                        |
-| u     | Undelete a mail which is pending deletion               |
-| $     | Delete all messages selected and check for new messages |
-| a     | Add to the address book                                 |
-| m     | Send a new mail                                         |
-| S     | Mark a message as spam                                  |
-| H     | Mark a message as ham                                   |
+| ESC /  | Search for text within message contents                 |
+| "/"    | Search for text within headers                          |
+| *      | Move to the last message                                |
+| TAB    | Move to the next unread message                         |
+| d      | Delete a message                                        |
+| u      | Undelete a mail which is pending deletion               |
+| $      | Delete all messages selected and check for new messages |
+| a      | Add to the address book                                 |
+| m      | Send a new mail                                         |
+| S      | Mark a message as spam                                  |
+| H      | Mark a message as ham                                   |
+| CTRL-b | Toggle side bar on/off                                  |
+| CTRL-n | Next mailbox (on side bar)                              |
+| CTRL-p | Previous mailbox (on side bar)                          |
+| CTRL-o | Open mailbox (on side bar)                              |
 
 *** K9 Android client
 
