@@ -597,10 +597,10 @@ iptables -A syn_flood -m limit --limit 1/s --limit-burst 3 -j RETURN
 iptables -A syn_flood -j DROP
 
 # Limiting the incoming icmp ping request:
-iptables -A INPUT -p icmp -m limit --limit  1/s --limit-burst 1 -j ACCEPT
-iptables -A INPUT -p icmp -m limit --limit 1/s --limit-burst 1 -j LOG --log-prefix PING-DROP:
+#iptables -A INPUT -p icmp -m limit --limit  1/s --limit-burst 1 -j ACCEPT
+#iptables -A INPUT -p icmp -m limit --limit 1/s --limit-burst 1 -j LOG --log-prefix PING-DROP:
 iptables -A INPUT -p icmp -j DROP
-iptables -A OUTPUT -p icmp -j ACCEPT
+#iptables -A OUTPUT -p icmp -j ACCEPT
 
 # Save the settings
 iptables-save > /etc/firewall.conf
