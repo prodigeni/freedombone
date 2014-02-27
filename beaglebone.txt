@@ -1196,9 +1196,39 @@ su
 emacs /etc/apache2/apache2.conf
 #+END_SRC
 
-Search for MaxClients and replace the value with 8 then save and exit.
+Search for MaxClients and replace the value with 6. As an example the settings should look something like this:
 
-In the examples below replace mydomainname.com with your own domain.
+#+BEGIN_SRC: bash
+<IfModule mpm_prefork_module>
+    StartServers          3
+    MinSpareServers       3
+    MaxSpareServers       5
+    MaxClients            6
+    MaxRequestsPerChild   0
+</IfModule>
+
+<IfModule mpm_worker_module>
+    StartServers          2
+    MinSpareThreads      25
+    MaxSpareThreads      75
+    ThreadLimit          64
+    ThreadsPerChild      25
+    MaxClients            6
+    MaxRequestsPerChild   0
+</IfModule>
+
+<IfModule mpm_event_module>
+    StartServers          2
+    MinSpareThreads      25
+    MaxSpareThreads      75
+    ThreadLimit          64
+    ThreadsPerChild      25
+    MaxClients            6
+    MaxRequestsPerChild   0
+</IfModule>
+#+END_SRC
+
+Then save and exit  In the examples below replace /mydomainname.com/ with your own domain name.
 
 #+BEGIN_SRC: bash
 export HOSTNAME=mydomainname.com
