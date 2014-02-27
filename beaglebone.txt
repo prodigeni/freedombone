@@ -1196,7 +1196,7 @@ su
 emacs /etc/apache2/apache2.conf
 #+END_SRC
 
-Search for MaxClients and replace the value with 10 then save and exit.
+Search for MaxClients and replace the value with 8 then save and exit.
 
 In the examples below replace mydomainname.com with your own domain.
 
