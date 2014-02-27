@@ -518,6 +518,8 @@ iptables -A INPUT -p tcp --destination-port 2000:2001 -j DROP
 iptables -A INPUT -p tcp --destination-port 12345 -j DROP
 iptables -A INPUT -p tcp --destination-port 32771:32774 -j DROP
 iptables -A INPUT -p tcp --destination-port 4000 -j DROP
+iptables -A INPUT -p tcp --destination-port 119 -j DROP
+iptables -A INPUT -p tcp --destination-port 137 -j DROP
 iptables -A INPUT -p udp --destination-port 1 -j DROP
 iptables -A INPUT -p udp --destination-port 7 -j DROP
 iptables -A INPUT -p udp --destination-port 109:111 -j DROP
@@ -537,6 +539,7 @@ iptables -A INPUT -p udp --destination-port 12345 -j DROP
 iptables -A INPUT -p udp --destination-port 32771:32774 -j DROP
 iptables -A INPUT -p udp --destination-port 4000 -j DROP
 iptables -A INPUT -p udp --destination-port 119 -j DROP
+iptables -A INPUT -p udp --destination-port 137 -j DROP
 
 # Make sure NEW incoming tcp connections are SYN packets
 iptables -A INPUT -p tcp ! --syn -m state --state NEW -j DROP
@@ -947,7 +950,7 @@ exit
 emacs ~/.procmailrc
 #+END_SRC
 
-The text should look like the following.  Replace /username/ with your username.
+The text should look like the following.
 
 #+BEGIN_SRC: sh
 MAILDIR=$HOME/Maildir
@@ -974,11 +977,6 @@ LOGABSTRACT=all
 :0
   * ^X-Spam-Level: \*\*
 .spam/
-
-# mail addressed to me
-:0
-  * ^TOusername
-$MAILDIR/new
 #+END_SRC
 
 Save and exit.
@@ -1148,7 +1146,7 @@ fi
 chown -R $MYUSERNAME:$MYUSERNAME $LISTDIR
 echo "" >> $PM
 echo ":0" >> $PM
-echo "  * ^Subject:.*[$SUBJECTTAG]" >> $PM
+echo "  * ^Subject:.*()\[$SUBJECTTAG\]" >> $PM
 echo "$LISTDIR/new" >> $PM
 chown $MYUSERNAME:$MYUSERNAME $PM
 if [ ! -f "$MUTTRC" ]; then
