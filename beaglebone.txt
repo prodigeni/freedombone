@@ -658,7 +658,7 @@ Email is not very secure, but its usefulness and ubiquity mean that it's likely 
 Exim4 seems much easier to install and configure than Postfix.
 
 #+BEGIN_SRC: bash
-aptitude install exim4 sasl2-bin swaks libnet-ssleay-perl
+aptitude install exim4 sasl2-bin swaks libnet-ssleay-perl procmail
 #+END_SRC
 
 You will be prompted to remove postfix.  Say yes and yes again.
@@ -947,7 +947,7 @@ exit
 emacs ~/.procmailrc
 #+END_SRC
 
-The text should look like the following.
+The text should look like the following.  Replace /username/ with your username.
 
 #+BEGIN_SRC: sh
 MAILDIR=$HOME/Maildir
@@ -970,25 +970,15 @@ LOGABSTRACT=all
   * ^X-Spam-Level: \*\*\*\*\*
 .0-spam/
 
-# if it wasn't detected as spam, but is to a fake address, then we
-# know it is spam, so learn from that
-:0
-  * !^(From|To|cc|bcc)[ :].*($USER|root|webmaster|admin|postmaster).*@acooke\.org
-  * !^(From|To|cc|bcc)[ :].*@isti\.com
-# add mailing lists below
-  * !^From[ :].*(snowmail_daily@...|Section@...|rforno@...|alert@...).*
-{
-  # save in case of screw-ups, mailing lists, etc
-  :0 c
-  .0-spam/
-  :0
-  .learn-spam/
-}
-
 # otherwise, marginal spam goes here for revision
 :0
   * ^X-Spam-Level: \*\*
 .spam/
+
+# mail addressed to me
+:0
+  * ^TOusername
+$MAILDIR/new
 #+END_SRC
 
 Save and exit.
@@ -1156,8 +1146,9 @@ if [ ! -d "$LISTDIR" ]; then
   mkdir -m 700 $LISTDIR/cur
 fi
 chown -R $MYUSERNAME:$MYUSERNAME $LISTDIR
+echo "" >> $PM
 echo ":0" >> $PM
-echo "* ^Subject:.*[$SUBJECTTAG].*" >> $PM
+echo "  * ^Subject:.*[$SUBJECTTAG]" >> $PM
 echo "$LISTDIR/new" >> $PM
 chown $MYUSERNAME:$MYUSERNAME $PM
 if [ ! -f "$MUTTRC" ]; then
