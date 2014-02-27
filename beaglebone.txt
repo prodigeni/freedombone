@@ -52,6 +52,12 @@ FreedomBone should be far more secure than using popular cloud-based services wh
 Hardly at all.  The BeagleBone Black consumes very little power - less than 5W.  It would even be potentially possible to run it from a solar panel.
 ** Can I use a Raspberry Pi instead?
 These instructions are not highly specific to the Beaglebone Black and so will likely also work on other single board computers (SBCs) such as the Raspberry Pi.  The original Raspberry Pi only had 256MB of RAM and so the performance of some services may be more limited.  The Beaglebone Black was chosen mainly because of its low cost, relatively good CPU performance for the price (by the standards of 2013) and also low electricity consumption.
+** Why should I trust the packages or source code downloaded from this site?
+If you're particularly security conscious then you shouldn't.  Binary or source packages have only been included here for convenience and to avoid confusion.  "/Go and find a Debian installation for the BeagleBone Black somewhere on the web/" is too vague an instruction for my liking, and I've attempted to keep things as concise and unambiguous as possible - particularly with an average or new Linux user in mind.
+
+However, for maximum security for those software systems which are not already packaged within the Debian repositories then seek out the original sources and verify the hashes independently.
+
+It's worth adopting an attitude of "/trust but verify/".  Don't let fear of mass surveillance and [[https://www.techdirt.com/articles/20140207/08354426130/gchq-has-entire-program-dirty-tricks-including-honeypots-using-journalists-deleting-online-accounts.shtml]["dirty tricks"]] paralyse you into trusting nothing and consequently doing nothing.  Doing nothing means they win.
 * Inventory
 
 #+BEGIN_VERSE
