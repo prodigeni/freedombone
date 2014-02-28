@@ -1879,6 +1879,12 @@ Note that when sending an email for the first time you will also need to accept 
 
 Get into the habit of using email encryption and encourage others to do so.  Remember that you may not think that your emails are very interesting but the Surveillance State is highly interested in them and will be actively trying to data mine your private life looking for "suspicious" patterns, regardless of whether you are guilty of any crime or not.
 
+**** Making folders visible
+By default you won't be able to see any folders which you may have created earlier using the /mailinglistrule/ script.  To make folders visible select:
+
+*Menu*, hover over *Preferences*, select *Account Settings*, select *Server Settings* then click on the *Advanced* button.
+
+Make sure that the "*Show only subscribed folders*" is not checked.  Then click the *Ok* buttons.  Folders will be re-scanned, which may take some time depending upon how much email you have, but your folders will then appear.
 ** Install a Blog
 
 #+BEGIN_VERSE
