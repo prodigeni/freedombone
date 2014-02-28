@@ -1782,7 +1782,7 @@ rm -rf /var/www/$HOSTNAME/htdocs/mail/installer
 
 Now with a browser navigate to https://mydomainname.com/mail and log in.
 
-TODO: connect Sent and Draft folders.
+You'll notice that you may not be able to see any mailing list folders which you may have created earlier using the /mailinglistrule/ script.  To make folders visible click on the cog-like settings icon at the bottom left of the screen then select *manage folders*.  You will then be able to select which folders you wish to become visible.
 
 *** Thunderbird
 
@@ -1884,7 +1884,7 @@ By default you won't be able to see any folders which you may have created earli
 
 *Menu*, hover over *Preferences*, select *Account Settings*, select *Server Settings* then click on the *Advanced* button.
 
-Make sure that the "*Show only subscribed folders*" is not checked.  Then click the *Ok* buttons.  Folders will be re-scanned, which may take some time depending upon how much email you have, but your folders will then appear.
+Make sure that "*show only subscribed folders*" is not checked.  Then click the *ok* buttons.  Folders will be re-scanned, which may take some time depending upon how much email you have, but your folders will then appear.
 ** Install a Blog
 
 #+BEGIN_VERSE
