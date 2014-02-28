@@ -1115,7 +1115,7 @@ emacs /etc/dovecot/conf.d/10-mail.conf
 Line 30: uncomment and add:
 
 #+BEGIN_SRC: bash
-mail_location = maildir:~/Maildir
+mail_location = maildir:~/Maildir:LAYOUT=fs
 #+END_SRC
 
 Save and exit, then start the dovecot service.
@@ -1527,7 +1527,7 @@ set mbox_type=Maildir
 set folder="~/Maildir"
 set mask="!^\\.[^.]"
 set mbox="~/Maildir"
-set record="+.Sent"
+set record="+sent"
 set postponed="+.Drafts"
 set spoolfile="~/Maildir"
 auto_view text/x-vcard text/html text/enriched
