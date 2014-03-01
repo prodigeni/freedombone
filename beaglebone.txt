@@ -868,15 +868,20 @@ adduser myusername sasl
 addgroup Debian-exim sasl
 /etc/init.d/exim4 restart
 mkdir -m 700 /etc/skel/Maildir
-mkdir -m 700 /etc/skel/Maildir/sent
-mkdir -m 700 /etc/skel/Maildir/sent/tmp
-mkdir -m 700 /etc/skel/Maildir/sent/cur
-mkdir -m 700 /etc/skel/Maildir/sent/new
-mkdir -m 700 /etc/skel/.learn-spam
-mkdir -m 700 /etc/skel/.learn-spam/cur
-mkdir -m 700 /etc/skel/.learn-spam/new
-mkdir -m 700 /etc/skel/.learn-spam/tmp
-ln -s /etc/skel/.learn-spam /etc/skel/spam
+mkdir -m 700 /etc/skel/Maildir/Sent
+mkdir -m 700 /etc/skel/Maildir/Sent/tmp
+mkdir -m 700 /etc/skel/Maildir/Sent/cur
+mkdir -m 700 /etc/skel/Maildir/Sent/new
+mkdir -m 700 /etc/skel/Maildir/.learn-spam
+mkdir -m 700 /etc/skel/Maildir/.learn-spam/cur
+mkdir -m 700 /etc/skel/Maildir/.learn-spam/new
+mkdir -m 700 /etc/skel/Maildir/.learn-spam/tmp
+mkdir -m 700 /etc/skel/Maildir/.learn-ham
+mkdir -m 700 /etc/skel/Maildir/.learn-ham/cur
+mkdir -m 700 /etc/skel/Maildir/.learn-ham/new
+mkdir -m 700 /etc/skel/Maildir/.learn-ham/tmp
+ln -s /etc/skel/Maildir/.learn-spam /etc/skel/Maildir/spam
+ln -s /etc/skel/Maildir/.learn-ham /etc/skel/Maildir/ham
 #+END_SRC
 
 If you're starting from scratch and don't already have a /Maildir/ directory in your home directory, then create one as follows:
@@ -887,15 +892,20 @@ mkdir -m 700 /home/$MYUSERNAME/Maildir
 mkdir -m 700 /home/$MYUSERNAME/Maildir/cur
 mkdir -m 700 /home/$MYUSERNAME/Maildir/tmp
 mkdir -m 700 /home/$MYUSERNAME/Maildir/new
-mkdir -m 700 /home/$MYUSERNAME/Maildir/sent
-mkdir -m 700 /home/$MYUSERNAME/Maildir/sent/cur
-mkdir -m 700 /home/$MYUSERNAME/Maildir/sent/tmp
-mkdir -m 700 /home/$MYUSERNAME/Maildir/sent/new
+mkdir -m 700 /home/$MYUSERNAME/Maildir/Sent
+mkdir -m 700 /home/$MYUSERNAME/Maildir/Sent/cur
+mkdir -m 700 /home/$MYUSERNAME/Maildir/Sent/tmp
+mkdir -m 700 /home/$MYUSERNAME/Maildir/Sent/new
 mkdir -m 700 /home/$MYUSERNAME/Maildir/.learn-spam
 mkdir -m 700 /home/$MYUSERNAME/Maildir/.learn-spam/cur
 mkdir -m 700 /home/$MYUSERNAME/Maildir/.learn-spam/new
 mkdir -m 700 /home/$MYUSERNAME/Maildir/.learn-spam/tmp
+mkdir -m 700 /home/$MYUSERNAME/Maildir/.learn-ham
+mkdir -m 700 /home/$MYUSERNAME/Maildir/.learn-ham/cur
+mkdir -m 700 /home/$MYUSERNAME/Maildir/.learn-ham/new
+mkdir -m 700 /home/$MYUSERNAME/Maildir/.learn-ham/tmp
 ln -s /home/$MYUSERNAME/Maildir/.learn-spam /home/$MYUSERNAME/Maildir/spam
+ln -s /home/$MYUSERNAME/Maildir/.learn-ham /home/$MYUSERNAME/Maildir/ham
 chown -R $MYUSERNAME:$MYUSERNAME /home/$MYUSERNAME/Maildir
 #+END_SRC
 
@@ -1192,7 +1202,7 @@ emacs /home/myusername/.muttrc
 Search for the *mailboxes* variable and add entries for the mailing lists you just created.  For example:
 
 #+BEGIN_SRC: bash
-mailboxes = =sent =mailinglistname
+mailboxes = =Sent =mailinglistname
 #+END_SRC
 
 Then save and exit.
@@ -1537,8 +1547,9 @@ set mbox_type=Maildir
 set folder="~/Maildir"
 set mask="!^\\.[^.]"
 set mbox="~/Maildir"
-set record="+sent"
-set postponed="+.Drafts"
+set record="+Sent"
+set postponed="+Drafts"
+set trash="+Trash"
 set spoolfile="~/Maildir"
 auto_view text/x-vcard text/html text/enriched
 set editor="emacsclient %s"
@@ -1558,7 +1569,7 @@ set sidebar_sort=yes
 set rfc2047_parameters
 
 # Show inbox and sent items
-mailboxes = =sent
+mailboxes = =Sent
 
 # Alter these colours as needed for maximum bling
 color sidebar_new yellow default
@@ -1792,9 +1803,9 @@ rm -rf /var/www/$HOSTNAME/htdocs/mail/installer
 
 Now with a browser navigate to https://mydomainname.com/mail and log in.
 
-You'll notice that you may not be able to see any mailing list folders which you may have created earlier using the /mailinglistrule/ script.  To make folders visible click on the cog-like settings icon at the bottom left of the screen then select *manage folders*.  You will then be able to select which folders you wish to become visible.  Make sure that the *sent* and *spam* folders are selected.
+You'll notice that you may not be able to see any mailing list folders which you may have created earlier using the /mailinglistrule/ script.  To make folders visible click on the cog-like settings icon at the bottom left of the screen then select *manage folders*.  You will then be able to select which folders you wish to become visible.  Make sure that the *Sent*, *spam* and *ham* folders are selected.
 
-Click on the *Mail* icon to go back to your main mail screen then click on the *Settings* icon at the top right of the screen and select *special folders*. Set *Sent* to (lower case) *sent* and *Junk* to *spam*.
+Click on the *Mail* icon to go back to your main mail screen then click on the *Settings* icon at the top right of the screen and select *special folders*. Set *Junk* to *spam*.
 
 *** Thunderbird
 
