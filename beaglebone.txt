@@ -1805,7 +1805,7 @@ Now with a browser navigate to https://mydomainname.com/mail and log in.
 
 You'll notice that you may not be able to see any mailing list folders which you may have created earlier using the /mailinglistrule/ script.  To make folders visible click on the cog-like settings icon at the bottom left of the screen then select *manage folders*.  You will then be able to select which folders you wish to become visible.  Make sure that the *Sent*, *spam* and *ham* folders are selected.
 
-Click on the *Mail* icon to go back to your main mail screen then click on the *Settings* icon at the top right of the screen and select *special folders*. Set *Junk* to *spam*.
+Click on the *Mail* icon to go back to your main mail screen then click on the *Settings* icon at the top right of the screen and select *special folders*. Set *Junk* to *spam* then click the save button.  Also select *identities* and make sure that your email address is correct.
 
 *** Thunderbird
 
