@@ -1681,6 +1681,10 @@ Some useful keys to know are:
  * Set authentication to PLAIN
  * Enter your username and password
  * Accept the SSL certificate
+**** Folders
+To view any new folders which you may have created using the /mailinglistrule/ script from your inbox press the *K9 icon* at the top left to access folders, then press the *menu button* and select *refresh folder list*.
+
+If your folder still doesn't show up then press the *menu button*, select *show folders* and select *all folders*.
 *** Webmail
 
 #+BEGIN_VERSE
