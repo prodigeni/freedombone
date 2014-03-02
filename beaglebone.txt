@@ -4016,6 +4016,14 @@ If you're moving servers and using a different domain name or path then you can 
 find /var/www/mynewdomain/htdocs -type f -exec sed -i 's@myolddomain@mynewdomain@g' {} \;
 #+END_SRC
 
+If you're moving the blog to a new domain then you will need to delete the lock file:
+
+#+BEGIN_SRC: bash
+rm /var/www/myblogdomainname.com/htdocs/fp-content/%%setup.lock
+#+END_SRC
+
+Then visit your blog and reinstall it.  Your existing content will be unaffected but you will need to delete the welcome post which gets added and also re-select your chosen theme.
+
 ** MySql foo
 *** Backup all databases
 To back up all mysql databases:
