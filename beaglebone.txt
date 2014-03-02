@@ -2101,7 +2101,7 @@ sudo apt-get install irssi
 irssi
 #+END_SRC
 
-Connect to the IRC and identify yourself as an operator.  Here /mynetwork/ should be the same as *network_name* specified earlier within /ircd.conf/.
+Connect to the IRC and identify yourself as an operator.  Here /mynetwork/ should be the same as *network_name* specified earlier within /ircd.conf/.  The network name is something equivalent to "freenode".
 
 #+BEGIN_SRC: bash
 /server add -auto -network mynetwork -ssl mydonainname.com 6670 mysendacceptpassword
@@ -2110,7 +2110,7 @@ Connect to the IRC and identify yourself as an operator.  Here /mynetwork/ shoul
 
 /channel add -auto #mychannel mynetwork channelpassword
 
-/network add -nick mynick mychannel
+/network add -nick mynick mynetwork
 
 /join #mychannel
 
