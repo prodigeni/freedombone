@@ -3149,7 +3149,7 @@ exit 0
 
 Save and exit.
 
-#+BEGHIN_SRC: bash
+#+BEGIN_SRC: bash
 chmod +x /usr/bin/mkphlog
 #+END_SRC
 
