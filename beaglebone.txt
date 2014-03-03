@@ -2803,6 +2803,8 @@ If you are using a self-signed certificate then at the login screen scroll down 
 More information about the Friendica app can be found on http://friendica-for-android.wiki-lab.net/
 
 ** Install Gopher
+*** Server setup
+
 Gopher is an old internet protocol which originated a few years before the web and is purely text based.  It can be quite fun to build a gopher site and browse the gopherverse.  One thing to keep in mind is that there is no security with gopher, so any text transmitted is trivially interceptable by systems such as [[https://en.wikipedia.org/wiki/XKeyscore][Xkeyscore]] or deep packet inspection.
 
 To set up a gopher server:
@@ -3009,6 +3011,149 @@ gopher://mydomainname.com
 #+END_SRC
 
 There is a browser addon for Gopher called "overbite".  Installing that should enable you to view your site.
+
+*** A phlogging script
+
+A phlog is the gopher equivalent of a blog on the web.  You can create a script which makes phlogging easy.
+
+#+BEGIN_SRC: bash
+emacs /usr/bin/mkphlog
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+#!/bin/sh
+
+# mkphlog - a utility to ease the creation of phlogs.
+#           Organizes phlog posts in separate directories.
+# Created by octotep; anyone can distribute, modify, and
+# share this file however they please.
+#
+# Version 0.3
+#
+# Modified by Bob Mottram
+#
+# Please note, all date strings are in the form of mm/dd/yy(yy)
+
+# The base of the entire gopher site.
+gopherRoot="/var/gopher"
+
+# The name of the phlog directory (contained in $gopherHome)
+phlogDirName="phlog"
+
+# Default editor, unless the user has one specified in env
+editor=${EDITOR:-emacs}
+
+# Default timezone, unless the user has one specified in env
+TZ=${TZ:-UTC}
+
+# Tells the script how many lines the title of the main page spans.
+# Used to insert the newest post at the top.
+# Titles created by mkphlog are 3 lines.
+# Isn't used if $addTitleToMain is false
+titleLineCount=3
+
+entryDate=`date +%Y-%m-%d`
+
+# Creates the phlog directory if it dosen't already exist.
+CreatePhlogDir() {
+    mkdir $phlogDirName
+    chmod 755 $phlogDirName
+    cd $phlogDirName
+    echo "Phlog directory created."
+}
+
+# Updates the main phlog listing
+UpdatePhlogListing() {
+    # Just in case the user didn't specify a title
+    if [ "$postTitleAns" = "" ] ; then
+	echo -n "Do you want to create a blank post? (y/n) "
+	read blankPostAns
+	case $blankPostAns in
+	    y* | Y* ) $postTitleAns="New Post" ;;
+		    n* | N* ) echo "Goodbye, then." ; exit 1 ;;
+			    * ) exit 1 ;;
+				  esac
+    fi
+
+    cd $gopherRoot/$phlogDirName/
+    title2=$(echo "${postTitleAns}" | tr " " _)
+    postfilename="${entryDate}_${title2}.txt"
+    touch ${postfilename}
+    echo $postTitleAns >> ${postfilename}
+    date "+%A %b %e %l:%M:%S %Y" >> ${postfilename}
+    echo "------------------------------" >> ${postfilename}
+    echo >> ${postfilename}
+}
+
+
+if [ -d $gopherRoot ] ; then
+    cd $gopherRoot
+else
+    echo "You don't have a gopherspace set-up. Please run the gopher server setup instructions."
+    exit 1
+fi
+
+if [ -d $phlogDirName ] ; then
+    cd $phlogDirName
+else
+    echo -n "Do you want to create a phlog directory? (y/n) "
+    read phlogDirAns
+    case $phlogDirAns in
+	y* | Y* ) CreatePhlogDir ;;
+	n* | N* ) exit 1 ;;
+	* ) exit 1 ;;
+    esac
+fi
+
+echo -n "Would you like to create a phlog entry for today? (y/n) "
+read phlogAns
+case $phlogAns in
+    y* | Y* ) echo "Creating today's phlog entry..." ;;
+    n* | N* ) exit 0 ;;
+    * ) exit 1 ;;
+esac
+
+# Make sure there isn't a post for that day, lest we overwrite it.
+if [ ! -d $entryDate ]; then
+    echo -n "Title: "
+    read postTitleAns
+    title2=$(echo "${postTitleAns}" | tr " " _)
+    postfilename="${entryDate}_${title2}.txt"
+    touch ${postfilename}
+    chmod 644 ${postfilename}
+    UpdatePhlogListing
+    echo -n "Would you like to edit the post with $editor? (y/n) "
+    read editorAns
+    case $editorAns in
+	y* | Y* ) $editor $gopherRoot/$phlogDirName/${postfilename} ;;
+	n* | N* ) exit 0 ;;
+	* ) exit 0 ;;
+    esac
+
+    rm $gopherRoot/$phlogDirName/${postfilename}~
+else
+    echo "There is already a post for today."
+    echo -n "Would you like to edit the post with $editor? (y/n) "
+    read editorAns
+    case $editorAns in
+	y* | Y* ) $editor $gopherRoot/$phlogDirName/$entryDate*.txt ;;
+	n* | N* ) exit 0 ;;
+	* ) exit 1 ;;
+    esac
+    rm $gopherRoot/$phlogDirName/${postfilename}.txt~
+fi
+exit 0
+#+END_SRC
+
+Save and exit.
+
+#+BEGHIN_SRC: bash
+chmod +x /usr/bin/mkphlog
+#+END_SRC
+
+Now entering the command /mkphlog/ will allow you to create a phlog entry.
 
 ** Install Owncloud
 
