@@ -390,7 +390,7 @@ Select "/dynamic DNS/" then click "/quick cron example/"
 An example would look like:
 
 #+BEGIN_SRC: bash
-4,9,14,19,24,29,34,39,44,49,54,59 * * * * root sleep 29 ; wget -O - http://free\ dns.afraid.org/dynamic/update.php?ABCKDNRCLFHENSLKNFEGSBFLFF== >> /\ tmp/freedns_mysubdomain_us_to.log 2>&1 &
+4,9,14,19,24,29,34,39,44,49,54,59 * * * * root sleep 29 ; /usr/bin/timeout 120 wget -O - http://free\ dns.afraid.org/dynamic/update.php?ABCKDNRCLFHENSLKNFEGSBFLFF== >> /\ tmp/freedns_mysubdomain_us_to.log 2>&1 &
 #+END_SRC
 
 Edit */etc/crontab* and append that to the end of the file.
@@ -1075,8 +1075,8 @@ emacs /etc/crontab
 Append the following, replacing *myusername* with your username.
 
 #+BEGIN_SRC: bash
-*/3 * * * * root /usr/bin/filterspam myusername
-*/3 * * * * root /usr/bin/filterham myusername
+*/3 * * * * root /usr/bin/timeout 120 /usr/bin/filterspam myusername
+*/3 * * * * root /usr/bin/timeout 120 /usr/bin/filterham myusername
 #+END_SRC
 
 Save and exit.
@@ -2603,7 +2603,7 @@ emacs /etc/crontab
 and append the following, changing mydomainname.com to whatever your domain is.
 
 #+BEGIN_SRC: bash
-*/10 *  * * *	root	cd /var/www/mydomainname.com/htdocs; /usr/bin/php include/poller.php
+*/10 *  * * *	root	cd /var/www/mydomainname.com/htdocs; /usr/bin/timeout 120 /usr/bin/php include/poller.php
 #+END_SRC
 
 Save and exit, then restart cron.
