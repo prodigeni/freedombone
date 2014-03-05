@@ -2092,7 +2092,7 @@ service ircd-hybrid restart
 service hybserv start
 #+END_SRC
 
-*** Usage
+*** Usage with Irssi
 
 On another computer (not the BBB).
 
@@ -2140,6 +2140,204 @@ It should look something like this:
 #+END_SRC
 
 If you're not using a self-signed certificate (self-signed is the default) then you can set *ssl_verify* to "yes".
+
+*** Usage with XChat
+TODO
+*** Install Irssi as a daemon
+
+If you wish to be able to log into the BBB via ssh and access IRC that way then you can create an Irssi deamon.  Note that this is only really appropriate for a single administrator user, not for a situation in which there are multiple users on the BBB.
+
+Install some prerequisites.
+
+#+BEGIN_SRC: bash
+apt-get install irssi screen
+#+END_SRC
+
+Create an initialisation script.
+
+#+BEGIN_SRC: bash
+emacs /etc/init.d/irssid
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides:          irssid
+# Required-Start:    $network
+# Required-Stop:     $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start irssi daemon within screen session at boot time
+# Description:       This init script will start an irssi session under screen using the settings provided in /etc/irssid.conf
+### END INIT INFO
+
+# Include the LSB library functions
+. /lib/lsb/init-functions
+
+# Setup static variables
+configFile='/etc/irssid.conf'
+daemonExec='/usr/bin/screen'
+daemonArgs='-D -m'
+daemonName="$(basename "$daemonExec")"
+pidFile='/var/run/irssid.pid'
+
+#
+# Checks if the environment is capable of running the script (such as
+# availability of programs etc).
+#
+# Return: 0 if the environmnt is properly setup for execution of init script, 1
+#         if not all conditions have been met.
+#
+function checkEnvironment() {
+    # Verify that the necessary binaries are available for execution.
+    local binaries=(irssi screen)
+
+    for bin in "${binaries[@]}"; do
+        if ! which "$bin" > /dev/null; then
+            log_failure_msg "Binary '$bin' is not available. Please install \
+package containing it."
+            exit 5
+        fi
+    done
+}
+
+#
+# Checks if the configuration files are available and properly setup.
+#
+# Return: 0 if irssid if properly configured, 1 otherwise.
+#
+function checkConfig() {
+    # Make sure the configuration file has been created
+    if ! [[ -f $configFile ]]; then
+        log_failure_msg "Please populate the configuration file '$configFile' \
+before running."
+        exit 6
+    fi
+
+    # Make sure the required options have been set
+    local reqOptions=(user group session)
+    for option in "${reqOptions[@]}"; do
+        if ! grep -q -e "^[[:blank:]]*$option=" "$configFile"; then
+            log_failure_msg "Mandatory option '$option' was not specified in \
+'$configFile'"
+            exit 6
+        fi
+    done
+}
+
+#
+# Loads the configuration file and performs any additional configuration steps.
+#
+function configure() {
+    . "$configFile"
+    daemonArgs="$daemonArgs -S $session irssi"
+    [[ -n $args ]] && daemonArgs="$daemonArgs $args"
+    daemonCommand="$daemonExec $daemonArgs"
+}
+
+#
+# Starts the daemon.
+#
+# Return: LSB-compliant code.
+#
+function start() {
+    start-stop-daemon --start --quiet --oknodo --pidfile "$pidFile" \
+        --make-pidfile --chuid "$user:$group" --background \
+        --exec "$daemonExec" -- $daemonArgs
+}
+
+#
+# Stops the daemon.
+#
+# Return: LSB-compliant code.
+#
+function stop() {
+    start-stop-daemon --stop --quiet --oknodo --retry 30 --pidfile "$pidFile" \
+        --chuid "$user:$group" --exec "$daemonExec" -- $daemonArgs
+}
+
+checkEnvironment
+checkConfig
+configure
+
+case "$1" in
+    start)
+        log_daemon_msg "Starting daemon" "irssid"
+        start && log_end_msg 0 || log_end_msg $?
+        ;;
+    stop)
+        log_daemon_msg "Stopping daemon" "irssid"
+        stop && log_end_msg 0 || log_end_msg $?
+        ;;
+    restart)
+        log_daemon_msg "Restarting daemon" "irssid"
+        stop
+        start && log_end_msg 0 || log_end_msg $?
+        ;;
+    force-reload)
+        log_daemon_msg "Restarting daemon" "irssid"
+        stop
+        start && log_end_msg 0 || log_end_msg $?
+        ;;
+    status)
+        status_of_proc -p "$pidFile" "$daemonExec" screen && exit 0 || exit $?
+        ;;
+    *)
+        echo "irssid (start|stop|restart|force-reload|status|help)"
+        ;;
+esac
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+chmod +x /etc/init.d/irssid
+#+END_SRC
+
+Create a configuration file, replacing /myusername/ with your username.
+
+#+BEGIN_SRC: bash
+emacs /etc/irssid.conf
+#+END_SRC
+
+#+BEGIN_SRC: bash
+#
+# Configuration file for irssid init script
+#
+# Mandatory options:
+#
+#    user    - Specify user for running irssi.
+#    group   - Specify group for running irssi.
+#    session - Specify screen session name to be used for irssi.
+#
+# Non-mandatory options:
+#
+#    args    - Pass additional arguments to irssi.
+#
+
+user='myusername'
+group='irssi'
+session='irssi'
+args='--config /home/myusername/.irssi/config'
+#+END_SRC
+
+Save and exit.  Then add your user to the irssi group and start the daemon.
+
+#+BEGIN_SRC: bash
+groupadd irssi
+usermod -aG irssi myusername
+update-rc.d irssid defaults
+service irssid start
+#+END_SRC
+
+Then to subsequently access irssi log into the BBB using ssh and type:
+
+#+BEGIN_SRC: bash
+screen -t irssi irssi
+#+END_SRC
 
 ** Install a Jabber/XMPP server
 
