@@ -2104,13 +2104,13 @@ irssi
 Connect to the IRC and identify yourself as an operator.  Here /mynetwork/ should be the same as *network_name* specified earlier within /ircd.conf/.  The network name is something equivalent to "freenode".
 
 #+BEGIN_SRC: bash
-/server add -auto -network mynetwork -ssl mydonainname.com 6670 mysendacceptpassword
-
-/connect mydomainname.com
+/network add -nick mynick mynetwork
 
 /channel add -auto #mychannel mynetwork channelpassword
 
-/network add -nick mynick mynetwork
+/server add -auto -network mynetwork -ssl mydonainname.com 6670 mysendacceptpassword
+
+/connect mydomainname.com
 
 /join #mychannel
 
@@ -2144,6 +2144,8 @@ If you're not using a self-signed certificate (self-signed is the default) then 
 *** Usage with XChat
 TODO
 *** Install Irssi as a daemon
+
+It may be useful to run a persistent Irssi session on
 
 If you wish to be able to log into the BBB via ssh and access IRC that way then you can create an Irssi deamon.  Note that this is only really appropriate for a single administrator user, not for a situation in which there are multiple users on the BBB.
 
@@ -2336,7 +2338,7 @@ service irssid start
 Then to subsequently access irssi log into the BBB using ssh and type:
 
 #+BEGIN_SRC: bash
-screen -t irssi irssi
+screen -r irssi
 #+END_SRC
 
 ** Install a Jabber/XMPP server
