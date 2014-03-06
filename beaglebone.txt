@@ -2145,11 +2145,9 @@ If you're not using a self-signed certificate (self-signed is the default) then 
 TODO
 *** Install Irssi as a daemon
 
-It may be useful to run a persistent Irssi session on
+It may be useful to run a persistent Irssi session on the BBB.  This will enable you to log in and see any entries which occurred previously so that you don't find yourself in an argument without knowledge of what was said in the last few minutes or hours.  This feature only works for a single user on the BBB - typically the administrator.
 
-If you wish to be able to log into the BBB via ssh and access IRC that way then you can create an Irssi deamon.  Note that this is only really appropriate for a single administrator user, not for a situation in which there are multiple users on the BBB.
-
-Install some prerequisites.
+First install some prerequisites.
 
 #+BEGIN_SRC: bash
 apt-get install irssi screen
@@ -2335,11 +2333,33 @@ update-rc.d irssid defaults
 service irssid start
 #+END_SRC
 
+Create a script to make running IRC on the server easier.
+
+#+BEGIN_SRC: bash
+emacs /usr/bin/irc
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+#!/bin/bash
+screen -r irssi
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+chmod +x /usr/bin/irc
+chown myusername:myusername /usr/bin/irc
+#+END_SRC
+
 Then to subsequently access irssi log into the BBB using ssh and type:
 
 #+BEGIN_SRC: bash
-screen -r irssi
+irc
 #+END_SRC
+
+
 
 ** Install a Jabber/XMPP server
 
