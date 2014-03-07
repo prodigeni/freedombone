@@ -2141,6 +2141,46 @@ It should look something like this:
 
 If you're not using a self-signed certificate (self-signed is the default) then you can set *ssl_verify* to "yes".
 
+By default Irssi does not look especially attractive.  To improve it's looks:
+
+#+BEGIN_SRC: bash
+cd ~/.irssi
+wget http://freedombone.uk.to/irssi/xchat.theme
+mkdir ~/.irssi/scripts
+mkdir ~/.irssi/scripts/autorun
+cd ~/.irssi/scripts/autorun
+wget http://freedombone.uk.to/irssi/xchatnickcolor.pl
+wget http://freedombone.uk.to/irssi/adv_windowlist.pl
+#+END_SRC
+
+Verify the files:
+
+#+BEGIN_SRC: bash
+sha256sum ~/.irssi/xchat.theme
+7a84130ad55aabd0b043a03b013628438e6c7f82a58e15267633bc7eb443e60b
+
+sha256sum ~/.irssi/scripts/autorun/xchatnickcolor.pl
+8293e867a22d42ce5a28cd755237509b6f3587fd2b21d7d20af4a832081610ca
+
+sha256sum ~/.irssi/scripts/autorun/adv_windowlist.pl
+e4dd8f6d384bf4f2d0ab5ccf06df06e4a69d2647b08d37c8fc6cfd9326688395
+#+END_SRC
+
+Then run Irssi and enter the commands:
+
+#+BEGIN_SRC: bash
+/set theme xchat
+/statusbar window remove act
+/set awl
+/set awl_block -14
+/set awl_display_key $Q%K|$N%n $H$C$S
+/set awl_display_key_active $Q%K|$N%n $H%U$C%n$S
+/set awl_display_nokey [$N]$H$C$S
+/run autorun/adv_windowlist.pl
+/set awl_viewer off
+/save
+#+END_SRC
+
 *** Usage with XChat
 TODO
 *** Install Irssi as a daemon
@@ -2358,8 +2398,6 @@ Then to subsequently access irssi log into the BBB using ssh and type:
 #+BEGIN_SRC: bash
 irc
 #+END_SRC
-
-
 
 ** Install a Jabber/XMPP server
 
