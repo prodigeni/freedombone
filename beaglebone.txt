@@ -1145,6 +1145,7 @@ service dovecot restart
 #+END_SRC
 
 ** Create Email folders and rules
+*** Rules for mailing lists
 A common situation with email is that you may be subscribed to various mailing lists and want incoming email from those to be automatically grouped into a separate folder for each list.
 
 We can make a script to make adding mailing list rules easy:
@@ -1190,7 +1191,7 @@ chmod +x /usr/bin/mailinglistrule
 Now we can add a new mailing list rule with the following, where /myusername/ is your username, /mailinglistname/ is the name of the mailing list (with no spaces) and /subjecttag/ is the tag which usually appears within square brackets in the subject line of emails from the list.
 
 #+BEGIN_SRC: bash
-mailinglistrule myusername mailinglistname subjecttag
+mailinglistrule [myusername] [mailinglistname] [subjecttag]
 #+END_SRC
 
 Repeat this command for as many mailing lists as you need.  Then edit your local Mutt configuration.
@@ -1203,6 +1204,70 @@ Search for the *mailboxes* variable and add entries for the mailing lists you ju
 
 #+BEGIN_SRC: bash
 mailboxes = =Sent =mailinglistname
+#+END_SRC
+
+Then save and exit.
+
+*** Rules for specific email addresses
+
+You can also make a script which will allow you to add specific email addresses to a folder.
+
+#+BEGIN_SRC: bash
+emacs /usr/bin/emailrule
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+#!/bin/bash
+MYUSERNAME=$1
+EMAILADDRESS=$2
+MAILINGLIST=$3
+MUTTRC=/home/$MYUSERNAME/.muttrc
+PM=/home/$MYUSERNAME/.procmailrc
+LISTDIR=/home/$MYUSERNAME/Maildir/$MAILINGLIST
+if [ ! -d "$LISTDIR" ]; then
+  mkdir -m 700 $LISTDIR
+  mkdir -m 700 $LISTDIR/tmp
+  mkdir -m 700 $LISTDIR/new
+  mkdir -m 700 $LISTDIR/cur
+fi
+chown -R $MYUSERNAME:$MYUSERNAME $LISTDIR
+echo "" >> $PM
+echo ":0" >> $PM
+echo "  * ^From: $EMAILADDRESS" >> $PM
+echo "$LISTDIR/new" >> $PM
+chown $MYUSERNAME:$MYUSERNAME $PM
+if [ ! -f "$MUTTRC" ]; then
+  cp /etc/Muttrc $MUTTRC
+  chown $MYUSERNAME:$MYUSERNAME $MUTTRC
+fi
+#+END_SRC
+
+Save and exit, then make the script executable.
+
+#+BEGIN_SRC: bash
+chmod +x /usr/bin/emailrule
+#+END_SRC
+
+Then to add a particular email address to a folder run the command:
+
+#+BEGIN_SRC: bash
+emailrule [myusername] [emailaddress] [foldername]
+#+END_SRC
+
+If you want any mail from the given email address to be deleted then set the /foldername/  to /Trash/.
+
+To ensure that the folder appears within Mutt.
+
+#+BEGIN_SRC: bash
+emacs /home/myusername/.muttrc
+#+END_SRC
+
+Search for the *mailboxes* variable and add entries for the mailing lists you just created.  For example:
+
+#+BEGIN_SRC: bash
+mailboxes = =Sent =foldername
 #+END_SRC
 
 Then save and exit.
