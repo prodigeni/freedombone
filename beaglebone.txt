@@ -2182,7 +2182,19 @@ Then run Irssi and enter the commands:
 #+END_SRC
 
 *** Usage with XChat
-TODO
+Within the network list click, *Add* and enter your domain name then click *Edit*.
+
+Select the entry within the servers box, then enter *mydomainname.com/6670* and press *Enter*.
+
+Uncheck *use global user information*.
+
+Enter first and second nicknames and check *auto connect to this network on startup*.
+
+Check *use SSL* and *accept invalid SSL certificate*.
+
+Enter some favourite channels and within *server password* enter /mysendacceptpassword/ which you defined earlier when setting up the server.
+
+Click *close* and then *connect*.
 *** Install Irssi as a daemon
 
 It may be useful to run a persistent Irssi session on the BBB.  This will enable you to log in and see any entries which occurred previously so that you don't find yourself in an argument without knowledge of what was said in the last few minutes or hours.  This feature only works for a single user on the BBB - typically the administrator.
