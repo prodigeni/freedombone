@@ -507,6 +507,7 @@ iptables -F
 iptables -X
 
 # Drop any IPv6 traffic
+ip6tables -A INPUT -p icmp -j DROP
 ip6tables -A INPUT -p tcp -j DROP
 ip6tables -A INPUT -p udp -j DROP
 
@@ -615,8 +616,10 @@ iptables -A INPUT -p icmp -j DROP
 
 # Save the settings
 iptables-save > /etc/firewall.conf
+ip6tables-save > /etc/firewall6.conf
 echo '#!/bin/sh' > /etc/network/if-up.d/iptables
 echo 'iptables-restore < /etc/firewall.conf' >> /etc/network/if-up.d/iptables
+echo 'ip6tables-restore < /etc/firewall6.conf' >> /etc/network/if-up.d/iptables
 chmod +x /etc/network/if-up.d/iptables
 #+END_SRC
 
@@ -646,6 +649,8 @@ net.ipv4.conf.all.accept_source_route = 0
 net.ipv6.conf.all.accept_source_route = 0
 net.ipv4.conf.default.rp_filter=1
 net.ipv4.conf.all.rp_filter=1
+net.ipv4.ip_forward=0
+net.ipv6.conf.all.forwarding=0
 #+END_SRC
 
 And append the following:
