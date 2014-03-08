@@ -504,7 +504,9 @@ echo 1 > /proc/sys/net/ipv4/tcp_syn_retries
 iptables -P INPUT ACCEPT
 ip6tables -P INPUT ACCEPT
 iptables -F
+ip6tables -F
 iptables -X
+ip6tables -X
 
 # Drop any IPv6 traffic
 ip6tables -A INPUT -p icmp -j DROP
