@@ -671,6 +671,18 @@ Save and exit.  It may be a good idea to reboot at this point and then log back 
 reboot
 #+END_SRC
 
+After reboot and logging back in to the root account via /ssh/ you can verify that the firewall rules were restored correctly with:
+
+#+BEGIN_SRC: bash
+iptables -L
+#+END_SRC
+
+and
+
+#+BEGIN_SRC: bash
+ip6tables -L
+#+END_SRC
+
 ** Install Email
 
 #+BEGIN_VERSE
