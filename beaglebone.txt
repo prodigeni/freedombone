@@ -1119,6 +1119,12 @@ service cron restart
 
 ** Install Dovecot
 
+#+BEGIN_VERSE
+/I dreamt last night that I was living in a surveillance state. I woke up and… I’m still in a surveillance state./
+
+-- Conrad Kramer
+#+END_VERSE
+
 Install the required packages.
 
 #+BEGIN_SRC: bash
@@ -1612,13 +1618,14 @@ Enter some trivial password for the key file.  The password will be removed as p
 If all has gone well then there should be no warnings or errors after you run the service restart command.  After that you should enable ports 80 (HTTP) and 443 (HTTPS) on your internet router/firewall, such that they are redirected to the BBB.
 
 ** Accessing your Email
-*** Mutt email client
 
 #+BEGIN_VERSE
-/I dreamt last night that I was living in a surveillance state. I woke up and… I’m still in a surveillance state./
+/The emails showed that Google...was among several other military/defense contractors vying for a piece of DAC’s $10.9-million surveillance contracting action./
 
--- Conrad Kramer
+-- Article on the "Google-Military-Surveillance Complex" by Yasha Levine
 #+END_VERSE
+
+*** Mutt email client
 
 #+BEGIN_SRC: bash
 apt-get install mutt-patched lynx abook
