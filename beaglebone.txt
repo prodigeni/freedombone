@@ -617,9 +617,9 @@ iptables -A INPUT -p icmp -j DROP
 # Save the settings
 iptables-save > /etc/firewall.conf
 ip6tables-save > /etc/firewall6.conf
-echo '#!/bin/sh' > /etc/network/if-up.d/iptables
-echo 'iptables-restore < /etc/firewall.conf' >> /etc/network/if-up.d/iptables
-echo 'ip6tables-restore < /etc/firewall6.conf' >> /etc/network/if-up.d/iptables
+printf '#!/bin/sh\n' > /etc/network/if-up.d/iptables
+printf 'iptables-restore < /etc/firewall.conf\n' >> /etc/network/if-up.d/iptables
+printf 'ip6tables-restore < /etc/firewall6.conf\n' >> /etc/network/if-up.d/iptables
 chmod +x /etc/network/if-up.d/iptables
 #+END_SRC
 
