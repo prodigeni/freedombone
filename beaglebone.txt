@@ -502,8 +502,13 @@ echo 1 > /proc/sys/net/ipv4/tcp_syn_retries
 # First of all delete any existing rules.
 # This means you're back to a known state:
 iptables -P INPUT ACCEPT
+ip6tables -P INPUT ACCEPT
 iptables -F
 iptables -X
+
+# Drop any IPv6 traffic
+ip6tables -A INPUT -p tcp -j DROP
+ip6tables -A INPUT -p udp -j DROP
 
 # Drop access to unused ports
 iptables -A INPUT -p tcp --destination-port 1 -j DROP
@@ -615,7 +620,9 @@ echo 'iptables-restore < /etc/firewall.conf' >> /etc/network/if-up.d/iptables
 chmod +x /etc/network/if-up.d/iptables
 #+END_SRC
 
-Save and exit
+Save and exit.
+
+Note that this will disable IP version 6.  At the time of writing it is expected that the average internet user is running on IP version 4.
 
 #+BEGIN_SRC: bash
 chmod +x /tmp/firewall.sh
@@ -646,6 +653,9 @@ And append the following:
 #+BEGIN_SRC: bash
 # ignore pings
 net.ipv4.icmp_echo_ignore_all = 1
+
+# disable ipv6
+net.ipv6.conf.all.disable_ipv6 = 1
 #+END_SRC
 
 Save and exit.  It may be a good idea to reboot at this point and then log back into the BBB using ssh.  You can do a safe reboot of the system by typing:
@@ -1210,7 +1220,7 @@ Then save and exit.
 
 *** Rules for specific email addresses
 
-You can also make a script which will allow you to add specific email addresses to a folder.
+You can also make a script which will allow you to move mail from specific email addresses to a folder.
 
 #+BEGIN_SRC: bash
 emacs /usr/bin/emailrule
