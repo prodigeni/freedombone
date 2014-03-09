@@ -4555,8 +4555,12 @@ To delete a public key: *X-DELETE-KEY: keyID*
 
 You can unsubscribe from the list with *X-UNSUBSCRIBE* in the message body.
 
-*** With Bitmessage
-On your local machine (not the BBB) you can make a private mailing list which is difficult to censor and where there is no single point of failure.  This type of mailing list is known as a "chan".
+*** Bitmessage mailing list
+A disadvantage with encrypted mailing lists which use the conventional email system is that there is a single server on which the list resides, and this creates a single point of failure and a bandwidth bottleneck for more heavily subscribed lists.  If the mailing list server goes down for whatever reason then that may cause a lot of disruption to its users.
+
+An alternative is to use a decentralised mailing list, as implemented using Bitmessage.  On your local machine (not the BBB) you can make a private mailing list which is difficult to censor and where there is no single point of failure.  This type of mailing list is known as a "/chan/".
+
+With Bitmessage if any one computer goes offline then the conversation can still keep going since there is no central mailing list server.  Bitmessages are also encrypted with public/private key pairs and the manner in which the system operates makes it very difficult for the surveillance apparatus to exfiltrate the social graph of list users.
 
 On a Debian based system:
 
