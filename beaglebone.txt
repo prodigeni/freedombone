@@ -4274,13 +4274,13 @@ Save and exit.
 
 #+BEGIN_SRC: bash
 emacs
-/etc/exim4/conf.d/router/450_mailman_aliases
+/etc/exim4/conf.d/router/450_exim4-config_mailman_aliases
 #+END_SRC
 
 Add the following:
 
 #+BEGIN_SRC: bash
-mailman_router:
+mailman:
   driver = accept
   domains = +mm_domains
   require_files = MM_LISTCHK
@@ -4297,7 +4297,7 @@ mailman_router:
 Save and exit.
 
 #+BEGIN_SRC: bash
-emacs /etc/exim4/conf.d/transport/40_mailman_pipe
+emacs /etc/exim4/conf.d/transport/40_exim4-config_mailman_pipe
 #+END_SRC
 
 Add the following:
@@ -4374,26 +4374,7 @@ Under *Privacy Options* set steps required for subscription to *Confirm and appr
 
 Also change these settings for the account within https://$HOSTNAME/cgi-bin/mailman/admin/mailman
 
-#+BEGIN_SRC: bash
-emacs /etc/aliases
-#+END_SRC
-
-Append the following, replacing /mymailinglistname/ with your mailing list name:
-
-#+BEGIN_SRC: bash
-mymailinglistname:              "|/var/lib/mailman/mail/mailman post mymailinglistname"
-mymailinglistname-admin:        "|/var/lib/mailman/mail/mailman admin mymailinglistname"
-mymailinglistname-bounces:      "|/var/lib/mailman/mail/mailman bounces mymailinglistname"
-mymailinglistname-confirm:      "|/var/lib/mailman/mail/mailman confirm mymailinglistname"
-mymailinglistname-join:         "|/var/lib/mailman/mail/mailman join mymailinglistname"
-mymailinglistname-leave:        "|/var/lib/mailman/mail/mailman leave mymailinglistname"
-mymailinglistname-owner:        "|/var/lib/mailman/mail/mailman owner mymailinglistname"
-mymailinglistname-request:      "|/var/lib/mailman/mail/mailman request mymailinglistname"
-mymailinglistname-subscribe:    "|/var/lib/mailman/mail/mailman subscribe mymailinglistname"
-mymailinglistname-unsubscribe:  "|/var/lib/mailman/mail/mailman unsubscribe mymailinglistname"
-#+END_SRC
-
-Save and exit.  Then to test that the mailing list works:
+Then to test that the mailing list works:
 
 #+BEGIN_SRC: bash
 exim -d+route -bt mymailinglistname@$HOSTNAME
@@ -4488,7 +4469,7 @@ Save and exit.
 Update Exim routing.
 
 #+BEGIN_SRC: bash
-emacs /etc/exim4/conf.d/router/550_schleuder
+emacs /etc/exim4/conf.d/router/550_exim4-config_schleuder
 #+END_SRC
 
 Add the following:
@@ -4500,14 +4481,14 @@ schleuder:
   local_part_suffix_optional
   local_part_suffix = +* : -bounce : -sendkey
   domains = +local_domains
-  require_files = schleuder:/var/schleuderlists/${local_part}/
+  require_files = schleuder:/var/lib/schleuder/$domain/${local_part}/
   transport = schleuder_transport
 #+END_SRC
 
 Save and exit.
 
 #+BEGIN_SRC: bash
-emacs /etc/exim4/conf.d/transport/30_schleuder
+emacs /etc/exim4/conf.d/transport/30_exim4-config_schleuder
 #+END_SRC
 
 Add the following.
@@ -4518,36 +4499,29 @@ schleuder_transport:
   driver = pipe
   user = schleuder
   group = schleuder
-  home_directory = "/var/schleuderlists/$local_part"
-  command = "/usr/bin/schleuder $local_part"
+  home_directory = "/var/lib/schleuder/$domain/$local_part"
+  command = "/usr/bin/schleuder $local_part@$domain"
 #+END_SRC
 
 Save and exit.
 
 #+BEGIN_SRC: bash
+update-exim4.conf.template -r
 update-exim4.conf
 service exim4 restart
-useradd  -d /var/schleuderlists -s /bin/false schleuder
+useradd -d /var/schleuderlists -s /bin/false schleuder
 adduser Debian-exim schleuder
 #+END_SRC
 
-#+BEGIN_SRC: bash
-emacs /etc/aliases
-#+END_SRC
-
-Append the following, replacing /mailinglistname/ with the mailing list name and /mydomainname.com/ with your domain name.
+Test the routing.
 
 #+BEGIN_SRC: bash
-mailinglistname: "|/usr/bin/schleuder mailinglistname@mydomainname.com"
-mailinglistname-request: "|/usr/bin/schleuder mailinglistname@mydomainname.com"
-mailinglistname-bounce: "|/usr/bin/schleuder mailinglistname@mydomainname.com"
-mailinglistname-sendkey: "|/usr/bin/schleuder mailinglistname@mydomainname.com"
-mailinglistname-owner: "|/usr/bin/schleuder mailinglistname@mydomainname.com"
+exim -d -bt mailinglistname@mydomainname.com
 #+END_SRC
-
-Save and exit.
 
 **** Using the list
+
+The use the list you'll need to get its public key.  Send an email to /mailinglistname-sendkey@mydomainname.com/ to receive it.
 
 To get the public keys send an email to /mailinglistname-request@mydomainname.com/ containing *X-LIST-KEYS* in the message body.
 
