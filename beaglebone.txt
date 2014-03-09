@@ -4408,6 +4408,10 @@ rmlist -a mymailinglistname
 #+END_SRC
 
 *** Private (encrypted) mailing list
+In addition to conventional public email lists it's also possible to set up a private mailing list which is only readable by members.  A private email list uses [[https://en.wikipedia.org/wiki/GNU_Privacy_Guard][GPG]] and a public/private key pair for the server which can then be used to send emails to the list in an encrypted form.  The email addresses and public GPG keys of members may be added to the list so that any new messages can be distributed to them in a secure manner.
+
+Private mailing lists are likely to be able to keep the contents of the discussion out of the clutches of warrantless mass surveillance but, as with all conventional email, it won't prevent such systems from generating social graphs of who is communicating with the list since the /from/ and /to/ attributes are always transmitted in the clear.
+
 **** Installation
 #+BEGIN_SRC: bash
 apt-get install schleuder
@@ -4521,9 +4525,9 @@ exim -d -bt mailinglistname@mydomainname.com
 
 **** Using the list
 
-The use the list you'll need to get its public key.  Send an email to /mailinglistname-sendkey@mydomainname.com/ to receive it.
+To use the list you'll first need to obtain its public key.  Send an email to /mailinglistname-sendkey@mydomainname.com/ to receive it.
 
-To get the public keys send an email to /mailinglistname-request@mydomainname.com/ containing *X-LIST-KEYS* in the message body.
+To get the public keys of list members send an email to /mailinglistname-request@mydomainname.com/ containing *X-LIST-KEYS* in the message body.
 
 To add a member: *X-ADD-MEMBER: othermember@otherdomain.net*
 
