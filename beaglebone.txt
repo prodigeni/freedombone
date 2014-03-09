@@ -1215,6 +1215,11 @@ if [ ! -f "$MUTTRC" ]; then
   cp /etc/Muttrc $MUTTRC
   chown $MYUSERNAME:$MYUSERNAME $MUTTRC
 fi
+PROCMAILLOG=/home/$MYUSERNAME/log
+if [ ! -d $PROCMAILLOG ]; then
+  mkdir $PROCMAILLOG
+  chown -R $MYUSERNAME:$MYUSERNAME $PROCMAILLOG
+fi
 #+END_SRC
 
 Save and exit, then make the script executable.
@@ -1276,6 +1281,11 @@ chown $MYUSERNAME:$MYUSERNAME $PM
 if [ ! -f "$MUTTRC" ]; then
   cp /etc/Muttrc $MUTTRC
   chown $MYUSERNAME:$MYUSERNAME $MUTTRC
+fi
+PROCMAILLOG=/home/$MYUSERNAME/log
+if [ ! -d $PROCMAILLOG ]; then
+  mkdir $PROCMAILLOG
+  chown -R $MYUSERNAME:$MYUSERNAME $PROCMAILLOG
 fi
 #+END_SRC
 
@@ -3900,9 +3910,9 @@ Now you can visit your wiki and begin editing.
 ** Install Bitmessage
 
 #+BEGIN_VERSE
-/Love your neighbour. Fight the future. If you are reading this you ARE the resistance./
+/The weakness of mass surveillance is that it can very easily be made much more expensive through changes in technical standards: pervasive, end-to-end encryption can quickly make indiscriminate surveillance impossible on a cost-effective basis/
 
--- BitChirp
+-- Edward J. Snowden, testimony to the EU parliament
 #+END_VERSE
 
 *** A new kind of Email
@@ -4182,7 +4192,7 @@ If you're in a very locked down environment where access to web sites is severel
 -- Jono Bacon
 #+END_VERSE
 
-*** With Email
+*** Public mailing list
 Email mailing lists are old skool but still remain as a common and easy way of communicating on the internet.  If you're running a public organisation such as an open source project or community group then you may want to set one up.
 
 **** Installation
@@ -4415,6 +4425,157 @@ To delete a mailing list:
 #+BEGIN_SRC: bash
 rmlist -a mymailinglistname
 #+END_SRC
+
+*** Private (encrypted) mailing list
+**** Installation
+#+BEGIN_SRC: bash
+apt-get install schleuder
+#+END_SRC
+
+Edit the configuration:
+
+#+BEGIN_SRC: bash
+emacs /etc/schleuder/schleuder.conf
+#+END_SRC
+
+Set the following parameters, replacing /mydomainname.com/ with your domain name:
+
+#+BEGIN_SRC: bash
+smtp_port: 465
+superadminaddr: root@mydomainname.com
+#+END_SRC
+
+Save and exit.
+
+Get your GPG public key, replacing /myGPGkeyID/ with your GPG key ID:
+
+#+BEGIN_SRC: bash
+export MYKEYID=myGPGkeyID
+gpg --search-keys $MYKEYID
+gpg --output /tmp/mypublickey.txt --armor --export $MYKEYID
+#+END_SRC
+
+Then to create a mailing list, replacing /mydomainname.com/ with your domain name, /myusername/ with your username and /mailinglistname/ with the name of the mailing list.  /mailinglistname/ should be all one word, with no spaces.
+
+#+BEGIN_SRC: bash
+export MAILINGLISTNAME=mailinglistname
+export MYUSERNAME=myusername
+export HOSTNAME=mydomainname.com
+export EMAILADDRESS=$MYUSERNAME@$HOSTNAME
+schleuder-newlist $MAILINGLISTNAME@$HOSTNAME -realname "mailing list name" -adminaddress $EMAILADDRESS -initmember $EMAILADDRESS -initmemberkey /tmp/mypublickey.txt -nointeractive
+#+END_SRC
+
+Now add a mailing list rule:
+
+#+BEGIN_SRC: bash
+emailrule $MYUSERNAME $MAILINGLISTNAME@$HOSTNAME $MAILINGLISTNAME
+#+END_SRC
+
+Edit your Mutt configuration.
+
+#+BEGIN_SRC: bash
+emacs /home/$MYUSERNAME/.muttrc
+#+END_SRC
+
+Search for the /mailboxes/ parameter and add "=mailinglistname".  For example:
+
+#+BEGIN_SRC: bash
+mailboxes = =Sent =Drafts =mailinglistname
+#+END_SRC
+
+Save and exit.
+
+Update Exim routing.
+
+#+BEGIN_SRC: bash
+emacs /etc/exim4/conf.d/router/550_schleuder
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+schleuder:
+  debug_print = "R: schleuder for $local_part@$domain"
+  driver = accept
+  local_part_suffix_optional
+  local_part_suffix = +* : -bounce : -sendkey
+  domains = +local_domains
+  require_files = schleuder:/var/schleuderlists/${local_part}/
+  transport = schleuder_transport
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+emacs /etc/exim4/conf.d/transport/30_schleuder
+#+END_SRC
+
+Add the following.
+
+#+BEGIN_SRC: bash
+schleuder_transport:
+  debug_print = "T: schleuder_transport for $local_part@$domain"
+  driver = pipe
+  user = schleuder
+  group = schleuder
+  home_directory = "/var/schleuderlists/$local_part"
+  command = "/usr/bin/schleuder $local_part"
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+update-exim4.conf
+service exim4 restart
+useradd  -d /var/schleuderlists -s /bin/false schleuder
+adduser Debian-exim schleuder
+#+END_SRC
+
+#+BEGIN_SRC: bash
+emacs /etc/aliases
+#+END_SRC
+
+Append the following, replacing /mailinglistname/ with the mailing list name and /mydomainname.com/ with your domain name.
+
+#+BEGIN_SRC: bash
+mailinglistname: "|/usr/bin/schleuder mailinglistname@mydomainname.com"
+mailinglistname-request: "|/usr/bin/schleuder mailinglistname@mydomainname.com"
+mailinglistname-bounce: "|/usr/bin/schleuder mailinglistname@mydomainname.com"
+mailinglistname-sendkey: "|/usr/bin/schleuder mailinglistname@mydomainname.com"
+mailinglistname-owner: "|/usr/bin/schleuder mailinglistname@mydomainname.com"
+#+END_SRC
+
+Save and exit.
+
+**** Using the list
+
+To get the public keys send an email to /mailinglistname-request@mydomainname.com/ containing *X-LIST-KEYS* in the message body.
+
+To add a member: *X-ADD-MEMBER: othermember@otherdomain.net*
+
+An example of adding a public key to the list:
+
+#+BEGIN_SRC: bash
+X-ADD-KEY:
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+mQGiBEjVO7oRBADQvT6wtD2IzzIiK0NbrcilCKCp4MWb8cYXTXguwPQI6y0Nerz4
+dsK6J0X1Vgeo02tqA4xd3EDK8rdqL2yZfl/2egH8+85R3gDk+kqkfEp4pwCgp6VO
+[...]
+pNlF/qkaWwRb048h+iMrW21EkouLKTDPFkdFbapV2X5KJZIcfhO1zEbwc1ZKF3Ju
+Q9X5GRmY62hz9SCZnsC0jeYAni8OUQV9NXfXlS/vePBUnOL08NQB
+=xTv3
+-----END PGP PUBLIC KEY BLOCK-----
+#+END_SRC
+
+To get details for a member: *X-GET-MEMBER: othermember@otherdomain.net*
+
+To delete a member: *X-DELETE-MEMBER: othermember@otherdomain.net*
+
+To delete a public key: *X-DELETE-KEY: keyID*
+
+You can unsubscribe from the list with *X-UNSUBSCRIBE* in the message body.
 
 *** With Bitmessage
 On your local machine (not the BBB) you can make a private mailing list which is difficult to censor and where there is no single point of failure.  This type of mailing list is known as a "chan".
