@@ -2035,6 +2035,19 @@ macro index,pager \Cb '<enter-command>toggle sidebar_visible<enter><redraw-scree
 macro index <esc>m "T~N<enter>;WNT~O<enter>;WO\CT~T<enter>" "mark all messages read"
 
 
+# Collapsing threads
+macro index [ "<collapse-thread>" "collapse/uncollapse thread"
+macro index ] "<collapse-all>"    "collapse/uncollapse all threads"
+
+# threads containing new messages
+uncolor index "~(~N)"
+  color index brightblue default "~(~N)"
+
+# new messages themselves
+uncolor index "~N"
+  color index brightyellow default "~N"
+
+
 # GPG/PGP integration
 
 # this set the number of seconds to keep in memory the passphrase used to encrypt/sign
@@ -2103,6 +2116,8 @@ Some useful keys to know are:
 | CTRL-n | Next mailbox (on side bar)                              |
 | CTRL-p | Previous mailbox (on side bar)                          |
 | CTRL-o | Open mailbox (on side bar)                              |
+| ]      | Expand or collapse all threads                          |
+| [      | Expand of collapse the current thread                   |
 
 *** K9 Android client
 
