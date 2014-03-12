@@ -2118,6 +2118,7 @@ Some useful keys to know are:
 | CTRL-o | Open mailbox (on side bar)                              |
 | ]      | Expand or collapse all threads                          |
 | [      | Expand of collapse the current thread                   |
+| CTRL-k | Import a PGP/GPG public key                             |
 
 *** K9 Android client
 
@@ -4875,11 +4876,25 @@ Test the routing.
 exim -d -bt mailinglistname@mydomainname.com
 #+END_SRC
 
+**** Importing the public key of the mailing list
+Before you can use the mailing list you will first need to import its public key.  How you do this depends upon which email client you're using.
+
+***** Using Mutt
+Send an email to /mailinglistname-sendkey@mydomainname.com/ to have the list public key emailed to you.
+
+When you receive the email open it and press *CTRL-k* to import it.
+***** Using Thunderbird
+Send an email to /mailinglistname-sendkey@mydomainname.com/ to have the list public key emailed to you.
+
+When you receive the email open it, select all the text with *CTRL-a* then *CTRL-c*.
+
+On the menu select *OpenPGP* followed by *Key Management*.
+
+You will now see a new menu bar.  Select *Edit* followed by *Import keys from clipboard*.
+
+Click on *Import* followed by *Ok*.
 **** Using the list
-
-To use the list you'll first need to obtain its public key.  Send an email to /mailinglistname-sendkey@mydomainname.com/ to receive it.
-
-To get the public keys of list members send an email to /mailinglistname-request@mydomainname.com/ containing *X-LIST-KEYS* in the message body.
+To obtain the public keys of list members send an email to /mailinglistname-request@mydomainname.com/ containing *X-LIST-KEYS* in the message body.
 
 To add a member: *X-ADD-MEMBER: othermember@otherdomain.net*
 
