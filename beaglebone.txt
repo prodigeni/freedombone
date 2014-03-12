@@ -1496,7 +1496,7 @@ If you later create an encrypted mailing list then the root user will also need 
 #+BEGIN_SRC: bash
 su
 cp -r /home/myusername/.gnupg ~/
-chown root:root ~/.gnupg
+chown -R root:root ~/.gnupg
 #+END_SRC
 
 ** Create Email folders and rules
