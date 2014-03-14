@@ -82,9 +82,17 @@ To use as the main storage for the BBB.  16 or 32GB is fine, and can be obtained
 
 You may also need an SD card adaptor or USB card reader in order to flash the operating image to the microSD card.  For instance, many laptops have an SD card slot but not a microSD slot.
 
-** 5V/1A power supply
+** 5V/2A power supply
 
-With a plug suitable for powering the BBB.  If you have some device with a USB socket nearby you may also be able to just use that for electrical power.  However, powering from the USB cable alone might result in crashes when the system is under load, depending upon how many milliamps can be supplied by the USB hub/socket.  If the system crashes due to running out of power then you will see that the LEDs on the BBB are continuously on, rather than flashing.
+With a plug suitable for powering the BBB.  If you have some device with a USB socket nearby you may also be able to just use that for electrical power.  However, powering from the USB cable alone might result in crashes when the system is under load, depending upon how many milliamps can be supplied by the USB hub/socket.  If the system crashes due to running out of power then you will see that the LEDs on the BBB are continuously on, rather than flashing.  One way to test whether the board has enough power is to try compiling a Linux kernel on it, but any CPU and disk intensive program will also suffice as a test.
+
+[[http://beagleboard.org/Support/FAQ][beagleboard.org]] gives the following advice on power supplies:
+
+#+BEGIN_VERSE
+/Power over USB is sufficient as long as the software and system running perform some management to keep it under the USB current limit threshold. For simplicity and maximum capability, powering over the 5V barrel connector is typically recommended./
+
+/The power adapter is required to provide 5V over a 5.5mm outer diameter and 2.1mm inner diameter barrel connector (a barrel connector length of 9.5mm is more than sufficient). The recommended supply current is at least 1.2A (or 6W), but at least 2A (or 10W) is recommended if you are going to connect up anything over the USB./
+#+END_VERSE
 
 ** An ethernet patch cable
 
@@ -490,6 +498,9 @@ Enter the following:
 
 #+BEGIN_SRC: bash
 #!/bin/bash
+
+# Don't fear the oom-killer
+echo 2 > /proc/sys/vm/overcommit_memory
 
 # Enable syn cookies
 echo 1 > /proc/sys/net/ipv4/tcp_syncookies
