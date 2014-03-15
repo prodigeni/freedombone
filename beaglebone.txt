@@ -94,6 +94,8 @@ With a plug suitable for powering the BBB.  If you have some device with a USB s
 /The power adapter is required to provide 5V over a 5.5mm outer diameter and 2.1mm inner diameter barrel connector (a barrel connector length of 9.5mm is more than sufficient). The recommended supply current is at least 1.2A (or 6W), but at least 2A (or 10W) is recommended if you are going to connect up anything over the USB./
 #+END_VERSE
 
+The plug should be /centre positive/, meaning that the centre/tip is positive and the outer part is negative.
+
 ** An ethernet patch cable
 
 Just an ordinary cat5 or cat6 cable that you can get from most electrical/computer stores.
@@ -498,9 +500,6 @@ Enter the following:
 
 #+BEGIN_SRC: bash
 #!/bin/bash
-
-# Don't fear the oom-killer
-echo 2 > /proc/sys/vm/overcommit_memory
 
 # Enable syn cookies
 echo 1 > /proc/sys/net/ipv4/tcp_syncookies
@@ -4874,11 +4873,13 @@ schleuder_transport:
 Save and exit.
 
 #+BEGIN_SRC: bash
+chown -R schleuder:schleuder /var/lib/schleuder
 update-exim4.conf.template -r
 update-exim4.conf
 service exim4 restart
 useradd -d /var/schleuderlists -s /bin/false schleuder
 adduser Debian-exim schleuder
+usermod -a -G mail schleuder
 #+END_SRC
 
 Test the routing.
