@@ -56,7 +56,7 @@ If you're particularly security conscious then you shouldn't.  Binary or source 
 
 However, for maximum security for those software systems which are not already packaged within the Debian repositories then seek out the original sources and verify the hashes independently.
 
-It's worth adopting an attitude of "/trust but verify/".  Don't let fear of mass surveillance and [[https://www.techdirt.com/articles/20140207/08354426130/gchq-has-entire-program-dirty-tricks-including-honeypots-using-journalists-deleting-online-accounts.shtml]["dirty tricks"]] paralyse you into trusting nothing and consequently doing nothing.  Doing nothing means they win.
+It's worth adopting an attitude of "/trust but verify/".  Don't let fear of mass surveillance and [[https://www.techdirt.com/articles/20140207/08354426130/gchq-has-entire-program-dirty-tricks-including-honeypots-using-journalists-deleting-online-accounts.shtml]["dirty tricks"]] paralyse you into trusting nothing and consequently doing nothing.  Doing nothing means that the surveillance apparatus has succeeded in keeping you under observation at all times.
 * Inventory
 
 #+BEGIN_VERSE
