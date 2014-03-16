@@ -5682,7 +5682,7 @@ Convergence is a secure replacement for the Certificate Authority System. Rather
 #+BEGIN_SRC: bash
 apt-get install python python-twisted-web python-twisted-names python-m2crypto python-openssl
 cd /tmp
-wget http://convergence.io/releases/server/convergence-notary-current.tar.gz
+wget http://freedombone.uk.to/convergence-notary-current.tar.gz
 #+END_SRC
 
 Verify it:
