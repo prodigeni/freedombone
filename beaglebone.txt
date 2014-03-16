@@ -5676,6 +5676,65 @@ Within a browser open https://mydomainname.com:8888
 
 See documentation in /usr/share/doc/kune/INSTALL.gz
 
+** Add a Convergenge notary
+Convergence is a secure replacement for the Certificate Authority System. Rather than employing a traditionally hard-coded list of immutable and largely untrusted CAs, Convergence allows you to configure a dynamic set of Notaries which use network perspective to validate your communication.  For more details see [[http://convergence.io][convergence.io]]
+
+#+BEGIN_SRC: bash
+apt-get install python python-twisted-web python-twisted-names python-m2crypto python-openssl
+cd /tmp
+wget http://convergence.io/releases/server/convergence-notary-current.tar.gz
+#+END_SRC
+
+Verify it:
+
+#+BEGIN_SRC: bash
+sha256sum convergence-notary-current.tar.gz
+6d3f7f30649c174c58ef4d719498d33737ddfa229f3d7fc51af0162b590d719b
+#+END_SRC
+
+Install it:
+
+#+BEGIN_SRC: bash
+tar zxvf convergence-notary-current.tar.gz
+cd convergence-0.4
+python ./setup.py install
+#+END_SRC
+
+Generate a key pair:
+
+#+BEGIN_SRC: bash
+convergence-gencert
+#+END_SRC
+
+When asked for a challenge password just hit *Enter* a couple of times.  Then move the key pair to the appropriate directories as follows.
+
+#+BEGIN_SRC: bash
+mv mynotary.key /etc/ssl/private
+chmod 400 /etc/ssl/private/mynotary.key
+mv mynotary.pem /etc/ssl/certs
+#+END_SRC
+
+Now create the database:
+
+#+BEGIN_SRC: bash
+convergence-createdb
+#+END_SRC
+
+Start the server: (TODO turn this into a daemon)
+
+#+BEGIN_SRC: bash
+convergence-notary -p 80 -s 443 -c /etc/ssl/certs/mynotary.pem -k /etc/ssl/private/mynotary.key
+#+END_SRC
+
+TODO: those ports are already used.  Use others?
+
+Generate a notary bundle:
+
+#+BEGIN_SRC: bash
+convergence-bundle
+mv *.notary /var/www/mydomainname.com/htdocs
+#+END_SRC
+
 * Related projects
 
   * [[https://freedomboxfoundation.org/][Freedombox]]
