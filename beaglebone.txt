@@ -4848,7 +4848,9 @@ schleuder:
   local_part_suffix_optional
   local_part_suffix = +* : -bounce : -sendkey
   domains = +local_domains
-  require_files = schleuder:/var/lib/schleuder/$domain/${local_part}/
+  user = schleuder
+  group = schleuder
+  require_files = schleuder:+/var/lib/schleuder/$domain/${local_part}
   transport = schleuder_transport
 #+END_SRC
 
@@ -4864,8 +4866,6 @@ Add the following.
 schleuder_transport:
   debug_print = "T: schleuder_transport for $local_part@$domain"
   driver = pipe
-  user = schleuder
-  group = schleuder
   home_directory = "/var/lib/schleuder/$domain/$local_part"
   command = "/usr/bin/schleuder $local_part@$domain"
 #+END_SRC
