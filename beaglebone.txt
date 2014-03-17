@@ -5720,20 +5720,33 @@ Now create the database:
 convergence-createdb
 #+END_SRC
 
-Start the server: (TODO turn this into a daemon)
+Create an initialisation script:
 
 #+BEGIN_SRC: bash
-convergence-notary -p 80 -s 443 -c /etc/ssl/certs/mynotary.pem -k /etc/ssl/private/mynotary.key
+convergence-notary -p 8432 -s 8433 -c /etc/ssl/certs/mynotary.pem -k /etc/ssl/private/mynotary.key
 #+END_SRC
 
-TODO: those ports are already used.  Use others?
+An initialisation script will be created automatically within /etc/init.d.
 
 Generate a notary bundle:
 
 #+BEGIN_SRC: bash
 convergence-bundle
-mv *.notary /var/www/mydomainname.com/htdocs
 #+END_SRC
+
+Enter your name, nickname, handle or whatever.
+
+For the bundle location enter https://mydomainname.com/convergence.notary
+
+For the Hostname press Enter.
+
+#+BEGIN_SRC: bash
+export HOSTNAME=mydomainname.com
+mv mynotarybundle.notary /var/www/$HOSTNAME/htdocs/convergence.notary
+chown www-data:www-data /var/www/$HOSTNAME/htdocs/convergence.notary
+#+END_SRC
+
+Now open ports 8432 and 8433 on your internet router or firewall and direct it to the BBB.
 
 * Related projects
 
