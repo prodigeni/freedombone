@@ -479,7 +479,7 @@ Set the following properties:
 TCP_PORTS="1,7,9,11,15,79,109,110,111,119,138,139,512,513,514,515,540,635,1080,1524,2000,2001,4000,4001,5742,6000,6001,6667,12345,12346,20034,27665,30303,32771,32772,32773,32774,31337,40421,40425,49724,54320"
 UDP_PORTS="1,7,9,66,67,68,69,111,137,138,161,162,474,513,517,518,635,640,641,666,700,2049,31335,27444,34555,32770,32771,32772,32773,32774,31337,54321"
 
-ADVANCED_EXCLUDE_TCP="113,139,70,80,443,143,6670,993,5060,5061,25,465,22,5222,5223,5269,5280,5281,8444"
+ADVANCED_EXCLUDE_TCP="113,139,70,80,443,143,6670,993,5060,5061,25,465,22,5222,5223,5269,5280,5281,8432,8433,8444"
 ADVANCED_EXCLUDE_UDP="520,138,137,67,70,80,443,143,6670,993, 5060,5061,25,465,22,5222,5223,5269,5280,5281,8444"
 
 SCAN_TRIGGER="2"
@@ -4982,28 +4982,15 @@ Convergence is a secure replacement for the Certificate Authority System. Rather
 #+BEGIN_SRC: bash
 apt-get install python python-twisted-web python-twisted-names python-m2crypto python-openssl
 cd /tmp
-wget http://freedombone.uk.to/convergence-notary-current.tar.gz
-#+END_SRC
-
-Verify it:
-
-#+BEGIN_SRC: bash
-sha256sum convergence-notary-current.tar.gz
-6d3f7f30649c174c58ef4d719498d33737ddfa229f3d7fc51af0162b590d719b
-#+END_SRC
-
-Install it:
-
-#+BEGIN_SRC: bash
-tar zxvf convergence-notary-current.tar.gz
-cd convergence-0.4
+git clone https://github.com/fuzzgun/convergence
+cd convergence/server
 python ./setup.py install
 #+END_SRC
 
 Generate a key pair:
 
 #+BEGIN_SRC: bash
-convergence-gencert
+convergence gencert
 #+END_SRC
 
 When asked for a challenge password just hit *Enter* a couple of times.  Then move the key pair to the appropriate directories as follows.
@@ -5017,21 +5004,40 @@ mv mynotary.pem /etc/ssl/certs
 Now create the database:
 
 #+BEGIN_SRC: bash
-convergence-createdb
+rm /var/lib/convergence/convergence.db
+convergence createdb
 #+END_SRC
 
 Create an initialisation script:
 
 #+BEGIN_SRC: bash
-convergence-notary -p 8432 -s 8433 -c /etc/ssl/certs/mynotary.pem -k /etc/ssl/private/mynotary.key
+emacs /etc/init.d/convergence
 #+END_SRC
 
-An initialisation script will be created automatically within /etc/init.d.
+Add the following:
+
+#+BEGIN_SRC: bash
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+adduser converg
+#+END_SRC
+
+The details for the user don't especially matter, but give them a long random password.
+
+#+BEGIN_SRC: bash
+chown -R converg:converg /home/converg
+chmod +x /etc/init.d/convergence
+update-rc.d convergence defaults
+service convergence start
+#+END_SRC
 
 Generate a notary bundle:
 
 #+BEGIN_SRC: bash
-convergence-bundle
+convergence bundle
 #+END_SRC
 
 Enter your name, nickname, handle or whatever.
@@ -5055,7 +5061,7 @@ Now open ports 8432 and 8433 on your internet router or firewall and direct it t
 *** Using Convergence
 On a computer which is not the BBB (your laptop, etc):
 
-Install the browser plugin by navigating to https://convergence.io or a backup copy also exists at http://freedombone.uk.to/convergence-current.xpi
+Install the browser plugin by navigating to https://addons.mozilla.org/en-us/firefox/addon/convergence-extra/
 
 After installation restart your browser.
 
