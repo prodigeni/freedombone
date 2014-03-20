@@ -1230,7 +1230,7 @@ service cron restart
 Install the required packages.
 
 #+BEGIN_SRC: bash
-aptitude -y install dovecot-common dovecot-pop3d dovecot-imapd
+aptitude -y install dovecot-common dovecot-imapd
 #+END_SRC
 
 Edit the configuration file.
