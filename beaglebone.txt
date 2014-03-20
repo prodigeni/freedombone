@@ -10,7 +10,6 @@
 *How to turn the Beaglebone Black into a FreedomBox-like personal communications server*
 #+END_CENTER
 
-#+ATTR_HTML: image :align right
 [[./images/freedombone_small.jpg]]
 
 #+BEGIN_CENTER
