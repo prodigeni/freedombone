@@ -327,6 +327,48 @@ apt-get update
 apt-get dist-upgrade
 #+END_SRC
 
+** Configure for your location
+
+#+BEGIN_SRC: bash
+dpkg-reconfigure locales
+#+END_SRC
+
+And to verify the change.
+
+#+BEGIN_SRC: bash
+locale -a
+#+END_SRC
+
+** Upgrade the kernel
+Using a more recent kernel should improve stability of the system and also allow it to make use of hardware random number generation, which improves the overall security.  Please note that this kernel is specific to the BBB, so if you're using a Raspberry Pi, Cubieboard or other SBC then look elsewhere on the web for information about upgrading the kernel.
+
+#+BEGIN_SRC: bash
+cd /tmp
+wget http://freedombone.uk.to/kernel-3.13.tar.gz
+#+END_SRC
+
+Verify it.
+
+#+BEGIN_SRC: bash
+sha256sum kernel-3.13.tar.gz
+88f7c5d1a26b844371137a5e849b376284267452ee8ddbfe7792da9254b86473
+#+END_SRC
+
+Then extract and install it.
+
+#+BEGIN_SRC: bash
+tar -xzvf kernel-3.13.tar.gz
+cd kernel-3.13
+sh install-me.sh
+reboot
+#+END_SRC
+
+After the system has rebooted you can ssh back unto it and log in as the root user.  You can check that the kernel version has changed with the command:
+
+#+BEGIN_SRC: bash
+uname -mrs
+#+END_SRC
+
 ** Random number generation
 
 #+BEGIN_VERSE
@@ -338,14 +380,62 @@ apt-get dist-upgrade
 
 The security of encryption depends upon the randomness of the random source used on your system.  If it isn't very random then it may be far more vulnerable to cryptanalysis, and it's known that in the past some dubious agencies have encouraged the use of flawed random number generators to assist with their prurient activities.  Randomness - typically referred to as /entropy/ - is often gathered from factors such as the timing of key presses or mouse movements, but since the BBB won't have such devices plugged into it this reduces the amount of entropy available.
 
-To improve entropy generation there are two options.  One is to install a kernel module which enables the hardware crypto available on the BBB, but that's a bit complicated and might have some stability implications.  The other option is to install [[http://www.issihosts.com/haveged/][havegd]].  While not as good as a true hardware random number generator, havegd is better than the default pseudo-random number generation within the Linux kernel.  To install it:
+*** On the Beaglebone Black
+If you are using a Beaglebone and have updated the kernel then install:
+
+#+BEGIN_SRC: bash
+apt-get install rng-tools
+emacs /etc/default/rng-tools
+#+END_SRC
+
+Uncomment *HRNGDEVICE=/dev/hwrng*, save and exit then restart the daemon.
+
+#+BEGIN_SRC: bash
+service rng-tools restart
+#+END_SRC
+
+Your BBB will now use hardware to generate random numbers.
+
+*** On other Single Board Comuters
+If you are not using a Beaglebone (a Cubieboard for example), or if you didn't update the kernel, then you can still improve the random number generation by installing:
 
 #+BEGIN_SRC: bash
 apt-get install haveged
 #+END_SRC
 
-At the time of writing there is also some hardware called [[http://beagleboard.org/project/CryptoCape/][cryptocape]] being developed, with the intention of adding extra random number generation capabilities to the BBB.
+*** Verifying random number quality
+You can check how much randomness (entropy) is available with:
 
+#+BEGIN_SRC: bash
+cat /proc/sys/kernel/random/entropy_avail
+#+END_SRC
+
+Ideally it should be in the range 1000-4096.  If it is persistently below 500 then there may be a problem with your system which could make it less secure.
+
+To verify that random number generation is good on the BBB run:
+
+#+BEGIN_SRC: bash
+cat /dev/hwrng | rngtest -c 1000
+#+END_SRC
+
+You should see something like this, with zero or a small number of failures:
+
+#+BEGIN_SRC: bash
+rngtest: starting FIPS tests...
+rngtest: bits received from input: 20000032
+rngtest: FIPS 140-2 successes: 1000
+rngtest: FIPS 140-2 failures: 0
+rngtest: FIPS 140-2(2001-10-10) Monobit: 0
+rngtest: FIPS 140-2(2001-10-10) Poker: 0
+rngtest: FIPS 140-2(2001-10-10) Runs: 0
+rngtest: FIPS 140-2(2001-10-10) Long run: 0
+rngtest: FIPS 140-2(2001-10-10) Continuous run: 0
+rngtest: input channel speed: (min=3.104; avg=26.015; max=18.626)Gibits/s
+rngtest: FIPS tests speed: (min=160.281; avg=165.696; max=168.792)Mibits/s
+rngtest: Program run time: 115987 microseconds
+#+END_SRC
+*** Additional addons
+At the time of writing there is also some hardware called [[http://beagleboard.org/project/CryptoCape/][cryptocape]] being developed, with the intention of adding extra random number generation capabilities to the BBB.
 ** Alter ssh configuration
 
 Altering the ssh configuration will make it a little more secure than the standard Debian settings.
