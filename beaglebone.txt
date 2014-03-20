@@ -802,6 +802,8 @@ Email is not very secure, but its usefulness and ubiquity mean that it's likely 
 Exim4 seems much easier to install and configure than Postfix.
 
 #+BEGIN_SRC: bash
+service postfix stop
+apt-get remove postfix
 aptitude install exim4 sasl2-bin swaks libnet-ssleay-perl procmail
 #+END_SRC
 
