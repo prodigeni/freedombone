@@ -327,13 +327,13 @@ apt-get update
 apt-get dist-upgrade
 #+END_SRC
 
-** Configure for your location
+** Configure your location/language
 
 #+BEGIN_SRC: bash
 dpkg-reconfigure locales
 #+END_SRC
 
-And to verify the change.
+You may need to reboot for this to take effect.  To verify the change.
 
 #+BEGIN_SRC: bash
 locale -a
@@ -376,7 +376,6 @@ uname -mrs
 
 -- Bruce Schneier, on the 2013 leaked NSA documents
 #+END_VERSE
-
 
 The security of encryption depends upon the randomness of the random source used on your system.  If it isn't very random then it may be far more vulnerable to cryptanalysis, and it's known that in the past some dubious agencies have encouraged the use of flawed random number generators to assist with their prurient activities.  Randomness - typically referred to as /entropy/ - is often gathered from factors such as the timing of key presses or mouse movements, but since the BBB won't have such devices plugged into it this reduces the amount of entropy available.
 
@@ -963,12 +962,6 @@ Search for the line *.ifdef MAIN_HARDCODE_PRIMARY_HOSTNAME* and above it insert 
 
 #+BEGIN_SRC: bash
 MAIN_HARDCODE_PRIMARY_HOSTNAME = mydomainname.com
-#+END_SRC
-
-Save and exit.
-
-#+BEGIN_SRC: bash
-emacs /etc/exim4/exim4.conf.template
 #+END_SRC
 
 Add the line:
