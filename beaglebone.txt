@@ -126,7 +126,7 @@ cd debian-7.2-console-armhf-2013-11-15
 Create the disk image, where sdX is the name of the flash drive (probably it will be sdb or sdc).
 
 #+BEGIN_SRC: bash
-sudo apt-get install u-boot-tools
+sudo apt-get install u-boot-tools dosfstools git-core kpartx wget parted
 sudo ./setup_sdcard.sh --mmc /dev/sdX --uboot bone --swap-file 1024
 #+END_SRC
 
