@@ -161,7 +161,7 @@ Throughout these instructions self signed SSL certificates are used to implement
 Not knowing who you're really connecting to is especially true for self-signed certificates, so it is in principle possible that when logging into a site with a username and password a system such as [[http://arstechnica.com/tech-policy/2013/11/uk-spies-continue-quantum-insert-attack-via-linkedin-slashdot-pages/][Quantum Insert]], or a compromised [[http://en.wikipedia.org/wiki/Domain_Name_System][DNS service]], could be used to direct the user to a fake copy of the login screen for the purposes of obtaining their login details.  While this doesn't seem to be a major problem at the time of writing it's something to keep in mind.  So if you can't log in or if you log in and what you see doesn't look like your site then it's possible that such a compromise could have taken place.  Using a password manager with different login details for each site is one way to ensure that if one system is compromised then the attacker can't necessarily get access to all your other stuff.
 ** Initial
 
-Plug the microSD card into the BBB and Connect the USB cable to your laptop/desktop, then login via ssh.
+Eject the microSD card from your computer and plug it into the BBB, then connect the USB cable between the two.  You may need to wait for a couple of minutes for the BBB to boot from the card, then you can then open a terminal and login via ssh.
 
 #+BEGIN_SRC: bash
 ssh debian@192.168.7.2
