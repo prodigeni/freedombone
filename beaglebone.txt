@@ -123,7 +123,13 @@ tar xJf debian-7.2-console-armhf-2013-11-15.tar.xz
 cd debian-7.2-console-armhf-2013-11-15
 #+END_SRC
 
-Create the disk image, where sdX is the name of the flash drive (probably it will be sdb or sdc).
+Create the disk image, where sdX is the name of the flash drive (probably it will be sdb or sdc).  An easy way to find out the device name of the flash drive is to enter the command:
+
+#+BEGIN_SRC: bash
+ls /dev/sd*
+#+END_SRC
+
+then plug in the flash drive and type the same command again.  You'll be able to see the difference.  Once you know the device name then you can proceed to install the image onto the flash drive.
 
 #+BEGIN_SRC: bash
 sudo apt-get install u-boot-tools dosfstools git-core kpartx wget parted
