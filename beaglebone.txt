@@ -5316,6 +5316,8 @@ If you want to invite more users then click on the big button *Invite more colle
 
 So, you're now microblogging on the open web, with no companies in the middle.  Congratulations!  To find some other people to connect to you can try searching other nodes listed at http://gnu.io/try/
 
+When following other GNU Social users enter the URL of your profile.  For example, https://mygnusocialdomain/myusername
+
 ** Install Tripwire
 
 #+BEGIN_VERSE
