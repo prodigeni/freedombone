@@ -5163,6 +5163,159 @@ Install the browser plugin by navigating to https://addons.mozilla.org/en-us/fir
 After installation restart your browser.
 
 You will notice that an icon appears in the top right corner of the browser, which resembles a lock and two plus signs.  Click on the down arrow to the right of it and select *options*.
+** Install a microblog
+
+#+BEGIN_VERSE
+/If you want to have more control over how you interact on the web, and regain your freedom, privacy and autonomy from outside interference, you need to start moving towards using programs like GNU Social/
+
+-- Jason Self
+#+END_VERSE
+
+For a microblog you will need a separate domain/subdomain, so see [[Setting up a web site]] for details of how to create an Apache configuration for your microblog.  If you're using freedns then you will need to create a new subdomain.
+
+Install some dependencies:
+
+#+BEGIN_SRC: bash
+apt-get install php5-xcache php-gettext php5-curl php5-gd php5-mysql
+#+END_SRC
+
+Download GNU Social
+
+#+BEGIN_SRC: bash
+cd /tmp
+wget http://freedombone.uk.to/gnu-social.tar.gz
+#+END_SRC
+
+Verify it.
+
+#+BEGIN_SRC: bash
+sha256sum gnu-social.tar.gz
+1f886241c7f1a175e7be3cccbcb944ab6c03617fb75aefa4d62d37abed87d2b4
+#+END_SRC
+
+Extract the files and set permissions on them, where /mydomainname.com/ is your domain name.
+
+#+BEGIN_SRC: bash
+export HOSTNAME=mydomainname.com
+tar zxf gnu-social.tar.gz
+rm -rf /var/www/$HOSTNAME/htdocs
+mv statusnet-gnu-social /var/www/$HOSTNAME/htdocs
+chmod a+w /var/www/$HOSTNAME/htdocs
+chown www-data:www-data /var/www/$HOSTNAME/htdocs
+chmod a+w /var/www/$HOSTNAME/htdocs/avatar
+chmod a+w /var/www/$HOSTNAME/htdocs/background
+chmod a+w /var/www/$HOSTNAME/htdocs/file
+chmod +x /var/www/$HOSTNAME/htdocs/scripts/maildaemon.php
+#+END_SRC
+
+Edit the Apache access settings.
+
+#+BEGIN_SRC: bash
+emacs /var/www/$HOSTNAME/htdocs/.htaccess
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  ## Uncomment these if having trouble with API authentication
+  ## when PHP is running in CGI or FastCGI mode.
+  #
+  #RewriteCond %{HTTP:Authorization} ^(.*)
+  #RewriteRule ^(.*) - [E=HTTP_AUTHORIZATION:%1]
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule (.*) index.php?p=$1 [L,QSA]
+</IfModule>
+
+<FilesMatch "\.(ini)">
+  Order allow,deny
+</FilesMatch>
+#+END_SRC
+
+Save and exit, then create a database.
+
+#+BEGIN_SRC: bash
+mysql -u root -p
+create database gnusocial;
+CREATE USER 'gnusocialadmin'@'localhost' IDENTIFIED BY 'gnusocialpassword';
+GRANT ALL PRIVILEGES ON gnusocial.* TO 'gnusocialadmin'@'localhost';
+quit
+#+END_SRC
+
+Add the mailer script to the aliases file:
+
+#+BEGIN_SRC: bash
+emacs /etc/aliases
+#+END_SRC
+
+Add the following, replacing /mydomainname.com/ with your domain name.
+
+#+BEGIN_SRC: bash
+www-data: root
+*: /var/www/mydomainname.com/htdocs/scripts/maildaemon.php
+#+END_SRC
+
+Save and exit.  Update the aliases by typing:
+
+#+BEGIN_SRC: bash
+newaliases
+#+END_SRC
+
+Then with a web browser navigate to:
+
+https://$HOSTNAME/install.php
+
+Set a name for the site.
+
+Server SSL: enable
+
+Hostname: localhost
+
+Type: MySql
+
+Name: gnusocial
+
+DB username: gnusocialadmin
+
+DB Password; your gnu social admin password goes here
+
+Administrator nickname: myusername
+
+Administrator password: mylongrandompassword
+
+Subscribe to announcements: ticked
+
+Site profile: Community
+
+Press the *Submit* button.  It may take a few minutes, so don't be concerned that it has crashed.  When the process completes you will see a lot of "Strict standards" warnings which you can ignore.
+
+Navigate to http://$HOSTNAME/gnusocial and you can then complete the configuration via the *Admin* section on the header bar.  Some recommended admin settings are:
+
+Under the *Site* settings:
+
+    Text limit: 140
+
+    Dupe Limit: 60000
+
+Under the *User* settings:
+
+    Bio limit: 1000
+
+Under the *Access* settings:
+
+    /Invite only/ ticked
+
+Under the License section select a license if you wish.  Details for Creative Commons licenses [[https://creativecommons.org/licenses/][can be found here]].  If you only intend to do private microblogging then just leave these settings as they are.
+
+If you want to invite more users then click on the big button *Invite more colleagues*, then enter their email addresses and hit the *send* button.  The invite only configuration which you've just installed is useful because it prevents spammers, or other [[https://en.wikipedia.org/wiki/Joint_Threat_Research_Intelligence_Group]["bad actors"]], from clogging your system with nonsense.
+
+So, you're now microblogging on the open web, with no companies in the middle.  Congratulations!  To find some other people to connect to you can try searching other nodes listed at http://gnu.io/try/
+
 ** Install Tripwire
 
 #+BEGIN_VERSE
