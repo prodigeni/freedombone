@@ -2086,6 +2086,8 @@ Some useful keys to know are:
 | [      | Expand of collapse the current thread                   |
 | CTRL-k | Import a PGP/GPG public key                             |
 
+One of the most common things which you might wish to do is to send an email.  To do this first press /m/ to create a new message.  Enter the address to send to and the subject, then after a few seconds the Emacs editor will appear with a blank document.  Type your email then press /CTRL-x CTRL-s/ to save it and /CTRL-x CTRL-c/ to exit.  You will then see a summary of the email to be sent out.  Press /y/ to send it and then enter your GPG key passphrase (the one you gave when creating a PGP/GPG key).  The purpose of that is to add a signature which is a strong proof that the email was written by you and not by someone else.
+
 *** K9 Android client
 
 #+BEGIN_VERSE
