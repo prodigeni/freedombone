@@ -1956,7 +1956,7 @@ set postponed="+Drafts"
 set trash="+Trash"
 set spoolfile="~/Maildir"
 auto_view text/x-vcard text/html text/enriched
-set editor="emacsclient %s"
+set editor="emacs"
 set header_cache="+.cache"
 
 macro index S "<tag-prefix><save-message>=.learn-spam<enter>" "move to learn-spam"
