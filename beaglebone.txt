@@ -1935,11 +1935,6 @@ apt-get install mutt-patched lynx abook
 exit
 mkdir ~/.mutt
 echo "text/html; lynx -dump -width=78 -nolist %s | sed ‘s/^ //’; copiousoutput; needsterminal; nametemplate=%s.html" > ~/.mutt/mailcap
-#+END_SRC
-
-Save and exit.
-
-#+BEGIN_SRC: bash
 su
 emacs /etc/Muttrc
 #+END_SRC
