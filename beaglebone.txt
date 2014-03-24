@@ -2516,6 +2516,7 @@ Extract and install it.
 tar -xzvf flatpress.tar.gz
 cd flatpress-*
 cp -r * /var/www/$HOSTNAME/htdocs
+cd ..
 rm -rf flatpress-*
 rm -f flatpress.tar.gz
 #+END_SRC
