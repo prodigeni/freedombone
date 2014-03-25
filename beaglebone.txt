@@ -1628,6 +1628,8 @@ emacs /etc/apache2/apache2.conf
 Search for MaxClients and replace the value with 6. As an example the settings should look something like this:
 
 #+BEGIN_SRC: bash
+Timeout 150
+
 <IfModule mpm_prefork_module>
     StartServers          3
     MinSpareServers       3
