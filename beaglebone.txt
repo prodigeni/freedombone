@@ -1664,7 +1664,14 @@ ServerSignature Off
 ServerTokens Prod
 #+END_SRC
 
-Then save and exit  In the examples below replace /mydomainname.com/ with your own domain name.
+Then save and exit.  Install some extra security.
+
+#+BEGIN_SRC: bash
+apt-get install libapache2-modsecurity
+apt-get install libapache2-mod-evasive
+#+END_SRC
+
+In the examples below replace /mydomainname.com/ with your own domain name.
 
 #+BEGIN_SRC: bash
 export HOSTNAME=mydomainname.com
@@ -1690,6 +1697,7 @@ The Apache configuration for the site should look something like the following. 
 		AllowOverride All
 		Order allow,deny
 		allow from all
+        LimitRequestBody 128000
 	</Directory>
 
 	# Don't serve .php~ or .php# files created by emacs
@@ -1714,6 +1722,7 @@ The Apache configuration for the site should look something like the following. 
 		Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
 		Order allow,deny
 		Allow from all
+        LimitRequestBody 128000
 	</Directory>
 
 	ErrorLog ${APACHE_LOG_DIR}/error.log
@@ -1740,6 +1749,7 @@ The Apache configuration for the site should look something like the following. 
 		AllowOverride All
 		Order allow,deny
 		allow from all
+        LimitRequestBody 128000
 	</Directory>
 
 	# Don't serve .php~ or .php# files created by emacs
@@ -1764,6 +1774,7 @@ The Apache configuration for the site should look something like the following. 
 		Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
 		Order allow,deny
 		Allow from all
+        LimitRequestBody 128000
 	</Directory>
 
 	ErrorLog ${APACHE_LOG_DIR}/error.log
