@@ -689,34 +689,34 @@ iptables -A INPUT -p udp --match multiport --dports 465,22,5222,5223,5269,5280,5
 iptables -A INPUT -p tcp --dport 22 -m limit --limit 3/minute --limit-burst 1 -j ACCEPT
 
 # Limit web connections
-iptables -A INPUT -p tcp --dport 80 -m limit --limit 10/minute --limit-burst 1 -j ACCEPT
-iptables -A INPUT -p tcp --dport 443 -m limit --limit 10/minute --limit-burst 1 -j ACCEPT
+iptables -A INPUT -p tcp --dport 80 -m limit --limit 3/minute --limit-burst 1 -j ACCEPT
+iptables -A INPUT -p tcp --dport 443 -m limit --limit 3/minute --limit-burst 1 -j ACCEPT
 
 # Limit number of XMPP connections
-iptables -A INPUT -p tcp --match multiport --dports 5222:5223,5269,5280:5281 -m limit --limit 10/minute --limit-burst 1 -j ACCEPT
+iptables -A INPUT -p tcp --match multiport --dports 5222:5223,5269,5280:5281 -m limit --limit 3/minute --limit-burst 1 -j ACCEPT
 
 # Limit IRC connections
-iptables -A INPUT -p tcp --dport 6666:6670 -m limit --limit 10/minute --limit-burst 1 -j ACCEPT
+iptables -A INPUT -p tcp --dport 6666:6670 -m limit --limit 3/minute --limit-burst 1 -j ACCEPT
 
 # Limit gopher connections
-iptables -A INPUT -p tcp --dport 70 -m limit --limit 10/minute --limit-burst 1 -j ACCEPT
+iptables -A INPUT -p tcp --dport 70 -m limit --limit 3/minute --limit-burst 1 -j ACCEPT
 
 # Limit IMAP connections
-iptables -A INPUT -p tcp --dport 143 -m limit --limit 10/minute --limit-burst 1 -j ACCEPT
-iptables -A INPUT -p tcp --dport 993 -m limit --limit 10/minute --limit-burst 1 -j ACCEPT
+iptables -A INPUT -p tcp --dport 143 -m limit --limit 3/minute --limit-burst 1 -j ACCEPT
+iptables -A INPUT -p tcp --dport 993 -m limit --limit 3/minute --limit-burst 1 -j ACCEPT
 
 # Limit SIP connections
-iptables -A INPUT -p tcp --dport 5060:5061 -m limit --limit 10/minute --limit-burst 1 -j ACCEPT
+iptables -A INPUT -p tcp --dport 5060:5061 -m limit --limit 3/minute --limit-burst 1 -j ACCEPT
 
 # Limit SMTP/SMTPS connections
 iptables -A INPUT -p tcp --dport 25 -m limit --limit 3/minute --limit-burst 1 -j ACCEPT
 iptables -A INPUT -p tcp --dport 465 -m limit --limit 3/minute --limit-burst 1 -j ACCEPT
 
 # Limit Bitmessage connections
-iptables -A INPUT -p tcp --dport 8444 -m limit --limit 10/minute --limit-burst 1 -j ACCEPT
+iptables -A INPUT -p tcp --dport 8444 -m limit --limit 3/minute --limit-burst 1 -j ACCEPT
 
 # Limit Convergence notary
-iptables -A INPUT -p tcp --dport 8432:8433 -m limit --limit 10/minute --limit-burst 1 -j ACCEPT
+iptables -A INPUT -p tcp --dport 8432:8433 -m limit --limit 3/minute --limit-burst 1 -j ACCEPT
 
 # Limit the number of incoming tcp connections
 # Interface 0 incoming syn-flood protection
@@ -1655,6 +1655,13 @@ Search for MaxClients and replace the value with 6. As an example the settings s
     MaxClients            6
     MaxRequestsPerChild   0
 </IfModule>
+#+END_SRC
+
+Also append the following:
+
+#+BEGIN_SRC: bash
+ServerSignature Off
+ServerTokens Prod
 #+END_SRC
 
 Then save and exit  In the examples below replace /mydomainname.com/ with your own domain name.
