@@ -2226,6 +2226,14 @@ Click *create config*
 
 Click download to download the file.
 
+The config file which you downloaded should contain the following:
+
+#+BEGIN_SRC: bash
+$config['default_host'] = 'localhost';
+$config['smtp_port'] = 465;
+$config['username_domain'] = '';
+#+END_SRC
+
 In a terminal on your local machine (not logged into the BBB):
 
 #+BEGIN_SRC: bash
