@@ -5197,6 +5197,8 @@ You will notice that an icon appears in the top right corner of the browser, whi
 -- Jason Self
 #+END_VERSE
 
+*** GNU Social
+
 For a microblog you will need a separate domain/subdomain, so see [[Setting up a web site]] for details of how to create an Apache configuration for your microblog.  If you're using freedns then you will need to create a new subdomain.
 
 Install some dependencies:
@@ -6051,6 +6053,47 @@ emacs /etc/apache2/sites-available/$HOSTNAME
 Within a browser open https://mydomainname.com:8888
 
 See documentation in /usr/share/doc/kune/INSTALL.gz
+
+** pump.io
+
+#+BEGIN_SRC: bash
+apt-get update && apt-get install nodejs-legacy mongodb graphicsmagick git-core screen
+cd /opt
+git clone https://github.com/e14n/pump.io.git
+cd /opt/pump.io
+npm install
+npm install -g databank-mongodb
+#+END_SRC
+
+Edit the configuration file.
+
+#+BEGIN_SRC: bash
+emacs /etc/pump.io.json
+#+END_SRC
+
+Add the following, replacing /mypumpiodomainname.com/ with your domain name.
+
+#+BEGIN_SRC: bash
+{
+    "driver":  "disk",
+    "params":  {"dir": "/tmp/pumpio/"},
+    "secret":  "my dog has fleas",
+    "noweb":  false,
+    "site":  "Name of my pump.io site",
+    "owner":  "My name or organisation",
+    "ownerURL":  "http://mypumpiodomainname.com/",
+    "port":  8000,
+    "hostname":  "mypumpiodomainname.com",
+    "address":  "pumpio.localhost",
+    "nologger":  false,
+    "serverUser":  "pumpio",
+    "key":  "/etc/my/keyfile.key",
+    "cert":  "/etc/my/server.crt",
+    "uploaddir": "/var/local/pump.io/uploads",
+    "debugClient": false,
+    "firehose": "ofirehose.example"
+}
+#+END_SRC
 
 * Related projects
 
