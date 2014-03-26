@@ -2567,7 +2567,7 @@ First install some dependencies.
 
 #+BEGIN_SRC: bash
 apt-get update
-apt-get install build-essential openssl libssl-dev
+apt-get install build-essential openssl libssl-dev debhelper dpatch docbook-to-man flex bison libpcre3-dev
 #+END_SRC
 
 Then get the source code for ircd-hybrid.
