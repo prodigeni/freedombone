@@ -5393,6 +5393,8 @@ When following other GNU Social users enter the URL of your profile.  For exampl
 *** pump.io
 pump.io is the successor to GNU Social.  It takes fewer system resources to run and so is better suited to low power servers such as the BBB, but is more complicated to install.  Currently when using self-signed certificates it seems very hard to federate with other pump.io servers so it may be that although GNU Social is an older system it may still be more practical.  For the instructions which follow it will be possible to run your own pump.io site for your family and friends, as a kind of /data silo/, but federating with anyone else could turn out to be difficult or impossible.
 
+A list of pump.io sites can be found at http://pumpstatus.jpope.org
+
 For a pump.io site you will need a separate domain/subdomain, so see [[Setting up a web site]] for details of how to create an Apache configuration for your site.  If you're using freedns then you will need to create a new subdomain.
 
 #+BEGIN_SRC: bash
