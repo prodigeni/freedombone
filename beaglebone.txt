@@ -1906,7 +1906,7 @@ Listen 80
 Create a self-signed certificate. The passphrase isn't important and will be removed, so make it easy (such as "password").
 
 #+BEGIN_SRC: bash
-emacs makecert
+emacs /usr/bin/makecert
 #+END_SRC
 
 Enter the following:
@@ -1932,11 +1932,11 @@ service apache2 restart
 Save and exit.
 
 #+BEGIN_SRC: bash
-chmod +x makecert
-./makecert mydomainname.com
+chmod +x /usr/bin/makecert
+makecert mydomainname.com
 #+END_SRC
 
-Enter some trivial password for the key file.  The password will be removed as part of the makecert script.  Note that leaving a password on the key file would mean that after a power cycle the apache server will not be able to boot properly (it would wait indefinitely for a password to be manually entered) and would look as if it had crashed.
+Enter some trivial password for the key file, such as "password".  The password will be removed as part of the /makecert/ script which you just created.  Note that leaving a password on the key file would mean that after a power cycle the Apache server will not be able to boot properly (it would wait indefinitely for a password to be manually entered) and would look as if it had crashed.
 
 If all has gone well then there should be no warnings or errors after you run the service restart command.  After that you should enable ports 80 (HTTP) and 443 (HTTPS) on your internet router/firewall, such that they are redirected to the BBB.
 
@@ -6056,13 +6056,14 @@ See documentation in /usr/share/doc/kune/INSTALL.gz
 
 ** pump.io
 
+For a pump.io site you will need a separate domain/subdomain, so see [[Setting up a web site]] for details of how to create an Apache configuration for your site.  If you're using freedns then you will need to create a new subdomain.
+
 #+BEGIN_SRC: bash
-apt-get update && apt-get install nodejs-legacy mongodb graphicsmagick git-core screen
+apt-get update && apt-get install redis-server nodejs-legacy graphicsmagick git-core screen
 cd /opt
 git clone https://github.com/e14n/pump.io.git
 cd /opt/pump.io
 npm install
-npm install -g databank-mongodb
 #+END_SRC
 
 Edit the configuration file.
@@ -6075,24 +6076,87 @@ Add the following, replacing /mypumpiodomainname.com/ with your domain name.
 
 #+BEGIN_SRC: bash
 {
-    "driver":  "disk",
-    "params":  {"dir": "/tmp/pumpio/"},
-    "secret":  "my dog has fleas",
+    "driver": "redis",
+    "params": {"host":"localhost","port":6379},
+    "secret":  "A long random string",
     "noweb":  false,
     "site":  "Name of my pump.io site",
     "owner":  "My name or organisation",
-    "ownerURL":  "http://mypumpiodomainname.com/",
-    "port":  8000,
+    "ownerURL":  "https://mypumpiodomainname.com/",
+    "port":  443,
     "hostname":  "mypumpiodomainname.com",
-    "address":  "pumpio.localhost",
+    "address":  "localhost",
     "nologger":  false,
     "serverUser":  "pumpio",
-    "key":  "/etc/my/keyfile.key",
-    "cert":  "/etc/my/server.crt",
+    "key":  "/etc/ssl/private/mypumpiodomainname.com.key",
+    "cert":  "/etc/ssl/certs/mypumpiodomainname.com.crt",
     "uploaddir": "/var/local/pump.io/uploads",
     "debugClient": false,
-    "firehose": "ofirehose.example"
+    "firehose": "ofirehose.example",
+	"logfile": "/var/log/pump.io.log",
+    "disableRegistration": false
 }
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+mkdir /var/local/pump.io
+mkdir /var/local/pump.io/uploads
+useradd -s /bin/bash -d /var/local/pump.io pumpio
+chown -R pumpio:pumpio /var/local/pump.io
+#+END_SRC
+
+Within the section of your Apache site configuration (in /etc/apache2/sites-available/mypumpiodomainname.com) add the following in the section which begins with *<VirtualHost *:443>*.
+
+#+BEGIN_SRC: bash
+mkdir /tmp/apache2
+cd /tmp/apache2
+apt-get build-dep apache2
+apt-get install autoconf
+apt-get source apache2
+cd apache2-*
+wget http://freedombone.uk.to/apache-2.2.24-wstunnel.patch
+sha256sum apache-2.2.24-wstunnel.patch
+7cfe86bb31c6674a316a6b1d8ba48cc2adaf9200348e3c95c29654f387c85cc2
+
+patch -p1 -i apache-2.2.24-wstunnel.patch
+autoconf
+./configure --enable-so --enable-proxy=shared --enable-proxy-wstunnel=shared
+make
+cp modules/proxy/.libs/mod_proxy_wstunnel.so  /usr/lib/apache2/modules/
+cd /etc/apache2/mods-enabled
+ln -s ../mods-available/proxy_wstunnel.load
+#+END_SRC
+
+#+BEGIN_SRC: bash
+LoadModule proxy_wstunnel_module /usr/lib/apache2/modules/mod_proxy_wstunnel.so
+
+        <Location /main/realtime/sockjs>
+                ProxyPass wss://localhost/main/realtime/sockjs
+                ProxyPassReverse wss://localhost/main/realtime/sockjs
+        </Location>
+
+        <LocationMatch ".*\.(jpg|png|gif)$">
+                CacheEnable disk
+        </LocationMatch>
+
+        ProxyPreserveHost On
+
+        ProxyPass               /       https://192.168.x.y/
+        ProxyPassReverse        /       https://192.168.x.y/
+#+END_SRC
+
+#+BEGIN_SRC: bash
+apachectl confgitest
+service apache2 restart
+#+END_SRC
+
+
+
+#+BEGIN_SRC: bash
+./opt/pump.io/bin/pump
+npm install forever -g
 #+END_SRC
 
 * Related projects
