@@ -500,7 +500,7 @@ Select "/dynamic DNS/" then click "/quick cron example/"
 An example would look like:
 
 #+BEGIN_SRC: bash
-4,9,14,19,24,29,34,39,44,49,54,59 * * * * root sleep 29 ; /usr/bin/timeout 120 wget -O - http://free\ dns.afraid.org/dynamic/update.php?ABCKDNRCLFHENSLKNFEGSBFLFF== >> /\ tmp/freedns_mysubdomain_us_to.log 2>&1 &
+4,9,14,19,24,29,34,39,44,49,54,59 * * * * root sleep 29 ; /usr/bin/timeout 120 wget -O - https://free\ dns.afraid.org/dynamic/update.php?ABCKDNRCLFHENSLKNFEGSBFLFF== >> /\ tmp/freedns_mysubdomain_us_to.log 2>&1 &
 #+END_SRC
 
 Edit */etc/crontab* and append that to the end of the file.
@@ -520,16 +520,16 @@ Add however many freedns subdomains you have.
 #+BEGIN_SRC: bash
 #!/bin/bash
 # subdomain name 1
-wget -O - http://freedns.afraid.org/dynamic/update.php?<subdomain code 1>== >> /dev/null 2>&1
+wget -O - https://freedns.afraid.org/dynamic/update.php?<subdomain code 1>== >> /dev/null 2>&1
 # subdomain name 2
-wget -O - http://freedns.afraid.org/dynamic/update.php?<subdomain code 2>== >> /dev/null 2>&1
+wget -O - https://freedns.afraid.org/dynamic/update.php?<subdomain code 2>== >> /dev/null 2>&1
 ...
 #+END_SRC
 
 Save and exit, then make the script runnable and only readable by the root user.
 
 #+BEGIN_SRC: bash
-chmod 400 /usr/bin/dynamicdns
+chmod 600 /usr/bin/dynamicdns
 chmod +x /usr/bin/dynamicdns
 #+END_SRC
 
