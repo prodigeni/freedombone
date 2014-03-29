@@ -5391,6 +5391,7 @@ So, you're now microblogging on the open web, with no companies in the middle.  
 When following other GNU Social users enter the URL of your profile.  For example, https://mygnusocialdomain/myusername
 
 *** pump.io
+pump.io is the successor to GNU Social.  It takes fewer system resources to run and so is better suited to low power servers such as the BBB, but is more complicated to install.  Currently when using self-signed certificates it seems very hard to federate with other pump.io servers so it may be that although GNU Social is an older system it may still be more practical.  For the instructions which follow it will be possible to run your own pump.io site for your family and friends, as a kind of /data silo/, but federating with anyone else could turn out to be difficult or impossible.
 
 For a pump.io site you will need a separate domain/subdomain, so see [[Setting up a web site]] for details of how to create an Apache configuration for your site.  If you're using freedns then you will need to create a new subdomain.
 
@@ -5426,6 +5427,7 @@ Add the following, replacing /mypumpiodomainname.com/ with your domain name.
     "address":  "localhost",
     "nologger":  false,
     "serverUser":  "pumpio",
+	"rejectUnauthorized": false,
     "key":  "/var/local/pump.io/keys/mypumpiodomainname.com.key",
     "cert":  "/var/local/pump.io/keys/mypumpiodomainname.com.crt",
     "uploaddir": "/var/local/pump.io/uploads",
@@ -5471,6 +5473,19 @@ Within the section of your Apache site configuration:
 
 #+BEGIN_SRC: bash
 emacs /etc/apache2/sites-available/mypumpiodomainname.com
+#+END_SRC
+
+The initial section which begins with *<VirtualHost *:80>* should be replaced by the following, replacing /mypumpiodomainname.com/ with your pump.io domain name and /myusername@mydomainname.com/ with your email address.
+
+#+BEGIN_SRC: bash
+<VirtualHost *:80>
+	ServerAdmin myusername@mydomainname.com
+	ServerName mypumpiodomainname.com
+
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+</VirtualHost>
 #+END_SRC
 
 Add the following in the section which begins with *<VirtualHost *:443>*.
