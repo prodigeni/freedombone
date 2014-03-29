@@ -503,6 +503,8 @@ An example would look like:
 4,9,14,19,24,29,34,39,44,49,54,59 * * * * root sleep 29 ; /usr/bin/timeout 120 wget -O - https://free\ dns.afraid.org/dynamic/update.php?ABCKDNRCLFHENSLKNFEGSBFLFF== >> /\ tmp/freedns_mysubdomain_us_to.log 2>&1 &
 #+END_SRC
 
+It's important to make sure that you change the *http* to *https*, since this will help to prevent a potential attacker from hijacking your site and redirecting it to a fake version for the purposes of obtaining your login details.
+
 Edit */etc/crontab* and append that to the end of the file.
 
 Via your router's firewall settings you should now open port 22 (secure shell).  This will allow you to ssh into your BBB from any location - not just your own local network.
