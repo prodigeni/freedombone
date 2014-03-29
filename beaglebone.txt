@@ -5502,20 +5502,90 @@ a2enmod cache
 a2enmod disk_cache
 apachectl configtest
 service apache2 restart
+npm install forever -g
 #+END_SRC
 
-Now you can run the pump.io server:
+Now create the daemon.
 
 #+BEGIN_SRC: bash
-npm install forever -g
-su - pumpio -c 'cd /opt/pump.io && forever ./bin/pump &'
+emacs /etc/init.d/pumpio
+#+END_SRC
+
+Add the following text:
+
+#+BEGIN_SRC: bash
+#!/bin/bash
+# /etc/init.d/pumpio
+
+### BEGIN INIT INFO
+# Provides:          pump.io
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts pump.io as a background daemon
+# Description:       Starts pump.io on boot
+### END INIT INFO
+
+# Author: Bob Mottram <bob@robotics.uk.to>
+
+#Settings
+SERVICE='pumpio'
+COMMAND="forever /opt/pump.io/bin/pump > /var/local/pump.io/daemon.log"
+USERNAME='pumpio'
+NICELEVEL=19 # from 0-19 the bigger the number, the less the impact on system resources
+HISTORY=1024
+INVOCATION="nice -n ${NICELEVEL} ${COMMAND}"
+PATH='/usr/local/sbin:/usr/local/bin:/usr/bin:/sbin:/usr/sbin:/bin:/var/local/pump.io'
+
+
+pumpio_start() {
+echo "Starting $SERVICE..."
+su --command "screen -h ${HISTORY} -dmS ${SERVICE} ${INVOCATION}" $USERNAME
+}
+
+
+pumpio_stop() {
+echo "Stopping $SERVICE"
+su --command "screen -p 0 -S ${SERVICE} -X stuff "'^C'"" $USERNAME
+}
+
+
+#Start-Stop here
+case "$1" in
+  start)
+    pumpio_start
+    ;;
+  stop)
+    pumpio_stop
+    ;;
+  restart)
+    pumpio_stop
+    sleep 10s
+    pumpio_start
+    ;;
+    *)
+  echo "Usage: $0 {start|stop|restart}"
+  exit 1
+  ;;
+esac
+
+exit 0
+#+END_SRC
+
+Save and exit. Then enable the daemon and run it.
+
+#+BEGIN_SRC: bash
+chmod +x /etc/init.d/pumpio
+update-rc.d pumpio defaults
+service pumpio start
 #+END_SRC
 
 Now visit your pump.io site by navigating to:
 
 https://mypumpiodomainname.com
 
-and adding a new user.  If you wish this to be a single user node not open to the general public (including spammers and sockpuppets) then edit */etc/pump.io.json* and set *disableRegistration* to *true*.  After making that change reboot the BBB by typing "reboot".
+and adding a new user.  If you wish this to be a single user node not open to the general public (including spammers and sockpuppets) then edit */etc/pump.io.json* and set *disableRegistration* to *true*.  After making that change restart with the command *service pumpio restart*.
 
 ** Install Tripwire
 
