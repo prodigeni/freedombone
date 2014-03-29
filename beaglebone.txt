@@ -5395,7 +5395,7 @@ When following other GNU Social users enter the URL of your profile.  For exampl
 For a pump.io site you will need a separate domain/subdomain, so see [[Setting up a web site]] for details of how to create an Apache configuration for your site.  If you're using freedns then you will need to create a new subdomain.
 
 #+BEGIN_SRC: bash
-apt-get update && apt-get install redis-server nodejs-legacy graphicsmagick git-core screen
+apt-get update && apt-get install redis-server nodejs-legacy imagemagick graphicsmagick git-core screen
 cd /opt
 git clone https://github.com/e14n/pump.io.git
 cd /opt/pump.io
@@ -5538,18 +5538,15 @@ HISTORY=1024
 INVOCATION="nice -n ${NICELEVEL} ${COMMAND}"
 PATH='/usr/local/sbin:/usr/local/bin:/usr/bin:/sbin:/usr/sbin:/bin:/var/local/pump.io'
 
-
 pumpio_start() {
 echo "Starting $SERVICE..."
 su --command "screen -h ${HISTORY} -dmS ${SERVICE} ${INVOCATION}" $USERNAME
 }
 
-
 pumpio_stop() {
 echo "Stopping $SERVICE"
 su --command "screen -p 0 -S ${SERVICE} -X stuff "'^C'"" $USERNAME
 }
-
 
 #Start-Stop here
 case "$1" in
@@ -5585,7 +5582,7 @@ Now visit your pump.io site by navigating to:
 
 https://mypumpiodomainname.com
 
-and adding a new user.  If you wish this to be a single user node not open to the general public (including spammers and sockpuppets) then edit */etc/pump.io.json* and set *disableRegistration* to *true*.  After making that change restart with the command *service pumpio restart*.
+and add a new user.  If you wish this to be a single user node not open to the general public (including spammers and sockpuppets) then edit */etc/pump.io.json* and set *disableRegistration* to *true*.  After making that change restart with the command *service pumpio restart*.
 
 ** Install Tripwire
 
