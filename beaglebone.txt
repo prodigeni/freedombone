@@ -509,6 +509,48 @@ Via your router's firewall settings you should now open port 22 (secure shell). 
 
 The freeDNS subdomain which you just created will hereafter just be refered to as "/your domain name/".
 
+If you have multiple freedns subdomains then you may want to rationalise that a little within */etc/crontab*.  Rather than listing them all individually create a script:
+
+#+BEGIN_SRC: bash
+emacs /usr/bin/dynamicdns
+#+END_SRC
+
+Add however many freedns subdomains you have.
+
+#+BEGIN_SRC: bash
+#!/bin/bash
+# subdomain name 1
+wget -O - http://freedns.afraid.org/dynamic/update.php?<subdomain code 1>== >> /dev/null 2>&1
+# subdomain name 2
+wget -O - http://freedns.afraid.org/dynamic/update.php?<subdomain code 2>== >> /dev/null 2>&1
+...
+#+END_SRC
+
+Save and exit, then make the script runnable and only readable by the root user.
+
+#+BEGIN_SRC: bash
+chmod 400 /usr/bin/dynamicdns
+chmod +x /usr/bin/dynamicdns
+#+END_SRC
+
+Then within */etc/crontab*
+
+#+BEGIN_SRC: bash
+emacs /etc/crontab
+#+END_SRC
+
+You can replace the multiple freedns entries with a single line:
+
+#+BEGIN_SRC: bash
+*/10 * * * * root /usr/bin/timeout 60 /usr/bin/dynamicdns
+#+END_SRC
+
+Then save and exit and restart the cron daemon.
+
+#+BEGIN_SRC: bash
+service cron restart
+#+END_SRC
+
 ** Set the host name
 
 #+BEGIN_SRC: bash
