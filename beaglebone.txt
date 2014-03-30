@@ -6164,37 +6164,51 @@ Install some dependencies.
 apt-get install git-core python python-dev python-lxml python-imaging python-virtualenv python-gst0.10 libjpeg8-dev
 #+END_SRC
 
-Download mediagoblin.
+Create a user and an installation directory, replacing /mymediagoblinsite/ with the domain name for your mediagoblin site.
 
 #+BEGIN_SRC: bash
-cd /opt
-git clone git://gitorious.org/mediagoblin/mediagoblin.git mediagoblin
-cd /opt/mediagoblin
+export HOSTNAME=mymediagoblinsite
+adduser mediagoblin
+#+END_SRC
+
+Give the user a long random password.
+
+#+BEGIN_SRC: bash
+mkdir -p /srv/$HOSTNAME
+chown -hR mediagoblin:mediagoblin /srv/$HOSTNAME
+su - mediagoblin
+export HOSTNAME=mymediagoblinsite
+cd /srv/$HOSTNAME
+git clone git://gitorious.org/mediagoblin/mediagoblin.git
+cd mediagoblin
 git submodule init
 git submodule update
-virtualenv .
-./bin/python setup.py develop
+virtualenv --system-site-packages .
+./bin/python setup.py install
 #+END_SRC
 
-If that fails then just run the same command again (i.e. ./bin/python setup.py develop)
-
-TODO: currently there are insurmountable errors here.
+Fails here.  Currently not installable.
 
 #+BEGIN_SRC: bash
-./bin/gmg dbupdate
-./runtests.sh
+Installed /srv/goblin.uk.to/mediagoblin/lib/python2.7/site-packages/sqlalchemy_migrate-0.9-py2.7.egg
+Searching for sqlalchemy>0.8.0,<0.9.0
+Reading http://pypi.python.org/simple/sqlalchemy/
+Best match: SQLAlchemy 0.8.6
+Downloading https://pypi.python.org/packages/source/S/SQLAlchemy/SQLAlchemy-0.8.6.tar.gz#md5=fe8766d913c1d0eb5c353650f11de624
+Processing SQLAlchemy-0.8.6.tar.gz
+Running SQLAlchemy-0.8.6/setup.py -q bdist_egg --dist-dir /tmp/easy_install-8HHH59/SQLAlchemy-0.8.6/egg-dist-tmp-Zy3CXP
+/usr/lib/python2.7/distutils/dist.py:267: UserWarning: Unknown distribution option: 'test_suite'
+  warnings.warn(msg)
+/usr/lib/python2.7/distutils/dist.py:267: UserWarning: Unknown distribution option: 'features'
+  warnings.warn(msg)
+/usr/lib/python2.7/distutils/dist.py:267: UserWarning: Unknown distribution option: 'tests_require'
+  warnings.warn(msg)
 #+END_SRC
 
-Create a mediagoblin directory in which data will be stored.
-
-#+BEGIN_SRC: bash
-mkdir /var/local/mediagoblin
-useradd -s /bin/bash -d /var/local/mediagoblin mediagoblin
-chown -R mediagoblin:mediagoblin /var/local/mediagoblin
-#+END_SRC
-
+http://mediagoblin.readthedocs.org/en/latest/siteadmin/deploying.html
 https://wiki.mediagoblin.org/HackingHowto
 https://github.com/joar/mediagoblin-init-scripts
+https://wiki.mediagoblin.org/Deployment#Apache_2_Config_With_mod_wsgi
 
 ** Kune
 Kune is a collaboration tool aimed at not just socialising but also getting stuff done within a community.  It's based upon Apache Wave (formerly Google Wave).
