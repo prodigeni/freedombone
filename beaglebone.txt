@@ -354,6 +354,7 @@ tzselect
 For example, for British time:
 
 #+BEGIN_SRC: bash
+TZ='Europe/London'; export TZ
 echo "TZ='Europe/London'; export TZ" >> ~/.bashrc
 echo "TZ='Europe/London'; export TZ" >> /home/myusername/.bashrc
 #+END_SRC
