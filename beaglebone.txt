@@ -345,6 +345,19 @@ You may need to reboot for this to take effect.  To verify the change.
 locale -a
 #+END_SRC
 
+Set your time zone with:
+
+#+BEGIN_SRC: bash
+tzselect
+#+END_SRC
+
+For example, for British time:
+
+#+BEGIN_SRC: bash
+echo "TZ='Europe/London'; export TZ" >> ~/.bashrc
+echo "TZ='Europe/London'; export TZ" >> /home/myusername/.bashrc
+#+END_SRC
+
 ** Upgrade the kernel
 Using a more recent kernel should improve stability of the system and also allow it to make use of hardware random number generation, which improves the overall security.  Please note that this kernel is specific to the BBB, so if you're using a Raspberry Pi, Cubieboard or other SBC then look elsewhere on the web for information about upgrading the kernel.
 
@@ -2785,6 +2798,13 @@ It should look something like this:
 #+END_SRC
 
 If you're not using a self-signed certificate (self-signed is the default) then you can set *ssl_verify* to "yes".
+
+By default irssi will use UTC time.  An example of setting to some other time zone is as follows:
+
+#+BEGIN_SRC: bash
+/load perl
+/script exec $ENV{'TZ'}='Europe/London';
+#+END_SRC
 
 By default Irssi does not look especially attractive.  To improve it's looks:
 
@@ -6137,78 +6157,42 @@ TODO
 CSipSimple?
 ** Install Mediagoblin
 
-#+BEGIN_SRC: bash
-apt-get install git-core python python-dev python-lxml python-imaging python-virtualenv apache2-suexec libapache2-mod-fcgid
-#+END_SRC
+Install some dependencies.
 
 #+BEGIN_SRC: bash
-adduser --system mediagoblin
-addgroup mediagoblin
-adduser mediagoblin mediagoblin
-export HOSTNAME=mydomainname.com
-cd /var/www/$HOSTNAME/htdocs
+apt-get install git-core python python-dev python-lxml python-imaging python-virtualenv python-gst0.10 libjpeg8-dev
+#+END_SRC
+
+Download mediagoblin.
+
+#+BEGIN_SRC: bash
+cd /opt
 git clone git://gitorious.org/mediagoblin/mediagoblin.git mediagoblin
-chown -hR mediagoblin:mediagoblin /var/www/$HOSTNAME/htdocs/mediagoblin
-cd /var/www/$HOSTNAME/htdocs/mediagoblin
-git submodule init && git submodule update
-cp mediagoblin.ini mediagoblin_local.ini
-emacs mediagoblin.ini
+cd /opt/mediagoblin
+git submodule init
+git submodule update
+virtualenv .
+./bin/python setup.py develop
 #+END_SRC
 
-Set email_sender_address to the address you wish to be used as the sender for system-generated emails
+If that fails then just run the same command again (i.e. ./bin/python setup.py develop)
 
-Edit direct_remote_path, base_dir, and base_url if your mediagoblin directory is not the root directory of your vhost.
-
-Save and exit.
+TODO: currently there are insurmountable errors here.
 
 #+BEGIN_SRC: bash
-a2enmod suexec
-a2enmod fcgid
-emacs /etc/apache2/sites-available/$HOSTNAME
+./bin/gmg dbupdate
+./runtests.sh
 #+END_SRC
 
-Add the following to the 80 virtual host, replacing mydomainname.com with your domain name.
+Create a mediagoblin directory in which data will be stored.
 
 #+BEGIN_SRC: bash
-  <Directory /var/www/mydomainname.com/htdocs/mediagoblin>
-    deny from all
-  </Directory>
+mkdir /var/local/mediagoblin
+useradd -s /bin/bash -d /var/local/mediagoblin mediagoblin
+chown -R mediagoblin:mediagoblin /var/local/mediagoblin
 #+END_SRC
 
-Add the following to the 443 virtual host.
-
-#+BEGIN_SRC: bash
-  # Serve static and media files via alias
-  Alias /mgoblin_static/ /var/www/mydomainname.com/htdocs/mediagoblin/mediagoblin/static/
-  Alias /mgoblin_media/ /var/www/mydomainname.com/htdocs/mediagoblin/user_dev/media/public/
-
-  # Rewrite all URLs to fcgi, except for static and media urls
-  RewriteEngine On
-  RewriteRule ^(mgoblin_static|mgoblin_media)($|/) - [L]
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteRule ^/(.*)$ /mg.fcgi/$1 [QSA,L]
-
-  # Allow access to static and media directories
-  <Directory /var/www/mydomainname.com/htdocs/mediagoblin/mediagoblin/static>
-    Order allow,deny
-    Allow from all
-  </Directory>
-  <Directory /var/www/mydomainname.com/htdocs/mediagoblin/mediagoblin/user_dev/media/public>
-    Order allow,deny
-    Allow from all
-  </Directory>
-
-  # Connect to fcgi server
-  FastCGIExternalServer /var/www/mg.fcgi -host 127.0.0.1:26543
-#+END_SRC
-
-Save and exit
-
-#+BEGIN_SRC: bash
-cd /var/www/$HOSTNAME/htdocs/mediagoblin
-./lazyserver.sh --server-name=fcgi fcgi_host=127.0.0.1 fcgi_port=26543
-#+END_SRC
-
+https://wiki.mediagoblin.org/HackingHowto
 https://github.com/joar/mediagoblin-init-scripts
 
 ** Kune
