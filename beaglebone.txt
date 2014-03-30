@@ -3738,6 +3738,217 @@ If you are using a self-signed certificate then at the login screen scroll down 
 
 More information about the Friendica app can be found on http://friendica-for-android.wiki-lab.net/
 
+*** pump.io
+pump.io is the successor to StatusNet (which later became [[GNU Social]]) and is a communications system which can do things other than just microblogging.  It takes fewer system resources to run and so is better suited to low power servers such as the BBB, but is more complicated to install.  Currently when using self-signed certificates it seems very hard to federate with other pump.io servers so it may be that although GNU Social is an older system it may still be more practical.  For the instructions which follow it will be possible to run your own pump.io site for your family and friends, as a kind of /data silo/, but federating with anyone else could turn out to be difficult or impossible.
+
+A list of pump.io sites can be found at http://pumpstatus.jpope.org
+
+For a pump.io site you will need a separate domain/subdomain, so see [[Setting up a web site]] for details of how to create an Apache configuration for your site.  If you're using freedns then you will need to create a new subdomain.
+
+#+BEGIN_SRC: bash
+apt-get update && apt-get install redis-server nodejs-legacy imagemagick graphicsmagick git-core screen
+cd /opt
+git clone https://github.com/e14n/pump.io.git
+cd /opt/pump.io
+npm install
+npm install databank-redis
+#+END_SRC
+
+Edit the configuration file.
+
+#+BEGIN_SRC: bash
+emacs /etc/pump.io.json
+#+END_SRC
+
+Add the following, replacing /mypumpiodomainname.com/ with your domain name.
+
+#+BEGIN_SRC: bash
+{
+    "driver": "redis",
+    "params": {"host":"localhost","port":6379},
+    "secret":  "A long random string",
+    "noweb":  false,
+    "site":  "Name of my pump.io site",
+    "owner":  "My name or organisation",
+    "ownerURL":  "https://mypumpiodomainname.com/",
+    "port":  7270,
+    "urlPort": 443,
+    "hostname":  "mypumpiodomainname.com",
+    "address":  "localhost",
+    "nologger":  false,
+    "serverUser":  "pumpio",
+	"rejectUnauthorized": false,
+    "key":  "/var/local/pump.io/keys/mypumpiodomainname.com.key",
+    "cert":  "/var/local/pump.io/keys/mypumpiodomainname.com.crt",
+    "uploaddir": "/var/local/pump.io/uploads",
+    "debugClient": false,
+    "firehose": "ofirehose.example",
+	"logfile": "/var/local/pump.io/pump.io.log",
+    "disableRegistration": false
+}
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+export HOSTNAME=mypumpiodomainname.com
+mkdir /var/local/pump.io
+mkdir /var/local/pump.io/uploads
+mkdir /var/local/pump.io/keys
+cp /etc/ssl/private/$HOSTNAME.key /var/local/pump.io/keys
+cp /etc/ssl/certs/$HOSTNAME.crt /var/local/pump.io/keys
+useradd -s /bin/bash -d /var/local/pump.io pumpio
+chown -R pumpio:pumpio /var/local/pump.io
+chmod 400 /var/local/pump.io/keys/*
+mkdir /tmp/apache2
+cd /tmp/apache2
+apt-get build-dep apache2
+apt-get install autoconf
+apt-get source apache2
+cd apache2-*
+wget http://freedombone.uk.to/apache-2.2-wstunnel.patch
+sha256sum apache-2.2-wstunnel.patch
+cfc4866da2688a8eb76e0300cf16b52539ef4e525053a3851d4b6bba9a77e439
+
+patch -p1 -i apache-2.2-wstunnel.patch
+autoconf
+./configure --enable-so --enable-proxy=shared --enable-proxy-wstunnel=shared
+make
+cp modules/proxy/.libs/mod_proxy_wstunnel.so  /usr/lib/apache2/modules/
+cd /etc/apache2/mods-enabled
+ln -s /usr/lib/apache2/modules/mod_proxy_wstunnel.so ../mods-available/proxy_wstunnel.load
+#+END_SRC
+
+Within the section of your Apache site configuration:
+
+#+BEGIN_SRC: bash
+emacs /etc/apache2/sites-available/mypumpiodomainname.com
+#+END_SRC
+
+The initial section which begins with *<VirtualHost *:80>* should be replaced by the following, replacing /mypumpiodomainname.com/ with your pump.io domain name and /myusername@mydomainname.com/ with your email address.
+
+#+BEGIN_SRC: bash
+<VirtualHost *:80>
+	ServerAdmin myusername@mydomainname.com
+	ServerName mypumpiodomainname.com
+
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+</VirtualHost>
+#+END_SRC
+
+Add the following in the section which begins with *<VirtualHost *:443>*.
+
+#+BEGIN_SRC: bash
+    LoadModule proxy_wstunnel_module /usr/lib/apache2/modules/mod_proxy_wstunnel.so
+
+    <Location /main/realtime/sockjs>
+        ProxyPass wss://localhost/main/realtime/sockjs
+        ProxyPassReverse wss://localhost/main/realtime/sockjs
+    </Location>
+
+#    <LocationMatch ".*\.(jpg|png|gif)$">
+#        CacheEnable disk
+#    </LocationMatch>
+
+    ProxyVia On
+    ProxyPreserveHost On
+    SSLProxyEngine On
+
+    ProxyPass / https://localhost:7270/
+    ProxyPassReverse / https://localhost:7270/
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+a2enmod cache
+a2enmod disk_cache
+apachectl configtest
+service apache2 restart
+npm install forever -g
+#+END_SRC
+
+Now create the daemon.
+
+#+BEGIN_SRC: bash
+emacs /etc/init.d/pumpio
+#+END_SRC
+
+Add the following text:
+
+#+BEGIN_SRC: bash
+#!/bin/bash
+# /etc/init.d/pumpio
+
+### BEGIN INIT INFO
+# Provides:          pump.io
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts pump.io as a background daemon
+# Description:       Starts pump.io on boot
+### END INIT INFO
+
+# Author: Bob Mottram <bob@robotics.uk.to>
+
+#Settings
+SERVICE='pumpio'
+COMMAND="forever /opt/pump.io/bin/pump > /var/local/pump.io/daemon.log"
+USERNAME='pumpio'
+NICELEVEL=19 # from 0-19 the bigger the number, the less the impact on system resources
+HISTORY=1024
+INVOCATION="nice -n ${NICELEVEL} ${COMMAND}"
+PATH='/usr/local/sbin:/usr/local/bin:/usr/bin:/sbin:/usr/sbin:/bin:/var/local/pump.io'
+
+pumpio_start() {
+echo "Starting $SERVICE..."
+su --command "screen -h ${HISTORY} -dmS ${SERVICE} ${INVOCATION}" $USERNAME
+}
+
+pumpio_stop() {
+echo "Stopping $SERVICE"
+su --command "screen -p 0 -S ${SERVICE} -X stuff "'^C'"" $USERNAME
+}
+
+#Start-Stop here
+case "$1" in
+  start)
+    pumpio_start
+    ;;
+  stop)
+    pumpio_stop
+    ;;
+  restart)
+    pumpio_stop
+    sleep 10s
+    pumpio_start
+    ;;
+    *)
+  echo "Usage: $0 {start|stop|restart}"
+  exit 1
+  ;;
+esac
+
+exit 0
+#+END_SRC
+
+Save and exit. Then enable the daemon and run it.
+
+#+BEGIN_SRC: bash
+chmod +x /etc/init.d/pumpio
+update-rc.d pumpio defaults
+service pumpio start
+#+END_SRC
+
+Now visit your pump.io site by navigating to:
+
+https://mypumpiodomainname.com
+
+and add a new user.  If you wish this to be a single user node not open to the general public (including spammers and sockpuppets) then edit */etc/pump.io.json* and set *disableRegistration* to *true*.  After making that change restart with the command *service pumpio restart*.
+
 ** Install Gopher
 *** Server setup
 
@@ -5262,8 +5473,6 @@ You will notice that an icon appears in the top right corner of the browser, whi
 -- Jason Self
 #+END_VERSE
 
-*** GNU Social
-
 For a microblog you will need a separate domain/subdomain, so see [[Setting up a web site]] for details of how to create an Apache configuration for your microblog.  If you're using freedns then you will need to create a new subdomain.
 
 Install some dependencies:
@@ -5410,217 +5619,6 @@ If you want to invite more users then click on the big button *Invite more colle
 So, you're now microblogging on the open web, with no companies in the middle.  Congratulations!  To find some other people to connect to you can try searching other nodes listed at http://gnu.io/try/
 
 When following other GNU Social users enter the URL of your profile.  For example, https://mygnusocialdomain/myusername
-
-*** pump.io
-pump.io is the successor to StatusNet (which later became [[GNU Social]]).  It takes fewer system resources to run and so is better suited to low power servers such as the BBB, but is more complicated to install.  Currently when using self-signed certificates it seems very hard to federate with other pump.io servers so it may be that although GNU Social is an older system it may still be more practical.  For the instructions which follow it will be possible to run your own pump.io site for your family and friends, as a kind of /data silo/, but federating with anyone else could turn out to be difficult or impossible.
-
-A list of pump.io sites can be found at http://pumpstatus.jpope.org
-
-For a pump.io site you will need a separate domain/subdomain, so see [[Setting up a web site]] for details of how to create an Apache configuration for your site.  If you're using freedns then you will need to create a new subdomain.
-
-#+BEGIN_SRC: bash
-apt-get update && apt-get install redis-server nodejs-legacy imagemagick graphicsmagick git-core screen
-cd /opt
-git clone https://github.com/e14n/pump.io.git
-cd /opt/pump.io
-npm install
-npm install databank-redis
-#+END_SRC
-
-Edit the configuration file.
-
-#+BEGIN_SRC: bash
-emacs /etc/pump.io.json
-#+END_SRC
-
-Add the following, replacing /mypumpiodomainname.com/ with your domain name.
-
-#+BEGIN_SRC: bash
-{
-    "driver": "redis",
-    "params": {"host":"localhost","port":6379},
-    "secret":  "A long random string",
-    "noweb":  false,
-    "site":  "Name of my pump.io site",
-    "owner":  "My name or organisation",
-    "ownerURL":  "https://mypumpiodomainname.com/",
-    "port":  7270,
-    "urlPort": 443,
-    "hostname":  "mypumpiodomainname.com",
-    "address":  "localhost",
-    "nologger":  false,
-    "serverUser":  "pumpio",
-	"rejectUnauthorized": false,
-    "key":  "/var/local/pump.io/keys/mypumpiodomainname.com.key",
-    "cert":  "/var/local/pump.io/keys/mypumpiodomainname.com.crt",
-    "uploaddir": "/var/local/pump.io/uploads",
-    "debugClient": false,
-    "firehose": "ofirehose.example",
-	"logfile": "/var/local/pump.io/pump.io.log",
-    "disableRegistration": false
-}
-#+END_SRC
-
-Save and exit.
-
-#+BEGIN_SRC: bash
-export HOSTNAME=mypumpiodomainname.com
-mkdir /var/local/pump.io
-mkdir /var/local/pump.io/uploads
-mkdir /var/local/pump.io/keys
-cp /etc/ssl/private/$HOSTNAME.key /var/local/pump.io/keys
-cp /etc/ssl/certs/$HOSTNAME.crt /var/local/pump.io/keys
-useradd -s /bin/bash -d /var/local/pump.io pumpio
-chown -R pumpio:pumpio /var/local/pump.io
-chmod 400 /var/local/pump.io/keys/*
-mkdir /tmp/apache2
-cd /tmp/apache2
-apt-get build-dep apache2
-apt-get install autoconf
-apt-get source apache2
-cd apache2-*
-wget http://freedombone.uk.to/apache-2.2-wstunnel.patch
-sha256sum apache-2.2-wstunnel.patch
-cfc4866da2688a8eb76e0300cf16b52539ef4e525053a3851d4b6bba9a77e439
-
-patch -p1 -i apache-2.2-wstunnel.patch
-autoconf
-./configure --enable-so --enable-proxy=shared --enable-proxy-wstunnel=shared
-make
-cp modules/proxy/.libs/mod_proxy_wstunnel.so  /usr/lib/apache2/modules/
-cd /etc/apache2/mods-enabled
-ln -s /usr/lib/apache2/modules/mod_proxy_wstunnel.so ../mods-available/proxy_wstunnel.load
-#+END_SRC
-
-Within the section of your Apache site configuration:
-
-#+BEGIN_SRC: bash
-emacs /etc/apache2/sites-available/mypumpiodomainname.com
-#+END_SRC
-
-The initial section which begins with *<VirtualHost *:80>* should be replaced by the following, replacing /mypumpiodomainname.com/ with your pump.io domain name and /myusername@mydomainname.com/ with your email address.
-
-#+BEGIN_SRC: bash
-<VirtualHost *:80>
-	ServerAdmin myusername@mydomainname.com
-	ServerName mypumpiodomainname.com
-
-    RewriteEngine On
-    RewriteCond %{HTTPS} off
-    RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
-</VirtualHost>
-#+END_SRC
-
-Add the following in the section which begins with *<VirtualHost *:443>*.
-
-#+BEGIN_SRC: bash
-    LoadModule proxy_wstunnel_module /usr/lib/apache2/modules/mod_proxy_wstunnel.so
-
-    <Location /main/realtime/sockjs>
-        ProxyPass wss://localhost/main/realtime/sockjs
-        ProxyPassReverse wss://localhost/main/realtime/sockjs
-    </Location>
-
-#    <LocationMatch ".*\.(jpg|png|gif)$">
-#        CacheEnable disk
-#    </LocationMatch>
-
-    ProxyVia On
-    ProxyPreserveHost On
-    SSLProxyEngine On
-
-    ProxyPass / https://localhost:7270/
-    ProxyPassReverse / https://localhost:7270/
-#+END_SRC
-
-Save and exit.
-
-#+BEGIN_SRC: bash
-a2enmod cache
-a2enmod disk_cache
-apachectl configtest
-service apache2 restart
-npm install forever -g
-#+END_SRC
-
-Now create the daemon.
-
-#+BEGIN_SRC: bash
-emacs /etc/init.d/pumpio
-#+END_SRC
-
-Add the following text:
-
-#+BEGIN_SRC: bash
-#!/bin/bash
-# /etc/init.d/pumpio
-
-### BEGIN INIT INFO
-# Provides:          pump.io
-# Required-Start:    $remote_fs $syslog
-# Required-Stop:     $remote_fs $syslog
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Short-Description: starts pump.io as a background daemon
-# Description:       Starts pump.io on boot
-### END INIT INFO
-
-# Author: Bob Mottram <bob@robotics.uk.to>
-
-#Settings
-SERVICE='pumpio'
-COMMAND="forever /opt/pump.io/bin/pump > /var/local/pump.io/daemon.log"
-USERNAME='pumpio'
-NICELEVEL=19 # from 0-19 the bigger the number, the less the impact on system resources
-HISTORY=1024
-INVOCATION="nice -n ${NICELEVEL} ${COMMAND}"
-PATH='/usr/local/sbin:/usr/local/bin:/usr/bin:/sbin:/usr/sbin:/bin:/var/local/pump.io'
-
-pumpio_start() {
-echo "Starting $SERVICE..."
-su --command "screen -h ${HISTORY} -dmS ${SERVICE} ${INVOCATION}" $USERNAME
-}
-
-pumpio_stop() {
-echo "Stopping $SERVICE"
-su --command "screen -p 0 -S ${SERVICE} -X stuff "'^C'"" $USERNAME
-}
-
-#Start-Stop here
-case "$1" in
-  start)
-    pumpio_start
-    ;;
-  stop)
-    pumpio_stop
-    ;;
-  restart)
-    pumpio_stop
-    sleep 10s
-    pumpio_start
-    ;;
-    *)
-  echo "Usage: $0 {start|stop|restart}"
-  exit 1
-  ;;
-esac
-
-exit 0
-#+END_SRC
-
-Save and exit. Then enable the daemon and run it.
-
-#+BEGIN_SRC: bash
-chmod +x /etc/init.d/pumpio
-update-rc.d pumpio defaults
-service pumpio start
-#+END_SRC
-
-Now visit your pump.io site by navigating to:
-
-https://mypumpiodomainname.com
-
-and add a new user.  If you wish this to be a single user node not open to the general public (including spammers and sockpuppets) then edit */etc/pump.io.json* and set *disableRegistration* to *true*.  After making that change restart with the command *service pumpio restart*.
 
 ** Install Tripwire
 
@@ -6161,10 +6159,10 @@ CSipSimple?
 Install some dependencies.
 
 #+BEGIN_SRC: bash
-apt-get install git-core python python-dev python-lxml python-imaging python-virtualenv python-gst0.10 libjpeg8-dev
+apt-get install git-core python python-dev python-lxml python-imaging python-virtualenv python-gst0.10 libjpeg8-dev sqlite3
 #+END_SRC
 
-Create a user and an installation directory, replacing /mymediagoblinsite/ with the domain name for your mediagoblin site.
+Create a user, replacing /mymediagoblinsite/ with the domain name for your mediagoblin site.
 
 #+BEGIN_SRC: bash
 export HOSTNAME=mymediagoblinsite
