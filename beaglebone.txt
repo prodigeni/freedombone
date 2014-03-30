@@ -421,7 +421,7 @@ service rng-tools restart
 
 Your BBB will now use hardware to generate random numbers.
 
-*** On other Single Board Comuters
+*** On other Single Board Computers
 If you are not using a Beaglebone (a Cubieboard for example), or if you didn't update the kernel, then you can still improve the random number generation by installing:
 
 #+BEGIN_SRC: bash
@@ -6184,7 +6184,7 @@ cd mediagoblin
 git submodule init
 git submodule update
 virtualenv --system-site-packages .
-./bin/python setup.py install
+./bin/python setup.py develop
 #+END_SRC
 
 Fails here.  Currently not installable.
