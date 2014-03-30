@@ -893,7 +893,7 @@ Destinations: mydomainname.com
 
 Domains to relay mail: blank
 
-Smarthost Relay: 192.168.1.0/60 (the range of addresses on your LAN)
+Smarthost Relay: 192.168.1.0/24 (the range of addresses on your LAN)
 
 Dial on demand = no
 
