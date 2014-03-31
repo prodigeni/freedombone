@@ -2805,6 +2805,7 @@ By default irssi will use UTC time.  An example of setting to some other time zo
 #+BEGIN_SRC: bash
 /load perl
 /script exec $ENV{'TZ'}='Europe/London';
+/save
 #+END_SRC
 
 By default Irssi does not look especially attractive.  To improve it's looks:
