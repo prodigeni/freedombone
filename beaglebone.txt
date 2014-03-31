@@ -5617,6 +5617,14 @@ Under the License section select a license if you wish.  Details for Creative Co
 
 If you want to invite more users then click on the big button *Invite more colleagues*, then enter their email addresses and hit the *send* button.  The invite only configuration which you've just installed is useful because it prevents spammers, or other [[https://en.wikipedia.org/wiki/Joint_Threat_Research_Intelligence_Group]["bad actors"]], from clogging your system with nonsense.
 
+Edit the config file.
+
+#+BEGIN_SRC: bash
+emacs /var/www/$HOSTNAME/htdocs/config.php
+#+END_SRC
+
+Change the ssl setting from *always* to *sometimes*, hten save and exit.
+
 So, you're now microblogging on the open web, with no companies in the middle.  Congratulations!  To find some other people to connect to you can try searching other nodes listed at http://gnu.io/try/
 
 When following other GNU Social users enter the URL of your profile.  For example, https://mygnusocialdomain/myusername
