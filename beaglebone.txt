@@ -400,8 +400,6 @@ uname -mrs
 The security of encryption depends upon the randomness of the random source used on your system.  If it isn't very random then it may be far more vulnerable to cryptanalysis, and it's known that in the past some dubious agencies have encouraged the use of flawed random number generators to assist with their prurient activities.  Randomness - typically referred to as /entropy/ - is often gathered from factors such as the timing of key presses or mouse movements, but since the BBB won't have such devices plugged into it this reduces the amount of entropy available.
 
 *** On the Beaglebone Black
-TODO: is this relevant? http://www.reddit.com/r/netsec/comments/1x7ias/sha256_authentication_hardware_rng_and_protected/
-
 Computers can't really generate truly random numbers by themselves, since they're deterministic and so operate in a highly predictable manner.  Fortunately, the BBB has an onboard hardware random number generator, which is a physical process which behaves randomly and which can then be read into the computer and stored for later use in encryption algorithms.
 
 Information on exactly how the hardware random number generator on the Beaglebone AM335x CPU works [[http://e2e.ti.com/support/arm/sitara_arm/f/791/t/292794.aspx][seems hard to come by]], but we can later use some software to verify that it does indeed produce random numbers and hasn't been deliberately weakened.
