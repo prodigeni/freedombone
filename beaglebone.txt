@@ -2865,7 +2865,7 @@ Then to see your OTR fingerprint:
 /otr info
 #+END_SRC
 
-And to trust or distrust some one else's fingerprint.
+And to trust or distrust someone else's fingerprint.
 
 #+BEGIN_SRC: bash
 /otr trust [fingerprint]
@@ -6214,25 +6214,341 @@ git submodule init
 git submodule update
 virtualenv --system-site-packages .
 ./bin/python setup.py develop
+./bin/easy_install flup
+cp mediagoblin.ini mediagoblin_local.ini
+emacs mediagoblin_local.ini
 #+END_SRC
 
-Fails here.  Currently not installable.
+Change *email_sender_address* to your email address, then save and exit.
 
 #+BEGIN_SRC: bash
-Installed /srv/goblin.uk.to/mediagoblin/lib/python2.7/site-packages/sqlalchemy_migrate-0.9-py2.7.egg
-Searching for sqlalchemy>0.8.0,<0.9.0
-Reading http://pypi.python.org/simple/sqlalchemy/
-Best match: SQLAlchemy 0.8.6
-Downloading https://pypi.python.org/packages/source/S/SQLAlchemy/SQLAlchemy-0.8.6.tar.gz#md5=fe8766d913c1d0eb5c353650f11de624
-Processing SQLAlchemy-0.8.6.tar.gz
-Running SQLAlchemy-0.8.6/setup.py -q bdist_egg --dist-dir /tmp/easy_install-8HHH59/SQLAlchemy-0.8.6/egg-dist-tmp-Zy3CXP
-/usr/lib/python2.7/distutils/dist.py:267: UserWarning: Unknown distribution option: 'test_suite'
-  warnings.warn(msg)
-/usr/lib/python2.7/distutils/dist.py:267: UserWarning: Unknown distribution option: 'features'
-  warnings.warn(msg)
-/usr/lib/python2.7/distutils/dist.py:267: UserWarning: Unknown distribution option: 'tests_require'
-  warnings.warn(msg)
+./bin/gmg dbupdate
+emacs /etc/init.d/mediagoblin-paster
 #+END_SRC
+
+Add the following, replacing /mymediagoblindomain/ with the domain name for your mediagoblin site.
+
+#+BEGIN_SRC: bash
+#!/bin/sh
+# /etc/init.d/mediagoblin-paster
+#
+## LICENSE: CC0 <http://creativecommons.org/publicdomain/zero/1.0/>
+# To the extent possible under law, Joar Wandborg <http://wandborg.se> has
+# waived all copyright and related or neighboring rights to
+# mediagoblin-paster. This work is published from Sweden.
+#
+## CREDIT
+# Credit goes to jpope <http://jpope.org/> and
+# chimo <http://chimo.chromic.org/>. From which' Arch init scripts this is
+# based upon.
+#
+### BEGIN INIT INFO
+# Provides:          mediagoblin-paster
+# Required-Start:    $network $named $local_fs
+# Required-Stop:     $remote_fs $syslog $network $named $local_fs
+# Should-Start:      postgresql $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: MediaGoblin paster FCGI server init script
+# Description:       This script will initiate the GNU MediaGoblin paster
+#                    fcgi server.
+### END INIT INFO
+
+################################################################################
+# CHANGE THIS
+# to suit your environment
+################################################################################
+MG_ROOT=/srv/mymediagoblindomain/mediagoblin
+MG_USER=mediagoblin
+################################################################################
+# NOW STOP
+# You probably won't have to change anything else.
+################################################################################
+
+set -e
+
+DAEMON_NAME=mediagoblin-paster
+
+MG_BIN=$MG_ROOT/bin
+MG_PASTER_BIN=$MG_BIN/paster
+MG_PASTE_INI=$MG_ROOT/paste_local.ini
+MG_FCGI_HOST=127.0.0.1
+MG_FCGI_PORT=26543
+MG_PASTER_PID_FILE=/var/run/mediagoblin/$DAEMON_NAME.pid
+MG_PASTER_LOG_FILE=/var/log/mediagoblin/$DAEMON_NAME.log
+
+set_up_directories() {
+    install -o $MG_USER -g users -d -m 755 /var/log/mediagoblin
+    install -o $MG_USER -g users -d -m 755 /var/run/mediagoblin
+}
+
+set_up_directories
+
+# Include LSB helper functions
+. /lib/lsb/init-functions
+
+getPID () {
+    # Discard any errors from cat
+    cat $MG_PASTER_PID_FILE 2>/dev/null
+}
+
+case "$1" in
+    start)
+        # Start the MediaGoblin paster process
+        log_daemon_msg "Starting GNU MediaGoblin paster fcgi server" "$DAEMON_NAME"
+		if [ ! -f $MG_PASTE_INI ]; then
+            MG_PASTE_INI=$MG_ROOT/paste.ini
+			fi
+        if [ -z "$(getPID)" ]; then
+            su -s /bin/sh -c "CELERY_ALWAYS_EAGER=False $MG_PASTER_BIN serve \
+                $MG_PASTE_INI \
+                --server-name=fcgi \
+                fcgi_host=$MG_FCGI_HOST fcgi_port=$MG_FCGI_PORT \
+                --pid-file=$MG_PASTER_PID_FILE \
+                --log-file=$MG_PASTER_LOG_FILE \
+                --daemon" - $MG_USER 2>&1 > /dev/null
+
+            PASTER_RESULT=$?
+
+            # Sleep for a while until we're kind of certain that paster has
+            # had it's time to initialize
+            TRIES=0
+            while ! [ "X$PASTER_RESULT" != "X" ]; do
+                log_action_msg "Tried $TRIES time(s)"
+                sleep 0.1
+                TRIES=$((TRIES+1))
+            done
+
+            log_end_msg $PASTER_RESULT
+        else
+            # Failed because the PID file indicates it's running
+            log_action_msg "PID file $MG_PASTER_BIN already exists"
+            log_end_msg 1
+        fi
+        ;;
+    stop)
+        log_daemon_msg "Stopping GNU MediaGoblin paster fcgi server" "$DAEMON_NAME"
+        if [ -z "$(getPID)" ]; then
+            # Failed because the PID file indicates it's not running
+            RET=1
+        else
+            kill $(getPID)
+
+            if [ $? -gt 0 ]; then
+                RET=1
+            else
+                RET=0
+            fi
+        fi
+        log_end_msg $RET
+        ;;
+    restart)
+        $0 stop
+        $0 start
+        ;;
+    status)
+        if ! [ -z "$(getPID)" ]; then
+            echo "$DAEMON_NAME start/running, process $(getPID)"
+        else
+            echo "$DAEMON_NAME stopped."
+        fi
+        ;;
+    *)
+        echo "Usage: $0 {restart|start|stop|status}"
+        exit 1
+        ;;
+esac
+
+exit 0
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+emacs /etc/init.d/mediagoblin-celeryd
+#+END_SRC
+
+Add the following, replacing /mymediagoblindomain/ with the domain name for your mediagoblin site.
+
+#+BEGIN_SRC: bash
+#!/bin/bash
+# /etc/init.d/mediagoblin-celeryd
+#
+## LICENSE: CC0 <http://creativecommons.org/publicdomain/zero/1.0/>
+# To the extent possible under law, Joar Wandborg <http://wandborg.se> has
+# waived all copyright and related or neighboring rights to
+# mediagoblin-celeryd. This work is published from Sweden.
+#
+## CREDIT
+# Credit goes to jpope <http://jpope.org/> and
+# chimo <http://chimo.chromic.org/>. From which' Arch init scripts this is
+# based upon.
+#
+### BEGIN INIT INFO
+# Provides:          mediagoblin-celeryd
+# Required-Start:    $network $named $local_fs
+# Required-Stop:     $remote_fs $syslog $network $named $local_fs
+# Should-Start:      postgres $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: MediaGoblin Celery task processor init script
+# Description:       This script will initiate the GNU MediaGoblin Celery
+#                    task processor
+### END INIT INFO
+
+################################################################################
+# CHANGE THIS
+# to suit your environment
+################################################################################
+MG_ROOT=/var/www/mymediagoblindomain/htdocs
+MG_USER=mediagoblin
+################################################################################
+# NOW STOP
+# You probably won't have to change anything else.
+################################################################################
+
+set -e
+
+DAEMON_NAME=mediagoblin-celeryd
+
+MG_BIN=$MG_ROOT/bin
+MG_CELERYD_BIN=$MG_BIN/celeryd
+MG_CONFIG=$MG_ROOT/mediagoblin_local.ini
+MG_CELERY_CONFIG_MODULE=mediagoblin.init.celery.from_celery
+MG_CELERYD_PID_FILE=/var/run/mediagoblin/$DAEMON_NAME.pid
+MG_CELERYD_LOG_FILE=/var/log/mediagoblin/$DAEMON_NAME.log
+
+set_up_directories() {
+    install -o $MG_USER -g users -d -m 755 /var/log/mediagoblin
+    install -o $MG_USER -g users -d -m 755 /var/run/mediagoblin
+}
+
+set_up_directories
+
+# Include LSB helper functions
+. /lib/lsb/init-functions
+
+wait_for_death() {
+    pid=$1
+    seconds=1
+
+    if [ -z "$2" ]; then
+        kill_at=20
+    else
+        kill_at=$2
+    fi
+
+    if [ -z "$pid" ]; then
+        log_action_msg "Could not get PID. Aborting"
+        log_end_msg 1
+        exit 1
+    fi
+
+    while ps ax | grep -v grep | grep $pid > /dev/null; do
+        sleep 1
+        seconds=$(expr $seconds + 1)
+        if [ $seconds -ge $kill_at ]; then
+            log_action_msg "Failed to shut down after $kill_at seconds. Aborting"
+            log_end_msg 1
+            exit 1
+        fi
+    done
+    log_end_msg 0
+}
+
+wait_for_pidfile() {
+    pidfile=$1
+    kill_at=20
+    seconds=1
+
+    while ! [[ -f $pidfile ]]; do
+        sleep 1
+        seconds=$(expr $seconds + 1)
+
+        if [ $seconds -ge $kill_at ]; then
+            log_action_msg "Can't find the PID file," \
+                " the application must have crashed."
+            log_end_msg 1
+            exit 1
+        fi
+    done
+}
+
+getPID() {
+    # Discard any errors from cat
+    cat $MG_CELERYD_PID_FILE 2>/dev/null
+}
+
+case "$1" in
+    start)
+        # Start the MediaGoblin celeryd process
+        log_daemon_msg "Starting GNU MediaGoblin Celery task queue" "$DAEMON_NAME"
+        if [ -z "$(getPID)" ]; then
+            # TODO: Could we send things to log a little bit more beautiful?
+            su -s /bin/sh -c "cd $MG_ROOT && \
+                MEDIAGOBLIN_CONFIG=$MG_CONFIG \
+                CELERY_CONFIG_MODULE=$MG_CELERY_CONFIG_MODULE \
+                $MG_CELERYD_BIN \
+                --pidfile=$MG_CELERYD_PID_FILE \
+                -f $MG_CELERYD_LOG_FILE 2>&1 >> $MG_CELERYD_PID_FILE" \
+                - $MG_USER 2>&1 >> $MG_CELERYD_LOG_FILE &
+
+            CELERYD_RESULT=$?
+
+            wait_for_pidfile $MG_CELERYD_PID_FILE
+
+            log_end_msg $CELERYD_RESULT
+        else
+            # Failed because the PID file indicates it's running
+            log_action_msg "PID file $MG_CELERYD_PID_FILE already exists"
+            log_end_msg 1
+        fi
+        ;;
+    stop)
+        log_daemon_msg "Stopping GNU MediaGoblin Celery task queue" "$DAEMON_NAME"
+        if [ -z "$(getPID)" ]; then
+            # Failed because the PID file indicates it's not running
+            log_action_msg "Could not get PID"
+            log_end_msg 1
+            exit 1
+        else
+            kill $(getPID)
+
+            wait_for_death $(getPID)
+        fi
+        ;;
+    restart)
+        $0 stop
+        $0 start
+        ;;
+    status)
+        if ! [ -z "$(getPID)" ]; then
+            echo "$DAEMON_NAME start/running, process $(getPID)"
+        else
+            echo "$DAEMON_NAME stopped."
+        fi
+        ;;
+    *)
+        echo "Usage: $0 {restart|start|stop|status}"
+        exit 1
+        ;;
+esac
+
+exit 0
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+chmod +x /etc/init.d/mediagoblin-paster
+chmod +x /etc/init.d/mediagoblin-celeryd
+update-rc.d mediagoblin-paster defaults
+update-rc.d mediagoblin-celeryd defaults
+service mediagoblin-paster start
+service mediagoblin-celeryd start
+#+END_SRC
+
+TODO: apache configuration
 
 http://mediagoblin.readthedocs.org/en/latest/siteadmin/deploying.html
 https://wiki.mediagoblin.org/HackingHowto
