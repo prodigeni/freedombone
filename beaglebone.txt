@@ -2852,7 +2852,7 @@ Then run Irssi and enter the commands:
 #+END_SRC
 
 *** Using irssi with Off The Record messaging (OTR)
-Once you/re running irssi then you can enable OTR with:
+Once you're running irssi then you can enable OTR with:
 
 #+BEGIN_SRC: bash
 /statusbar window add otr
