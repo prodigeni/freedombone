@@ -2754,7 +2754,7 @@ service hybserv start
 On another computer (not the BBB).
 
 #+BEGIN_SRC: bash
-sudo apt-get install irssi
+sudo apt-get install irssi irssi-plugin-otr irssi-plugin-xmpp
 irssi
 #+END_SRC
 
@@ -2801,9 +2801,14 @@ If you're not using a self-signed certificate (self-signed is the default) then 
 By default irssi will use UTC time.  An example of setting to some other time zone is as follows:
 
 #+BEGIN_SRC: bash
-/load perl
-/script exec $ENV{'TZ'}='Europe/London';
-/save
+echo "load perl" >> ~/.irssi/startup
+echo "script exec $ENV{'TZ'}='Europe/London';" >> ~/.irssi/startup
+#+END_SRC
+
+Also enable /Off The Record/ (OTR) messaging.
+
+#+BEGIN_SRC: bash
+echo "load otr" >> ~/.irssi/startup
 #+END_SRC
 
 By default Irssi does not look especially attractive.  To improve it's looks:
@@ -2846,6 +2851,27 @@ Then run Irssi and enter the commands:
 /save
 #+END_SRC
 
+*** Using irssi with Off The Record messaging (OTR)
+Once you/re running irssi then you can enable OTR with:
+
+#+BEGIN_SRC: bash
+/statusbar window add otr
+/otr genkey mynick@network  (for example mynick@irc.freenode.net)
+#+END_SRC
+
+Then to see your OTR fingerprint:
+
+#+BEGIN_SRC: bash
+/otr info
+#+END_SRC
+
+And to trust or distrust some one else's fingerprint.
+
+#+BEGIN_SRC: bash
+/otr trust [fingerprint]
+/otr distrust [fingerprint]
+#+END_SRC
+
 *** Usage with XChat
 Within the network list click, *Add* and enter your domain name then click *Edit*.
 
@@ -2867,7 +2893,7 @@ It may be useful to run a persistent Irssi session on the BBB.  This will enable
 First install some prerequisites.
 
 #+BEGIN_SRC: bash
-apt-get install irssi screen
+apt-get install irssi irssi-plugin-otr irssi-plugin-xmpp screen
 #+END_SRC
 
 Create an initialisation script.
@@ -2961,9 +2987,7 @@ function configure() {
 # Return: LSB-compliant code.
 #
 function start() {
-    start-stop-daemon --start --quiet --oknodo --pidfile "$pidFile" \
-        --make-pidfile --chuid "$user:$group" --background \
-        --exec "$daemonExec" -- $daemonArgs
+    start-stop-daemon --start -v -b -x /bin/su -p /tmp/irssi.screen.session -m --chdir /home/$user -- - $user -c "screen -D -m -S irssi -- irssi" 1>>/log.irssi
 }
 
 #
@@ -2972,8 +2996,7 @@ function start() {
 # Return: LSB-compliant code.
 #
 function stop() {
-    start-stop-daemon --stop --quiet --oknodo --retry 30 --pidfile "$pidFile" \
-        --chuid "$user:$group" --exec "$daemonExec" -- $daemonArgs
+    start-stop-daemon --stop -x /bin/su -p /tmp/irssi.screen.session -q
 }
 
 checkEnvironment
@@ -3047,6 +3070,7 @@ Save and exit.  Then add your user to the irssi group and start the daemon.
 groupadd irssi
 usermod -aG irssi myusername
 update-rc.d irssid defaults
+chown -R myusername:irssi /home/myusername/.irssi
 service irssid start
 #+END_SRC
 
