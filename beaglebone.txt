@@ -6187,10 +6187,12 @@ TODO
 CSipSimple?
 ** Install Mediagoblin
 
+For a mediagoblin site it is recommended to use a separate domain/subdomain, so see [[Setting up a web site]] for details of how to create an Apache configuration for your microblog.  If you're using freedns then you will need to create a new subdomain.
+
 Install some dependencies.
 
 #+BEGIN_SRC: bash
-apt-get install git-core python python-dev python-lxml python-imaging python-virtualenv python-gst0.10 libjpeg8-dev sqlite3
+apt-get install git-core python python-dev python-lxml python-imaging python-virtualenv python-gst0.10 libjpeg8-dev sqlite3 libapache2-mod-fcgid
 #+END_SRC
 
 Create a user, replacing /mymediagoblinsite/ with the domain name for your mediagoblin site.
@@ -6400,7 +6402,7 @@ Add the following, replacing /mymediagoblindomain/ with the domain name for your
 # CHANGE THIS
 # to suit your environment
 ################################################################################
-MG_ROOT=/var/www/mymediagoblindomain/htdocs
+MG_ROOT=/srv/mymediagoblindomain/mediagoblin
 MG_USER=mediagoblin
 ################################################################################
 # NOW STOP
@@ -6548,7 +6550,68 @@ service mediagoblin-paster start
 service mediagoblin-celeryd start
 #+END_SRC
 
-TODO: apache configuration
+Create a script as follows:
+
+#+BEGIN_SRC: bash
+emacs /srv/mymediagoblindomain/mediagoblin/mg.fcgi
+#+END_SRC
+
+Add the following, replacing /mymediagoblindomain/ with your mediagoblin domain name.
+
+#+BEGIN_SRC: bash
+#!/srv/mymediagoblindomain/mediagoblin/bin/python
+
+# Written in 2011 by Christopher Allan Webber
+#
+# To the extent possible under law, the author(s) have dedicated all
+# copyright and related and neighboring rights to this software to the
+# public domain worldwide. This software is distributed without any
+# warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+
+from paste.deploy import loadapp
+from flup.server.fcgi import WSGIServer
+
+CONFIG_PATH = '/srv/mymediagoblindomain/mediagoblin/paste.ini'
+
+## Uncomment this to run celery in "always eager" mode... ie, you don't have
+## to run a separate process, but submissions wait till processing finishes
+# import os
+# os.environ['CELERY_ALWAYS_EAGER'] = 'true'
+
+def launch_fcgi():
+    ccengine_wsgi_app = loadapp('config:' + CONFIG_PATH)
+    WSGIServer(ccengine_wsgi_app).run()
+
+
+if __name__ == '__main__':
+    launch_fcgi()
+#+END_SRC
+
+Save and exit, then edit the Apache configuration for your mediagoblin site.
+
+#+BEGIN_SRC: bash
+emacs /etc/apache2/sites-available/mymediagoblindomain
+#+END_SRC
+
+Add the following to the section which begins with *<VirtualHost *:80>*, and remove the existing ScriptAlias sections.
+
+#+BEGIN_SRC: bash
+    Options +ExecCGI
+
+    # Accept up to 16MB requests
+    FcgidMaxRequestLen 16777216
+
+    Alias /mgoblin_static/ /srv/mymediagoblindomain/mediagoblin/mediagoblin/static/
+    Alias /mgoblin_media/ /srv/mymediagoblindomain/mediagoblin/user_dev/media/public/
+
+    ScriptAlias / /srv/mymediagoblindomain/mediagoblin/mg.fcgi/
+#+END_SRC
+
+Save and exit.
 
 http://mediagoblin.readthedocs.org/en/latest/siteadmin/deploying.html
 https://wiki.mediagoblin.org/HackingHowto
