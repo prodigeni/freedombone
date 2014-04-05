@@ -5653,6 +5653,12 @@ When following other GNU Social users enter the URL of your profile.  For exampl
 
 ** Install Mediagoblin
 
+#+BEGIN_VERSE
+/The silos that are the main current points of media sharing are not only vulnerable to attacks on free speech, but also hamper important grassroots economic activity by privileging the interests of a tiny minority over those of most of the world./
+#+END_VERSE
+
+Mediagoblin allows you to have a YouTube/Soundcloud/Flickr/Picasa type of site to share your pictures, videos or audio files.  An advantage of not having any company in the middle is that you can't be arbitrarily censored without any explanation, as seems to frequently occur on YouTube.  It is recommended that you use media formats which are not encumbered by patents, such as /ogg/ or /ogv/.
+
 For a mediagoblin site it is recommended to use a separate domain/subdomain, so see [[Setting up a web site]] for details of how to create an Apache configuration for your microblog.  If you're using freedns then you will need to create a new subdomain.
 
 Install some dependencies.
@@ -5688,7 +5694,15 @@ cp paste.ini paste_local.ini
 emacs mediagoblin_local.ini
 #+END_SRC
 
-Change *email_sender_address* to your email address and set *email_debug_mode* to false, then save and exit.
+Change *email_sender_address* to your email address and set *email_debug_mode* to false.  Also append the following to the bottom of the file, under the *plugins* section.
+
+#+BEGIN_SRC: bash
+[[mediagoblin.media_types.image]]
+[[mediagoblin.media_types.video]]
+[[mediagoblin.media_types.stl]]
+#+END_SRC
+
+Then save and exit.
 
 #+BEGIN_SRC: bash
 ./bin/gmg dbupdate
