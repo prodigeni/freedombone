@@ -5697,7 +5697,7 @@ emacs mediagoblin_local.ini
 Change *email_sender_address* to your email address and set *email_debug_mode* to false.  Also append the following to the bottom of the file, under the *plugins* section.
 
 #+BEGIN_SRC: bash
-[[mediagoblin.media_types.image]]
+[[mediagoblin.media_types.audio]]
 [[mediagoblin.media_types.video]]
 [[mediagoblin.media_types.stl]]
 #+END_SRC
