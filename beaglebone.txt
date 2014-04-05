@@ -6577,7 +6577,7 @@ Add the following, replacing /mymediagoblindomain/ with your mediagoblin domain 
 from paste.deploy import loadapp
 from flup.server.fcgi import WSGIServer
 
-CONFIG_PATH = '/srv/mymediagoblindomain/mediagoblin/paste.ini'
+CONFIG_PATH = '/srv/mymediagoblindomain/mediagoblin/paste_local.ini'
 
 ## Uncomment this to run celery in "always eager" mode... ie, you don't have
 ## to run a separate process, but submissions wait till processing finishes
@@ -6596,6 +6596,7 @@ if __name__ == '__main__':
 Save and exit, then edit the Apache configuration for your mediagoblin site.
 
 #+BEGIN_SRC: bash
+chown -hR mediagoblin:mediagoblin /srv/$HOSTNAME
 emacs /etc/apache2/sites-available/mymediagoblindomain
 #+END_SRC
 
