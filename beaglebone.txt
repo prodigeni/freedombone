@@ -6264,6 +6264,7 @@ Add the following, replacing /mymediagoblindomain/ with the domain name for your
 ################################################################################
 MG_ROOT=/srv/mymediagoblindomain/mediagoblin
 MG_USER=mediagoblin
+MG_GROUP=mediagoblin
 ################################################################################
 # NOW STOP
 # You probably won't have to change anything else.
@@ -6282,8 +6283,8 @@ MG_PASTER_PID_FILE=/var/run/mediagoblin/$DAEMON_NAME.pid
 MG_PASTER_LOG_FILE=/var/log/mediagoblin/$DAEMON_NAME.log
 
 set_up_directories() {
-    install -o $MG_USER -g mediagoblin -d -m 755 /var/log/mediagoblin
-    install -o $MG_USER -g mediagoblin -d -m 755 /var/run/mediagoblin
+    install -o $MG_USER -g $MG_GROUP -d -m 755 /var/log/mediagoblin
+    install -o $MG_USER -g $MG_GROUP -d -m 755 /var/run/mediagoblin
 }
 
 set_up_directories
@@ -6406,6 +6407,7 @@ Add the following, replacing /mymediagoblindomain/ with the domain name for your
 ################################################################################
 MG_ROOT=/srv/mymediagoblindomain/mediagoblin
 MG_USER=mediagoblin
+MG_GROUP=mediagoblin
 ################################################################################
 # NOW STOP
 # You probably won't have to change anything else.
@@ -6423,8 +6425,8 @@ MG_CELERYD_PID_FILE=/var/run/mediagoblin/$DAEMON_NAME.pid
 MG_CELERYD_LOG_FILE=/var/log/mediagoblin/$DAEMON_NAME.log
 
 set_up_directories() {
-    install -o $MG_USER -g mediagoblin -d -m 755 /var/log/mediagoblin
-    install -o $MG_USER -g mediagoblin -d -m 755 /var/run/mediagoblin
+    install -o $MG_USER -g $MG_GROUP -d -m 755 /var/log/mediagoblin
+    install -o $MG_USER -g $MG_GROUP -d -m 755 /var/run/mediagoblin
 }
 
 set_up_directories
