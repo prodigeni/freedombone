@@ -17,7 +17,7 @@ Copyright (C)  2014  Bob Mottram
 
 Permission is granted to copy, distribute and/or modify this document under the terms of the [[https://gnu.org/licenses/fdl.html][GNU Free Documentation License]], Version 1.3 or any later version published by the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
 
-Source for this web site in [[https://en.wikipedia.org/wiki/Org-mode][Emacs org-mode]] format is available [[/beaglebone.txt][here]].  Comments or patches may be submitted via [[https://github.com/bashrc/freedombone][Github]].
+Source for this web site in [[https://en.wikipedia.org/wiki/Org-mode][Emacs org-mode]] format is available [[/beaglebone.txt][here]]. Comments or patches may be submitted via [[https://github.com/bashrc/freedombone][Github]].
 #+END_CENTER
 
 * Introduction
@@ -113,7 +113,7 @@ Verify it.
 
 #+BEGIN_SRC: bash
 sha256sum debian-7.2-console-armhf-2013-11-15.tar.xz
-262ea96d6bff530ad545e001eb2aa50b26a999c02f0c0e2e5f8536edf21c973a  debian-7.2-console-armhf-2013-11-15.tar.xz
+262ea96d6bff530ad545e001eb2aa50b26a999c02f0c0e2e5f8536edf21c973a debian-7.2-console-armhf-2013-11-15.tar.xz
 #+END_SRC
 
 Uncompress it.
@@ -251,7 +251,7 @@ nameserver 85.214.20.141
 
 CTRL-O followed by ENTER to save, then CTRL-X to exit.
 
-Now disconnect the BBB from your computer and plug it into the router.  You'll need an ethernet patch cable and you may also need a 5V/1A power supply for the BBB.
+Now disconnect the BBB from your computer and plug it into the router. You'll need an ethernet patch cable and you may also need a 5V/1A power supply for the BBB.
 
 If you go to the web administration screen for your internet router (often it's on 192.168.2.1 or 192.168.1.254) then after a few minutes you should see the BBB appear on the network.  It's name will be "arm".
 
@@ -320,7 +320,7 @@ Append the following line:
 
 Then save and exit.
 
-To verify that the swapfile is accessilble type /top/ and look for the line which begins with "KiB Swap".  Probably there will be zero bytes used, but this might be non-zero when the system is under some load (for example getting a lot of web views or being crawled by a search engine).  CTRL-C exits from the /top/ command.
+To verify that the swapfile is accessilble type /top/ and look for the line which begins with "KiB Swap".  Probably there will be zero bytes used, but this might be non-zero when the system is under some load (for example getting a lot of web views or being crawled by a search engine). CTRL-C exits from the /top/ command.
 
 ** Enable backports
 
@@ -457,8 +457,75 @@ rngtest: input channel speed: (min=3.104; avg=26.015; max=18.626)Gibits/s
 rngtest: FIPS tests speed: (min=160.281; avg=165.696; max=168.792)Mibits/s
 rngtest: Program run time: 115987 microseconds
 #+END_SRC
-*** Additional addons
-At the time of writing there is also some hardware called [[http://beagleboard.org/project/CryptoCape/][cryptocape]] being developed, with the intention of adding extra random number generation capabilities to the BBB.
+*** Cryptotronix Hashlet
+#+BEGIN_VERSE
+/One must acknowledge with cryptography no amount of violence will ever solve a math problem./
+
+-- Jacob Appelbaum
+#+END_VERSE
+
+An optional extra is the [[http://cryptotronix.com/products/hashlet/][Cryptotronix Hashlet]] which also has hardware random number generation capability via the [[Atmel-8740-CryptoAuth-ATSHA204-Datasheet.pdf][Atmel ATSHA204]] chip.
+
+Install the hashlet [[images/hashlet_installed.jpg][like this]] on the BBB, then download the source code.
+
+#+BEGIN_SRC: bash
+cd /tmp
+wget http://freedombone.uk.to/hashlet-1.0.0.tar.gz
+wget http://freedombone.uk.to/hashlet-1.0.0.tar.gz.sig
+#+END_SRC
+
+Install some dependencies.
+
+#+BEGIN_SRC: bash
+apt-get install gnupg build-essential libgcrypt11-dev
+#+END_SRC
+
+Verify it.
+
+#+BEGIN_SRC: bash
+gpg --verify hashlet-1.0.0.tar.gz.sig
+#+END_SRC
+
+The main parts of the verification to check are:
+
+#+BEGIN_SRC: bash
+gpg: Signature made Fri 07 Feb 2014 23:22:37 GMT using RSA key ID 81CD647A
+gpg: requesting key 81CD647A from hkp server keys.gnupg.net
+gpg: key BD2EDEA6: public key "Joshua Brian Datko <jbd@cryptotronix.com>" imported
+
+gpg: Good signature from "Joshua Brian Datko <jbd@cryptotronix.com>"
+#+END_SRC
+
+Now install the driver.
+
+#+BEGIN_SRC: bash
+tar -xzvf hashlet-1.0.0.tar.gz
+cd hashlet-1.0.0
+chmod o+rw /dev/i2c*
+./configure
+make
+make check
+make install
+#+END_SRC
+
+To check the initial state of the device:
+
+#+BEGIN_SRC: bash
+hashlet --bus=/dev/i2c-2 state
+#+END_SRC
+
+It should return the message "/Factory/".  This is an indication that the hardware hasn't been tampered with by [[https://en.wikipedia.org/wiki/Tailored_Access_Operations][TAO]] or other shady outfits in transit.  If /i2c-2/ fails then try /i2c-1/ or /i2c-0/.
+
+#+BEGIN_SRC: bash
+hashlet --bus=/dev/i2c-2 personalize
+#+END_SRC
+
+Nothing should be returned by this command, but a file called ~/.hashlet will be generate which is the private key of the device.  To make sure it's only accessible by the root user:
+
+#+BEGIN_SRC: bash
+chmod 400 ~/.hashlet
+#+END_SRC
+
 ** Alter ssh configuration
 
 Altering the ssh configuration will make it a little more secure than the standard Debian settings.
@@ -1942,7 +2009,7 @@ a2enmod rewrite
 a2enmod headers
 #+END_SRC
 
-Ensure that "NameVirtualHost *:443" is added to /etc/apache2/ports.conf.  It should look something like the following:
+Ensure that "NameVirtualHost *:443" is added to /etc/apache2/ports.conf. It should look something like the following:
 
 #+BEGIN_SRC: bash
 NameVirtualHost *:80
@@ -2225,7 +2292,7 @@ Verify it.
 
 #+BEGIN_SRC: bash
 sha256sum roundcubemail.tar.gz
-e8a311b22a8e1f70abb72ed9551cc9233cf6c5221f1eebf1ae64974117e3148b  roundcubemail.tar.gz
+e8a311b22a8e1f70abb72ed9551cc9233cf6c5221f1eebf1ae64974117e3148b roundcubemail.tar.gz
 #+END_SRC
 
 Extract the files.
@@ -2270,7 +2337,7 @@ Save and exit, then restart Apache.
 service apache2 restart
 #+END_SRC
 
-Now with a browser visit https://mydomainname.com/mail/installer.  Scroll down and click "next".  Give your webmail site a product name.
+Now with a browser visit https://mydomainname.com/mail/installer. Scroll down and click "next".  Give your webmail site a product name.
 
 The *spellcheck_engine* option being limited to Google is slightly concerning in terms of privacy and security, but seems not to be implemented.
 
@@ -2318,9 +2385,9 @@ rm -rf /var/www/$HOSTNAME/htdocs/mail/installer
 
 Now with a browser navigate to https://mydomainname.com/mail and log in.
 
-You'll notice that you may not be able to see any mailing list folders which you may have created earlier using the /mailinglistrule/ script.  To make folders visible click on the cog-like settings icon at the bottom left of the screen then select *manage folders*.  You will then be able to select which folders you wish to become visible.  Make sure that the *Sent*, *spam* and *ham* folders are selected.
+You'll notice that you may not be able to see any mailing list folders which you may have created earlier using the /mailinglistrule/ script. To make folders visible click on the cog-like settings icon at the bottom left of the screen then select *manage folders*.  You will then be able to select which folders you wish to become visible.  Make sure that the *Sent*, *spam* and *ham* folders are selected.
 
-Click on the *Mail* icon to go back to your main mail screen then click on the *Settings* icon at the top right of the screen and select *special folders*. Set *Junk* to *spam* then click the save button.  Also select *identities* and make sure that your email address is correct.
+Click on the *Mail* icon to go back to your main mail screen then click on the *Settings* icon at the top right of the screen and select *special folders*. Set *Junk* to *spam* then click the save button. Also select *identities* and make sure that your email address is correct.
 
 *** Thunderbird
 
@@ -2576,7 +2643,7 @@ Then save and exit.
 -- Nick Cohen
 #+END_VERSE
 
-Wordpress is the most popular blogging platform, but in practice I found it to be high maintenance with frequent security updates and breakages.  More practical for a home server is Flatpress.  Flatpress doesn't use a MySql database, just text files, and so is easy to relocate or reinstall.
+Wordpress is the most popular blogging platform, but in practice I found it to be high maintenance with frequent security updates and breakages. More practical for a home server is Flatpress.  Flatpress doesn't use a MySql database, just text files, and so is easy to relocate or reinstall.
 
 See the [[Setting up a web site]] section of this document for details of how to configure the web server for your blog's domain.
 
@@ -2591,7 +2658,7 @@ Verify the download:
 
 #+BEGIN_SRC: bash
 sha256sum flatpress.tar.gz
-6312a49aab5aabd6371518dcaf081f489dff04d001bc34b4fe3f2a81170bbd4e  flatpress.tar.gz
+6312a49aab5aabd6371518dcaf081f489dff04d001bc34b4fe3f2a81170bbd4e flatpress.tar.gz
 #+END_SRC
 
 Extract and install it.
@@ -2698,7 +2765,7 @@ Verify it.
 
 #+BEGIN_SRC: bash
 sha256sum hybserv_1.9.4-1_armhf.deb
-41bf4eb6e24c87610a80bc14db1103a57484835510eea7e4ba9709c523318615  hybserv_1.9.4-1_armhf.deb
+41bf4eb6e24c87610a80bc14db1103a57484835510eea7e4ba9709c523318615 hybserv_1.9.4-1_armhf.deb
 #+END_SRC
 
 Install it.
@@ -3118,7 +3185,7 @@ openssl genpkey -paramfile /etc/ssl/private/xmpp.pem -out /etc/ssl/private/xmpp.
 openssl req -new -x509 -key /etc/ssl/private/xmpp.key -out /etc/ssl/certs/xmpp.crt -days 3650
 #+END_SRC
 
-The above uses a Diffie-Hellman elliptic curve (ECDH P-256) algorithm.  It is apparent that amongst crypographers there are differences of opinion about the security of elliptic curves, so if you prefer there is also a more traditional RSA way to generate an SSL certificate:
+The above uses a Diffie-Hellman elliptic curve (ECDH P-256) algorithm. It is apparent that amongst crypographers there are differences of opinion about the security of elliptic curves, so if you prefer there is also a more traditional RSA way to generate an SSL certificate:
 
 #+BEGIN_SRC: bash
 openssl genrsa -out /etc/ssl/private/xmpp.key 4096
@@ -3220,7 +3287,7 @@ Jitsi can be downloaded from https://jitsi.org/
 
 On your desktop/laptop open Jitsi and select *Options* from the *Tools* menu.
 
-Click *Add* to add a new user, then enter the Jabber ID which you previously specified with /prosodyctl/ when setting up the XMPP server.  Close and then you should notice that your status is "Online" (or if not then you should be able to set it to online).
+Click *Add* to add a new user, then enter the Jabber ID which you previously specified with /prosodyctl/ when setting up the XMPP server. Close and then you should notice that your status is "Online" (or if not then you should be able to set it to online).
 
 From the *File* menu you can add contacts, then select the chat icon to begin a chat.  Click on the lock icon on the right hand side and this will initiate an authentication procedure in which you can specify a question and answer to verify the identity of the person you're communicating with.  Once authentication is complete then you'll be chating using OTR, which provides an additional layer of security.
 
@@ -3469,7 +3536,7 @@ Under the *themes* section select a few themes, including mobile themes which ar
 
 Under the *site* section give your Friendica node a name other than "/my friend network/", you can change the icon and banner text and set the default mobile theme typically to /frost-mobile/.  If you don't want your node to host a lot of accounts for people you don't know then you may want to set the register policy to "/requires approval/".  For security it's probably a good idea only to host accounts for people who you actually know, rather than random strangers.  Also be aware that the Beaglebone does not have a great deal of computational power or bandwidth and will not function well if there are hundreds of users using your node.  If you're not federating with Diaspora or other sites then you may wish to select "/only allow Friendica contacts/".  That improves the security of the system, since communication between Friendica nodes is always encrypted separately and in addition to the usual SSL encryption layer - which makes life interesting for the Surveillance State and at least keeps those cryptanalysts employed.
 
-It's probably a good idea to enable "/private posts by default for new users/" and also "/don't include post content in email notifications/".  Since traditional email isn't a secure system and is easily vulnerable to attack by systems such as [[https://en.wikipedia.org/wiki/XKeyscore][Xkeyscore]].
+It's probably a good idea to enable "/private posts by default for new users/" and also "/don't include post content in email notifications/". Since traditional email isn't a secure system and is easily vulnerable to attack by systems such as [[https://en.wikipedia.org/wiki/XKeyscore][Xkeyscore]].
 
 ***** Settings
 Each user has their own customisable settings, typically available either via an icon or by an entry on a drop down menu.
@@ -3542,7 +3609,7 @@ Verify it.
 
 #+BEGIN_SRC: bash
 sha256sum movim.tar.gz
-2740ddbedf6cefcc2934759374376643b6cdea4fb7f944ec25098a6868cb499e  movim.tar.gz
+2740ddbedf6cefcc2934759374376643b6cdea4fb7f944ec25098a6868cb499e movim.tar.gz
 #+END_SRC
 
 Install it.
@@ -3591,7 +3658,7 @@ Click on /Database Settings/ and alter the MySql movim database username to /mov
 
 Click /Submit/ followed by /Resend/.  If you get a lot of orange warnings about database fields being created then hit /Submit/ again until you see "Movim database is up to date".
 
-If everything on all three tabs looks green then you are ready to go.  Click on the Movim logo at the top left and then log in with your Jabber ID (JID).
+If everything on all three tabs looks green then you are ready to go. Click on the Movim logo at the top left and then log in with your Jabber ID (JID).
 
 *** Red Matrix
 **** Introduction
@@ -3989,7 +4056,7 @@ Verify the download:
 
 #+BEGIN_SRC: bash
 sha256sum geomyidae-current.tgz
-162f55ab059ab0a9be8e840497795293bbd51c34b1f4564dcdf3f0ddd5c0db31  geomyidae-current.tgz
+162f55ab059ab0a9be8e840497795293bbd51c34b1f4564dcdf3f0ddd5c0db31 geomyidae-current.tgz
 #+END_SRC
 
 Then extract and install it.
@@ -4407,7 +4474,7 @@ Verify the download:
 
 #+BEGIN_SRC: bash
 sha256sum owncloud.tar.bz2
-92b53fdfa7c4165b83dd2f8447f63928454a5815d08ff2d6165dd1a8969ecbe1  owncloud.tar.bz2
+92b53fdfa7c4165b83dd2f8447f63928454a5815d08ff2d6165dd1a8969ecbe1 owncloud.tar.bz2
 #+END_SRC
 
 Extract the archive.  This may take a couple of minutes, so don't be alarmed that the system has crashed.
@@ -4469,7 +4536,7 @@ Verify it.
 
 #+BEGIN_SRC: bash
 sha256sum dokuwiki.tgz
-6b126f90979463d9ddaa74acc6f96aa230cfdc789946f241c3646086d9574be8  dokuwiki.tgz
+6b126f90979463d9ddaa74acc6f96aa230cfdc789946f241c3646086d9574be8 dokuwiki.tgz
 #+END_SRC
 
 Then extract and install it.
@@ -4692,7 +4759,7 @@ webm    video/webm
 
 Save and exit.
 
-If you need to be able to upload large files to the wiki then edit */etc/php5/apache2/php.ini* and set *upload_max_filesize* accordingly.  If the directory */etc/php5/apache2* doesn't exist then you will need to install the package *libapache2-mod-php5*.
+If you need to be able to upload large files to the wiki then edit */etc/php5/apache2/php.ini* and set *upload_max_filesize* accordingly. If the directory */etc/php5/apache2* doesn't exist then you will need to install the package *libapache2-mod-php5*.
 
 Now you can visit your wiki and begin editing.
 
@@ -5365,7 +5432,7 @@ A disadvantage with encrypted mailing lists which use the conventional email sys
 
 An alternative is to use a decentralised mailing list, implemented using Bitmessage.  On your local machine (not the BBB) you can make a private mailing list which is difficult to censor and where there is no single point of failure.  This type of mailing list is known as a "/chan/".
 
-With Bitmessage if any one computer goes offline then the conversation can still keep going since there is no central mailing list server.  Bitmessages are also encrypted with public/private key pairs and the manner in which the system operates makes it very difficult for the surveillance apparatus to exfiltrate the social graph of list users.
+With Bitmessage if any one computer goes offline then the conversation can still keep going since there is no central mailing list server. Bitmessages are also encrypted with public/private key pairs and the manner in which the system operates makes it very difficult for the surveillance apparatus to exfiltrate the social graph of list users.
 
 On a Debian based system:
 
@@ -5415,7 +5482,7 @@ Generate a key pair:
 convergence gencert
 #+END_SRC
 
-When asked for a challenge password just hit *Enter* a couple of times.  Then move the key pair to the appropriate directories as follows.
+When asked for a challenge password just hit *Enter* a couple of times. Then move the key pair to the appropriate directories as follows.
 
 #+BEGIN_SRC: bash
 mv mynotary.key /etc/ssl/private
@@ -5649,7 +5716,7 @@ Change the ssl setting from *always* to *sometimes*, hten save and exit.
 
 So, you're now microblogging on the open web, with no companies in the middle.  Congratulations!  To find some other people to connect to you can try searching other nodes listed at http://gnu.io/try/
 
-When following other GNU Social users enter the URL of your profile.  For example, https://mygnusocialdomain/myusername
+When following other GNU Social users enter the URL of your profile. For example, https://mygnusocialdomain/myusername
 
 ** Install Mediagoblin
 
@@ -5664,7 +5731,7 @@ For a mediagoblin site it is recommended to use a separate domain/subdomain, so 
 Install some dependencies.
 
 #+BEGIN_SRC: bash
-apt-get install git-core python python-dev python-lxml python-imaging python-virtualenv python-gst0.10 libjpeg8-dev sqlite3 libapache2-mod-fcgid
+apt-get install git-core python python-dev python-lxml python-imaging python-virtualenv python-gst0.10 libjpeg8-dev sqlite3 libapache2-mod-fcgid gstreamer0.10-plugins-base gstreamer0.10-plugins-bad gstreamer0.10-plugins-good gstreamer0.10-plugins-ugly gstreamer0.10-ffmpeg python-numpy python-scipy libsndfile1-dev
 #+END_SRC
 
 Create a user, replacing /mymediagoblindomain/ with the domain name for your mediagoblin site.
@@ -5705,6 +5772,7 @@ Change *email_sender_address* to your email address and set *email_debug_mode* t
 Then save and exit.
 
 #+BEGIN_SRC: bash
+./bin/pip install scikits.audiolab
 ./bin/gmg dbupdate
 exit # to go back to the root user
 emacs /etc/init.d/mediagoblin
