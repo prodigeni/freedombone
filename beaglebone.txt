@@ -575,9 +575,11 @@ MACs hmac-sha2-512,hmac-sha2-256,hmac-ripemd160
 KexAlgorithms diffie-hellman-group-exchange-sha256,diffie-hellman-group14-sha1,diffie-hellman-group-exchange-sha1
 #+END_SRC
 
-CTRL-X CTRL-S to save, then CTRL-X CTRL-C to exit.
+CTRL-X CTRL-S to save, then CTRL-X CTRL-C to exit.  Now clear out any pre-existing host keys and reconfigure the ssh server.
 
 #+BEGIN_SRC: bash
+rm /etc/ssh/ssh_host_*
+dpkg-reconfigure openssh-server
 service ssh restart
 #+END_SRC
 
