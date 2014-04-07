@@ -520,10 +520,32 @@ It should return the message "/Factory/".  This is intended to provide an indica
 hashlet --bus=/dev/i2c-2 personalize
 #+END_SRC
 
-Nothing should be returned by this command, but a file called ~/.hashlet will be generate which is the private key of the device.  To make sure it's only accessible by the root user:
+Nothing should be returned by this command, but a file called ~/.hashlet will be generated which is the private key of the device.  To make sure it's only accessible by the root user:
 
 #+BEGIN_SRC: bash
 chmod 400 ~/.hashlet
+#+END_SRC
+
+#+BEGIN_SRC: bash
+mknod /dev/hashletrng p
+emacs /root/hashletupdate
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+#!/bin/sh
+
+while :
+do
+hashlet --bus=/dev/i2c-2 random > /dev/hashletrng # 32 bytes at a time...
+done
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+chmod +x /root/hashletupdate
 #+END_SRC
 
 ** Alter ssh configuration
