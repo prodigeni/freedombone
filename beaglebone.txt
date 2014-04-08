@@ -472,6 +472,7 @@ Install the hashlet [[./images/hashlet_installed.jpg][like this]] on the BBB, th
 cd /tmp
 wget http://freedombone.uk.to/hashlet-1.0.0.tar.gz
 wget http://freedombone.uk.to/hashlet-1.0.0.tar.gz.sig
+wget http://freedombone.uk.to/hashlet-1.0.0.patch
 #+END_SRC
 
 Install some dependencies.
@@ -490,10 +491,14 @@ The main parts of the verification to check are:
 
 #+BEGIN_SRC: bash
 gpg: Signature made Fri 07 Feb 2014 23:22:37 GMT using RSA key ID 81CD647A
-gpg: requesting key 81CD647A from hkp server keys.gnupg.net
-gpg: key BD2EDEA6: public key "Joshua Brian Datko <jbd@cryptotronix.com>" imported
-
 gpg: Good signature from "Joshua Brian Datko <jbd@cryptotronix.com>"
+#+END_SRC
+
+Also verify the patch:
+
+#+BEGIN_SRC: bash
+sha256sum hashlet-1.0.0.patch
+bb9f08b049d112fadd0f8889849a39d199a7f7582c627f8eda5680ded842945b
 #+END_SRC
 
 Now install the driver.
@@ -501,6 +506,7 @@ Now install the driver.
 #+BEGIN_SRC: bash
 tar -xzvf hashlet-1.0.0.tar.gz
 cd hashlet-1.0.0
+patch -p1 < ../hashlet-1.0.0.patch
 chmod o+rw /dev/i2c*
 ./configure
 make
