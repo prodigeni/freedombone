@@ -427,6 +427,13 @@ apt-get install haveged
 #+END_SRC
 
 *** Verifying random number quality
+
+#+BEGIN_VERSE
+/Living in a surveillance state is exactly like being guilty until proven guilty./
+
+-- Mohammad Tarakiyee
+#+END_VERSE
+
 You can check how much randomness (entropy) is available with:
 
 #+BEGIN_SRC: bash
