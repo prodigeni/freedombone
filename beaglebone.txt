@@ -478,7 +478,7 @@ wget http://freedombone.uk.to/hashlet-1.0.0.patch
 Install some dependencies.
 
 #+BEGIN_SRC: bash
-apt-get install gnupg build-essential libgcrypt11-dev
+apt-get install gnupg build-essential libgcrypt11-dev texinfo
 #+END_SRC
 
 Verify it.
@@ -508,6 +508,7 @@ tar -xzvf hashlet-1.0.0.tar.gz
 cd hashlet-1.0.0
 patch -p1 < ../hashlet-1.0.0.patch
 chmod o+rw /dev/i2c*
+./autogen.sh
 ./configure
 make
 make check
@@ -544,7 +545,7 @@ Add the following:
 
 while :
 do
-hashlet --bus=/dev/i2c-2 random > /dev/hashletrng # 32 bytes at a time...
+hashlet --bus=/dev/i2c-2 --Bytes 32 random-bytes > /dev/hashletrng
 done
 #+END_SRC
 
@@ -6268,6 +6269,51 @@ apt-get remove --purge mysql\*
 apt-get clean
 updatedb
 #+END_SRC
+** Regenerating SSL certificates
+If a security vulnerability arrises which requires you to regenerate your SSL certificates, such as [[http://filippo.io/Heartbleed]["heartbleed"]], then this can be done as follows:
+
+Obtain the latest updates:
+
+#+BEGIN_SRC: bash
+apt-get update
+apt-get upgrade
+#+END_SRC
+
+Run *makecert <domain>* for each of your sites.
+
+Recreate the XMPP certificate:
+
+#+BEGIN_SRC: bash
+openssl genrsa -out /etc/ssl/private/xmpp.key 4096
+openssl req -new -x509 -key /etc/ssl/private/xmpp.key -out /etc/ssl/certs/xmpp.crt -days 3650
+chmod 600 /etc/ssl/private/xmpp.key
+chmod 600 /etc/ssl/certs/xmpp.crt
+chown prosody:prosody /etc/ssl/private/xmpp.key
+chown prosody:prosody /etc/ssl/certs/xmpp.crt
+#+END_SRC
+
+And regenerate the IRC server keys:
+
+#+BEGIN_SRC: bash
+openssl genrsa -out /etc/ircd-hybrid/key/ircd.key 4096
+openssl req -new -x509 -key /etc/ircd-hybrid/key/ircd.key -out /etc/ircd-hybrid/key/ircd.pem -days 3650
+chmod 600 /etc/ircd-hybrid/key/ircd.key
+chmod 600 /etc/ircd-hybrid/key/ircd.pem
+#+END_SRC
+
+As an added precaution you may wish to regenerate your ssh host keys:
+
+#+BEGIN_SRC: bash
+rm /etc/ssh/ssh_host_*
+dpkg-reconfigure openssh-server
+#+END_SRC
+
+Then reboot the server with:
+
+#+BEGIN_SRC: bash
+reboot
+#+END_SRC
+
 * Deprecated
 
 The following items have been deprecated until such time as a successful installation is achieved.
