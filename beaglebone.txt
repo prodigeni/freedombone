@@ -473,51 +473,25 @@ rngtest: Program run time: 115987 microseconds
 
 An optional extra is the [[http://cryptotronix.com/products/hashlet/][Cryptotronix Hashlet]] which also has hardware random number generation capability via the [[./Atmel-8740-CryptoAuth-ATSHA204-Datasheet.pdf][Atmel ATSHA204]] chip.
 
-Install the hashlet [[./images/hashlet_installed.jpg][like this]] on the BBB, then download the source code.
+Install the hashlet [[./images/hashlet_installed.jpg][like this]] on the BBB, then install some dependencies.
+
+#+BEGIN_SRC: bash
+apt-get install git build-essential libgcrypt11-dev texinfo
+#+END_SRC
+
+Download the source code.
 
 #+BEGIN_SRC: bash
 cd /tmp
-wget http://freedombone.uk.to/hashlet-1.0.0.tar.gz
-wget http://freedombone.uk.to/hashlet-1.0.0.tar.gz.sig
-wget http://freedombone.uk.to/hashlet-1.0.0.patch
-#+END_SRC
-
-Install some dependencies.
-
-#+BEGIN_SRC: bash
-apt-get install gnupg build-essential libgcrypt11-dev texinfo
-#+END_SRC
-
-Verify it.
-
-#+BEGIN_SRC: bash
-gpg --verify hashlet-1.0.0.tar.gz.sig
-#+END_SRC
-
-The main parts of the verification to check are:
-
-#+BEGIN_SRC: bash
-gpg: Signature made Fri 07 Feb 2014 23:22:37 GMT using RSA key ID 81CD647A
-gpg: Good signature from "Joshua Brian Datko <jbd@cryptotronix.com>"
-#+END_SRC
-
-Also verify the patch:
-
-#+BEGIN_SRC: bash
-sha256sum hashlet-1.0.0.patch
-bb9f08b049d112fadd0f8889849a39d199a7f7582c627f8eda5680ded842945b
+git clone https://github.com/bashrc/hashlet.git
 #+END_SRC
 
 Now install the driver.
 
 #+BEGIN_SRC: bash
-tar -xzvf hashlet-1.0.0.tar.gz
-cd hashlet-1.0.0
-patch -p1 < ../hashlet-1.0.0.patch
+cd hashlet
 chmod o+rw /dev/i2c*
 ./autogen.sh
-./configure
-make
 make check
 make install
 #+END_SRC
@@ -540,27 +514,116 @@ Nothing should be returned by this command, but a file called ~/.hashlet will be
 chmod 400 ~/.hashlet
 #+END_SRC
 
+Now create a daemon which will create a random number generator device */dev/hashletrng*.
+
 #+BEGIN_SRC: bash
-mknod /dev/hashletrng p
-emacs /root/hashletupdate
+emacs /usr/bin/hashletd
+#+END_SRC
+
+#+BEGIN_SRC: bash
+#!/bin/sh
+
+PATH='/usr/local/sbin:/usr/local/bin:/usr/bin:/sbin:/usr/sbin:/bin'
+I2CBUS=2
+BYTES=32
+DEVICE=/dev/hashletrng
+
+# create a device
+if [ ! -e ${DEVICE} ]; then
+  mknod ${DEVICE} p
+fi
+
+while :
+do
+hashlet --bus=/dev/i2c-${I2CBUS} --Bytes ${BYTES} random-bytes > ${DEVICE}
+done
+#+END_SRC
+
+Save and exit.  Now create an init script to run it.
+
+#+BEGIN_SRC: bash
+emacs /etc/init.d/hashlet
 #+END_SRC
 
 Add the following:
 
 #+BEGIN_SRC: bash
-#!/bin/sh
+#!/bin/bash
 
-while :
-do
-hashlet --bus=/dev/i2c-2 --Bytes 32 random-bytes > /dev/hashletrng
-done
+# /etc/init.d/hashlet
+
+### BEGIN INIT INFO
+# Provides:          hashlet
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: hashlet
+# Description:       Creates a random number generator device
+### END INIT INFO
+
+# Author: Bob Mottram <bob@robotics.uk.to>
+
+#Settings
+SERVICE='hashlet'
+LOGFILE='/dev/null'
+COMMAND="/usr/bin/hashletd"
+USERNAME='root'
+NICELEVEL=19
+HISTORY=1024
+INVOCATION="nice -n ${NICELEVEL} ${COMMAND}"
+PATH='/usr/local/sbin:/usr/local/bin:/usr/bin:/sbin:/usr/sbin:/bin'
+
+hashlet_start() {
+echo "Starting $SERVICE..."
+su --command "screen -h ${HISTORY} -dmS ${SERVICE} ${INVOCATION}" $USERNAME
+}
+
+
+hashlet_stop() {
+echo "Stopping $SERVICE"
+su --command "screen -p 0 -S ${SERVICE} -X stuff "'^C'"" $USERNAME
+}
+
+
+#Start-Stop here
+case "$1" in
+  start)
+    hashlet_start
+    ;;
+  stop)
+    hashlet_stop
+    ;;
+  restart)
+    hashlet_stop
+    sleep 10s
+    hashlet_start
+    ;;
+    *)
+  echo "Usage: $0 {start|stop|restart}"
+  exit 1
+  ;;
+esac
+
+exit 0
 #+END_SRC
 
-Save and exit.
+Save and exit, then start the daemon.
 
 #+BEGIN_SRC: bash
-chmod +x /root/hashletupdate
+chmod +x /usr/bin/hashletd
+chmod +x /etc/init.d/hashlet
+update-rc.d hashlet defaults
+service hashlet start
 #+END_SRC
+
+Then to obtain some random bytes:
+
+#+BEGIN_SRC: bash
+cat /dev/hashletrng
+#+END_SRC
+
+The rate of entropy generation by the Hashlet seems very slow compared to */dev/hwrng*, and this is most likely because of the I2C interface.  So it's probably a good idea to keep hwrng as the main random source and only use the Hashlet's random number generator for any ancillary stuff.
 
 ** Alter ssh configuration
 
@@ -6825,6 +6888,79 @@ emacs /etc/apache2/sites-available/$HOSTNAME
 Within a browser open https://mydomainname.com:8888
 
 See documentation in /usr/share/doc/kune/INSTALL.gz
+
+** Loomio
+
+#+BEGIN_SRC: bash
+apt-get install imagemagick libmagickcore-dev postgresql libmagickwand-dev
+#+END_SRC
+
+psql -d postgres
+postgres=# create role postgres login createdb;
+postgres=# \q
+
+
+#+BEGIN_SRC: bash
+cd /srv
+git clone https://github.com/loomio/loomio.git
+cd /srv/loomio
+bundle install
+cp config/database.example.yml config/database.yml
+cp .example-env .env
+bundle exec rake db:create
+bundle exec rake db:schema:load
+bundle exec rake db:schema:load RAILS_ENV=test
+bundle exec rake db:seed
+#+END_SRC
+
+foreman start
+
+Edit the Apache configuration for your mediagoblin site.
+
+#+BEGIN_SRC: bash
+emacs /etc/apache2/sites-available/myloomiodomain
+#+END_SRC
+
+Delete the existing configuration (in Emacs it's CTRL-x h then CTRL-w) and paste the following, replacing /myloomiodomain/ with your mediagoblin domain name and /myusername@mydomainname.com/ with your email address.
+
+#+BEGIN_SRC: bash
+<VirtualHost *:80>
+    ServerAdmin myusername@mydomainname.com
+
+    DocumentRoot /srv/myloomiodomain
+    ServerName myloomiodomain
+
+    <Directory />
+        Options FollowSymLinks
+        AllowOverride None
+    </Directory>
+    <Directory /srv/myloomiodomain/>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride All
+        Order allow,deny
+        allow from all
+    </Directory>
+
+    LogLevel warn
+
+    ProxyVia On
+
+    ProxyRequests off
+    ProxyPreserveHost on
+
+    ProxyPass / http://localhost:3000/
+
+    ErrorLog "/var/log/apache2/error.log"
+    CustomLog "/var/log/apache2/access.log" combined
+
+    RewriteEngine On
+    RewriteOptions Inherit
+</VirtualHost>
+#+END_SRC
+
+Save and exit.
+
+Now in a browser visit http://myloomiodomain and create a user.
 
 * Related projects
 
