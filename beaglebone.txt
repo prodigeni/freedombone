@@ -508,7 +508,7 @@ It should return the message "/Factory/".  This is intended to provide an indica
 hashlet --bus=/dev/i2c-2 personalize
 #+END_SRC
 
-Nothing should be returned by this command, but a file called ~/.hashlet will be generated which is the private key of the device.  To make sure it's only accessible by the root user:
+Nothing should be returned by this command, but a file called ~/.hashlet will be generated which is the private key of the device.  This personalization process is a one-time operation which physically alters the hardware, so it would not be trivial to reset the device back to "Factory" again.  To make sure it's only accessible by the root user:
 
 #+BEGIN_SRC: bash
 chmod 400 ~/.hashlet
