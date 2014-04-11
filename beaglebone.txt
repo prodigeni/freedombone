@@ -530,6 +530,7 @@ DEVICE=/dev/hashletrng
 
 # create a device
 if [ ! -e ${DEVICE} ]; then
+  chmod o+rw /dev/i2c*
   mknod ${DEVICE} p
 fi
 
