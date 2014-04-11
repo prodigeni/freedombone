@@ -681,12 +681,18 @@ Select "/dynamic DNS/" then click "/quick cron example/"
 An example would look like:
 
 #+BEGIN_SRC: bash
-4,9,14,19,24,29,34,39,44,49,54,59 * * * * root sleep 29 ; /usr/bin/timeout 120 wget -O - https://free\ dns.afraid.org/dynamic/update.php?ABCKDNRCLFHENSLKNFEGSBFLFF== >> /\ tmp/freedns_mysubdomain_us_to.log 2>&1 &
+4,14,24,34,44,54 * * * * root sleep 29 ; /usr/bin/timeout 200 wget -O - https://free\ dns.afraid.org/dynamic/update.php?ABCKDNRCLFHENSLKNFEGSBFLFF== >> /dev/null 2>&1 &
 #+END_SRC
 
 It's important to make sure that you change the *http* to *https*, since this will help to prevent a potential attacker from hijacking your site and redirecting it to a fake version for the purposes of obtaining your login details.
 
-Edit */etc/crontab* and append that to the end of the file.
+Edit */etc/crontab* and append that to the top of the file, underneath the heading line which looks like this:
+
+#+BEGIN_SRC: bash
+# m h dom mon dow user	command
+#+END_SRC
+
+In general the most frequently run crontab entries should be at the top.  Then save and exit.
 
 Via your router's firewall settings you should now open port 22 (secure shell).  This will allow you to ssh into your BBB from any location - not just your own local network.
 
@@ -725,7 +731,7 @@ emacs /etc/crontab
 You can replace the multiple freedns entries with a single line:
 
 #+BEGIN_SRC: bash
-*/10 * * * * root /usr/bin/timeout 60 /usr/bin/dynamicdns
+*/10 * * * * root /usr/bin/timeout 200 /usr/bin/dynamicdns
 #+END_SRC
 
 Then save and exit and restart the cron daemon.
@@ -733,6 +739,8 @@ Then save and exit and restart the cron daemon.
 #+BEGIN_SRC: bash
 service cron restart
 #+END_SRC
+
+If you want to know what a typical /crontab/ file might look like then see the [[Example crontab file]]
 
 ** Set the host name
 
@@ -6383,6 +6391,29 @@ Then reboot the server with:
 
 #+BEGIN_SRC: bash
 reboot
+#+END_SRC
+
+** Example crontab file
+
+This is an example of what your crontab file might look like, with the more frequently run tasks at the top.  For the two most frequent tasks specific minutes within each hour are given and they're arranged to try to minimise the number of things running simultaneously.
+
+#+BEGIN_SRC: bash
+# /etc/crontab: system-wide crontab
+# Unlike any other crontab you don't have to run the `crontab'
+# command to install the new version when you edit this file
+# and files in /etc/cron.d. These files also have username fields,
+# that none of the other crontabs do.
+
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# m            h dom mon dow user command
+10,20,30,40,50 * *   *   *   root /usr/bin/timeout 120 /usr/bin/dynamicdns && /usr/bin/spamfilter myusername
+15,35,55       * *   *   *   root cd /var/www/mydomainname/htdocs; /usr/bin/timeout 240 /usr/bin/php include/poller.php
+17             * *   *   *   root cd / && run-parts --report /etc/cron.hourly
+25             6 *   *   *   root test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.daily )
+47             6 *   *   7   root test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.weekly )
+52             6 1   *   *   root test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.monthly )
 #+END_SRC
 
 * Deprecated
