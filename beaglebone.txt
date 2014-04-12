@@ -6493,10 +6493,15 @@ cat /etc/ssl/requests/$HOSTNAME.csr
 
 You can then click on "skip" within the StartSSL certificates wizard and copy and paste the encrypted request into the text entry box.  A confirmation will be emailed back to you normally within a few hours.
 
-Then on the BBB.
+Log into your StartSSL account and select *Retrieve Certificate* from the *Tool Box* tab.  Copy the text.
 
 #+BEGIN_SRC: bash
-mv /etc/ssl/requests/$HOSTNAME.csr /etc/ssl/certs/$HOSTNAME.crt
+emacs /etc/ssl/certs/$HOSTNAME.crt
+#+END_SRC
+
+Paste the public key, then save and exit.  Then on the BBB.
+
+#+BEGIN_SRC: bash
 mkdir /etc/ssl/roots
 mkdir /etc/ssl/chains
 wget "http://www.startssl.com/certs/ca.pem" --output-document="/etc/ssl/roots/startssl-root.ca"
@@ -6520,6 +6525,14 @@ cp /etc/ssl/certs/$HOSTNAME* /etc/ssl/backups/certs/
 cp /etc/ssl/private/$HOSTNAME* /etc/ssl/backups/private/
 chmod -R 400 /etc/ssl/backups/certs/*
 chmod -R 400 /etc/ssl/backups/private/*
+#+END_SRC
+
+Remove the certificate password, so if the server is rebooted then it won't wait indefinitely for a non-existant keyboard user to type in a password.
+
+#+BEGIN_SRC: bash
+openssl rsa -in /etc/ssl/private/$HOSTNAME.key -out /etc/ssl/private/$HOSTNAME.new.key
+cp /etc/ssl/private/$HOSTNAME.new.key /etc/ssl/private/$HOSTNAME.key
+shred -zu /etc/ssl/private/$HOSTNAME.new.key
 #+END_SRC
 
 Now visit your web site at https://mydomainname.com and you should notice that there is no certificate warning displayed.  You will now be able to install systems which don't allow the use of self-signed certificates, such as [[https://redmatrix.me/&JS=1][Red Matrix]].
