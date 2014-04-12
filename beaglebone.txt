@@ -6416,6 +6416,79 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 52             6 1   *   *   root test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.monthly )
 #+END_SRC
 
+** Using your own domain
+Suppose that you have bought a domain name (rather than using a free subdomain on freedns) and you want to use that instead.
+
+Remove any existing nameservers for your domain (or select "custom" nameservers), then add:
+
+#+BEGIN_SRC: bash
+NS1.AFRAID.ORG
+NS2.AFRAID.ORG
+NS3.AFRAID.ORG
+NS4.AFRAID.ORG
+#+END_SRC
+
+It might take a few minutes for the above change to take effect.  Within freedns click on "Domains" and add your domains (this might only be available to paid members).  Make sure that they're marked as "private".
+
+Select "Subdomains" from the menu on the left then select the MX entry for your domain and change the destination to *10:mydomainname* rather than *10:mail.mydomainname*.
+
+To route email to one of your freedns domains:
+
+#+BEGIN_SRC: bash
+emacs /etc/mailname
+#+END_SRC
+
+Add any extra domains which you own, then save and exit.
+
+#+BEGIN_SRC: bash
+emacs /etc/exim4/update-exim4.conf.conf
+#+END_SRC
+
+Within dc_other_hostnames add your extra domain names, separated by a colon ':' character.
+
+Save and exit, then restart exim.
+
+#+BEGIN_SRC: bash
+update-exim4.conf.template -r
+update-exim4.conf
+service exim4 restart
+#+END_SRC
+
+You should now be able to send an email from /postmaster@mynewdomainname/ and it should arrive in your inbox.
+
+** Obtaining an "official" SSL certificate
+You can obtain a free "official" (as in recognised by default by web browsers) SSL certificate from [[https://www.startssl.com/][StartSSL]].  You will first need to have bought a domain name, since it's not possible to obtain one for a freedns subdomain, so see [[Using your own domain]] for details of how to do that.  You should also have tested that you can send email to the domain and receive it on the BBB (via Mutt or any other email client).
+
+When creating a SSL certificate it's important that the private key (the private component of the public/private pair in [[https://en.wikipedia.org/wiki/Public-key_cryptography][public key cryptography]]) be generated on the BBB /and remain there/.  Don't generate the private key via the StartSSL certificate wizard because this means that potentially they may retain a copy of it which could then be exfiltrated either via [[https://en.wikipedia.org/wiki/Lavabit][Lavabit]] style methodology, "implants", compromised sysadmins or other "side channel" methods.  So that the private key isn't broadcast on the internet we can instead generate a certificate request, which is really just a request for authorisation of a public key.
+
+Firstly under the validations wizard validate your domain, which means sending an email to it and confirming a code.
+
+Now we can generate the certificate request as follows.
+
+#+BEGIN_SRC: bash
+export HOSTNAME=mydomainname
+openssl genrsa -out /etc/ssl/private/$HOSTNAME.key 2048
+chown root:ssl-cert /etc/ssl/private/$HOSTNAME.key
+chmod 440 /etc/ssl/private/$HOSTNAME.key
+mkdir /etc/ssl/requests
+#+END_SRC
+
+Now make a certificate request as follows.  You should copy and paste the whole of this, not just line by line.
+
+#+BEGIN_SRC: bash
+openssl req -new -key /etc/ssl/private/$HOSTNAME.key -out /etc/ssl/requests/$HOSTNAME.csr
+#+END_SRC
+
+For the email address it's a good idea to use postmaster@mydomainname.
+
+View the request with:
+
+#+BEGIN_SRC: bash
+cat /etc/ssl/requests/$HOSTNAME.csr
+#+END_SRC
+
+You can then click on "skip" within the StartSSL certificates wizard and copy and paste the encrypted request into the text entry box.  A confirmation will be emailed back to you normally within a few hours.
+
 * Deprecated
 
 The following items have been deprecated until such time as a successful installation is achieved.
