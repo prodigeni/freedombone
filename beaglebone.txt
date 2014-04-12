@@ -6461,12 +6461,14 @@ You can obtain a free "official" (as in recognised by default by web browsers) S
 
 When creating a SSL certificate it's important that the private key (the private component of the public/private pair in [[https://en.wikipedia.org/wiki/Public-key_cryptography][public key cryptography]]) be generated on the BBB /and remain there/.  Don't generate the private key via the StartSSL certificate wizard because this means that potentially they may retain a copy of it which could then be exfiltrated either via [[https://en.wikipedia.org/wiki/Lavabit][Lavabit]] style methodology, "implants", compromised sysadmins or other "side channel" methods.  So that the private key isn't broadcast on the internet we can instead generate a certificate request, which is really just a request for authorisation of a public key.
 
-Firstly under the validations wizard validate your domain, which means sending an email to it and confirming a code.
+Firstly you should have an Apache web site configutaion ready to go.  See [[Setting up a web site]] for details.
+
+Within StartSSL under the validations wizard validate your domain, which means sending an email to it and confirming a code.
 
 Now we can generate the certificate request as follows.
 
 #+BEGIN_SRC: bash
-export HOSTNAME=mydomainname
+export HOSTNAME=mydomainname.com
 openssl genrsa -out /etc/ssl/private/$HOSTNAME.key 2048
 chown root:ssl-cert /etc/ssl/private/$HOSTNAME.key
 chmod 440 /etc/ssl/private/$HOSTNAME.key
@@ -6481,6 +6483,8 @@ openssl req -new -key /etc/ssl/private/$HOSTNAME.key -out /etc/ssl/requests/$HOS
 
 For the email address it's a good idea to use postmaster@mydomainname.
 
+Use a random 20 character password, and keep a note of it.  We'll remove this later.
+
 View the request with:
 
 #+BEGIN_SRC: bash
@@ -6488,6 +6492,37 @@ cat /etc/ssl/requests/$HOSTNAME.csr
 #+END_SRC
 
 You can then click on "skip" within the StartSSL certificates wizard and copy and paste the encrypted request into the text entry box.  A confirmation will be emailed back to you normally within a few hours.
+
+Then on the BBB.
+
+#+BEGIN_SRC: bash
+mv /etc/ssl/requests/$HOSTNAME.csr /etc/ssl/certs/$HOSTNAME.crt
+mkdir /etc/ssl/roots
+mkdir /etc/ssl/chains
+wget "http://www.startssl.com/certs/ca.pem" --output-document="/etc/ssl/roots/startssl-root.ca"
+wget "http://www.startssl.com/certs/sub.class1.server.ca.pem" --output-document="/etc/ssl/chains/startssl-sub.class1.server.ca.pem"
+wget "http://www.startssl.com/certs/sub.class2.server.ca.pem" --output-document="/etc/ssl/chains/startssl-sub.class2.server.ca.pem"
+wget "http://www.startssl.com/certs/sub.class3.server.ca.pem" --output-document="/etc/ssl/chains/startssl-sub.class3.server.ca.pem"
+ln -s "/etc/ssl/roots/startssl-root.ca" "/etc/ssl/roots/$HOSTNAME-root.ca"
+ln -s "/etc/ssl/chains/startssl-sub.class1.server.ca.pem" "/etc/ssl/chains/$HOSTNAME.ca"
+cp "/etc/ssl/certs/$HOSTNAME.crt" "/etc/ssl/certs/$HOSTNAME.crt+chain+root"
+test -e "/etc/ssl/chains/$HOSTNAME.ca" && cat "/etc/ssl/chains/$HOSTNAME.ca" >> "/etc/ssl/certs/$HOSTNAME.crt+chain+root"
+test -e "/etc/ssl/roots/$HOSTNAME-root.ca" && cat "/etc/ssl/roots/$HOSTNAME-root.ca" >> "/etc/ssl/certs/$HOSTNAME.crt+chain+root"
+#+END_SRC
+
+To avoid any possibility of the certificates being accidentally overwritten by self-signed ones at a later date you can create backups.
+
+#+BEGIN_SRC: bash
+mkdir /etc/ssl/backups
+mkdir /etc/ssl/backups/certs
+mkdir /etc/ssl/backups/private
+cp /etc/ssl/certs/$HOSTNAME* /etc/ssl/backups/certs/
+cp /etc/ssl/private/$HOSTNAME* /etc/ssl/backups/private/
+chmod -R 400 /etc/ssl/backups/certs/*
+chmod -R 400 /etc/ssl/backups/private/*
+#+END_SRC
+
+Now visit your web site at https://mydomainname.com and you should notice that there is no certificate warning displayed.  You will now be able to install systems which don't allow the use of self-signed certificates, such as [[https://redmatrix.me/&JS=1][Red Matrix]].
 
 * Deprecated
 
