@@ -643,17 +643,20 @@ ServerKeyBits 4096
 Protocol 2
 PermitEmptyPasswords no
 StrictModes yes
+TCPKeepAlive no
 #+END_SRC
 
 Append the following:
 
 #+BEGIN_SRC: bash
+ClientAliveInterval 60
+ClientAliveCountMax 3
 Ciphers aes256-ctr,aes192-ctr,aes128-ctr
 MACs hmac-sha2-512,hmac-sha2-256,hmac-ripemd160
 KexAlgorithms diffie-hellman-group-exchange-sha256,diffie-hellman-group14-sha1,diffie-hellman-group-exchange-sha1
 #+END_SRC
 
-CTRL-X CTRL-S to save, then CTRL-X CTRL-C to exit.  Now clear out any pre-existing host keys and reconfigure the ssh server.
+CTRL-x CTRL-s to save, then CTRL-x CTRL-c to exit.  Now clear out any pre-existing host keys and reconfigure the ssh server.
 
 #+BEGIN_SRC: bash
 rm /etc/ssh/ssh_host_*
@@ -4046,7 +4049,7 @@ Get the source code.
 #+BEGIN_SRC: bash
 export HOSTNAME=mydomainname.com
 cd /var/www/$HOSTNAME
-mv htdocs htdocs_old
+rm -rf htdocs
 git clone https://github.com/friendica/red.git htdocs
 chmod -R 755 htdocs
 chown -R www-data:www-data htdocs
@@ -4067,7 +4070,7 @@ emacs /etc/crontab
 and append the following, changing mydomainname.com to whatever your domain is.
 
 #+BEGIN_SRC
-*/10 *  * * *	root	cd /var/www/mydomainname.com/htdocs; /usr/bin/php include/poller.php
+12,22,32,42,52 * *   *   *   root cd /var/www/apespace.org/htdocs; /usr/bin/timeout 240 /usr/bin/php include/poller.php
 #+END_SRC
 
 Save and exit, then restart cron.
