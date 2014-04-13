@@ -2064,14 +2064,17 @@ emacs /etc/apache2/apache2.conf
 Search for MaxClients and replace the value with 6. As an example the settings should look something like this:
 
 #+BEGIN_SRC: bash
+KeepAliveTimeout 2
 Timeout 150
 
 <IfModule mpm_prefork_module>
-    StartServers          3
-    MinSpareServers       3
-    MaxSpareServers       5
-    MaxClients            6
-    MaxRequestsPerChild   0
+  StartServers           1
+  MinSpareServers        1
+  MaxSpareServers        5
+  ServerLimit           16
+  MaxClients            16
+  MaxRequestsPerChild    0
+  ListenBacklog        100
 </IfModule>
 
 <IfModule mpm_worker_module>
@@ -2080,7 +2083,7 @@ Timeout 150
     MaxSpareThreads      75
     ThreadLimit          64
     ThreadsPerChild      25
-    MaxClients            6
+    MaxClients           16
     MaxRequestsPerChild   0
 </IfModule>
 
@@ -2090,7 +2093,7 @@ Timeout 150
     MaxSpareThreads      75
     ThreadLimit          64
     ThreadsPerChild      25
-    MaxClients            6
+    MaxClients           16
     MaxRequestsPerChild   0
 </IfModule>
 #+END_SRC
@@ -6544,7 +6547,7 @@ Edit your Apache configuration file.
 emacs /etc/apache2/sites-available/$HOSTNAME
 #+END_SRC
 
-Add the following to the section which starts with
+Add the following to the section which starts with *<VirtualHost *:443>*
 
 #+BEGIN_SRC: bash
 	SSLCertificateChainFile /etc/ssl/chains/startssl-sub.class1.server.ca.pem
