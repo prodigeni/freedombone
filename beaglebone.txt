@@ -6538,6 +6538,24 @@ cp /etc/ssl/private/$HOSTNAME.new.key /etc/ssl/private/$HOSTNAME.key
 shred -zu /etc/ssl/private/$HOSTNAME.new.key
 #+END_SRC
 
+Edit your Apache configuration file.
+
+#+BEGIN_SRC: bash
+emacs /etc/apache2/sites-available/$HOSTNAME
+#+END_SRC
+
+Add the following to the section which starts with
+
+#+BEGIN_SRC: bash
+	SSLCertificateChainFile /etc/ssl/chains/startssl-sub.class1.server.ca.pem
+#+END_SRC
+
+Save and exit, then restart apache.
+
+#+BEGIN_SRC: bash
+service apache2 restart
+#+END_SRC
+
 Now visit your web site at https://mydomainname.com and you should notice that there is no certificate warning displayed.  You will now be able to install systems which don't allow the use of self-signed certificates, such as [[https://redmatrix.me/&JS=1][Red Matrix]].
 
 * Deprecated
