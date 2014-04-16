@@ -2072,7 +2072,7 @@ Timeout 150
   MinSpareServers        1
   MaxSpareServers        5
   ServerLimit           16
-  MaxClients            16
+  MaxClients             5
   MaxRequestsPerChild    0
   ListenBacklog        100
 </IfModule>
@@ -2083,7 +2083,7 @@ Timeout 150
     MaxSpareThreads      75
     ThreadLimit          64
     ThreadsPerChild      25
-    MaxClients           16
+    MaxClients            5
     MaxRequestsPerChild   0
 </IfModule>
 
@@ -2093,7 +2093,7 @@ Timeout 150
     MaxSpareThreads      75
     ThreadLimit          64
     ThreadsPerChild      25
-    MaxClients           16
+    MaxClients            5
     MaxRequestsPerChild   0
 </IfModule>
 #+END_SRC
