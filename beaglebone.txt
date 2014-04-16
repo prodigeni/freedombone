@@ -226,7 +226,7 @@ iface eth0 inet static
 #    gateway 192.168.7.1
 #+END_SRC
 
-CTRL-O followed by ENTER to save, then CTRL-X to exit.
+CTRL-o followed by ENTER to save, then CTRL-x to exit.
 
 In the above example "address 192.168.1.60" is a static IP address for the BBB, which will allow incoming network traffic to be directed from the router in a reliable manner.  It should be outside of the DHCP range set up on the router.
 
@@ -249,7 +249,7 @@ nameserver 213.73.91.35
 nameserver 85.214.20.141
 #+END_SRC
 
-CTRL-O followed by ENTER to save, then CTRL-X to exit.
+CTRL-o followed by ENTER to save, then CTRL-x to exit.
 
 Now disconnect the BBB from your computer and plug it into the router. You'll need an ethernet patch cable and you may also need a 5V/1A power supply for the BBB.
 
@@ -293,34 +293,6 @@ Some basic Emacs keys which will be useful to new users are:
 | Load a file | CTRL-x CTRL-f |
 | Save        | CTRL-x CTRL-s |
 | Exit        | CTRL-x CTRL-c |
-
-** Create a swap file
-
-Without a swap file the system may occasionally run out of memory and crash, since the Beaglebone only has 512MB of RAM.  The following commands will create a 1GB swap file:
-
-#+BEGIN_SRC: bash
-mkdir -p /var/cache/swap/
-dd if=/dev/zero of=/var/cache/swap/swapfile bs=1M count=1024
-chmod 600 /var/cache/swap/swapfile
-mkswap /var/cache/swap/swapfile
-swapon /var/cache/swap/swapfile
-#+END_SRC
-
-To tell the OS to load this swapfile on each start up.
-
-#+BEGIN_SRC: bash
-emacs /etc/fstab
-#+END_SRC
-
-Append the following line:
-
-#+BEGIN_SRC: bash
-/var/cache/swap/swapfile    none    swap    sw    0   0
-#+END_SRC
-
-Then save and exit.
-
-To verify that the swapfile is accessilble type /top/ and look for the line which begins with "KiB Swap".  Probably there will be zero bytes used, but this might be non-zero when the system is under some load (for example getting a lot of web views or being crawled by a search engine). CTRL-C exits from the /top/ command.
 
 ** Enable backports
 
