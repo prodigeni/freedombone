@@ -364,21 +364,22 @@ Using a more recent kernel should improve stability of the system and also allow
 
 #+BEGIN_SRC: bash
 cd /tmp
-wget http://freedombone.uk.to/kernel-3.13.tar.gz
+wget http://freedombone.uk.to/kernel-3.14.tar.gz
 #+END_SRC
 
 Verify it.
 
 #+BEGIN_SRC: bash
-sha256sum kernel-3.13.tar.gz
-88f7c5d1a26b844371137a5e849b376284267452ee8ddbfe7792da9254b86473
+sha256sum kernel-3.14.tar.gz
+c0f76ace9ae149ffbba785dd83ee1f1b7e2d5cdcd41120c8cb3fa4aea2612753
 #+END_SRC
 
 Then extract and install it.
 
 #+BEGIN_SRC: bash
-tar -xzvf kernel-3.13.tar.gz
-cd kernel-3.13
+mkdir kernel-3.14
+cd kernel-3.14
+tar -xzvf ../kernel-3.14.tar.gz
 sh install-me.sh
 reboot
 #+END_SRC
@@ -2477,6 +2478,7 @@ set pgp_timeout=60
 set pgp_autosign         # autosign all outgoing mails
 set pgp_replyencrypt     # autocrypt replies to crypted
 set pgp_replysign        # autosign replies to signed
+set pgp_auto_decode=yes  # decode attachments
 #+END_SRC
 
 Save and exit.
