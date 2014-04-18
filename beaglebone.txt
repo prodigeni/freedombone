@@ -1090,8 +1090,8 @@ iptables -A INPUT -p udp --match multiport --dports 465,22,5222,5223,5269,5280,5
 iptables -A INPUT -p tcp --dport 22 -m limit --limit 3/minute --limit-burst 1 -j ACCEPT
 
 # Limit web connections
-iptables -A INPUT -p tcp --dport 80 -m limit --limit 30/minute --limit-burst 5 -j ACCEPT
-iptables -A INPUT -p tcp --dport 443 -m limit --limit 30/minute --limit-burst 5 -j ACCEPT
+iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT
 
 # Limit number of XMPP connections
 iptables -A INPUT -p tcp --match multiport --dports 5222:5223,5269,5280:5281 -m limit --limit 3/minute --limit-burst 1 -j ACCEPT
