@@ -1010,14 +1010,6 @@ Enter the following:
 #+BEGIN_SRC: bash
 #!/bin/bash
 
-# Enable syn cookies
-echo 1 > /proc/sys/net/ipv4/tcp_syncookies
-
-# Other settings
-echo 1 > /proc/sys/net/ipv4/tcp_keepalive_probes
-echo 2 > /proc/sys/net/ipv4/tcp_synack_retries
-echo 1 > /proc/sys/net/ipv4/tcp_syn_retries
-
 # First of all delete any existing rules.
 # This means you're back to a known state:
 iptables -P INPUT ACCEPT
@@ -1168,6 +1160,7 @@ emacs /etc/sysctl.conf
 Uncomment or change the following:
 
 #+BEGIN_SRC: bash
+net.ipv4.tcp_syncookies = 1
 net.ipv4.conf.all.accept_redirects = 0
 net.ipv6.conf.all.accept_redirects = 0
 net.ipv4.conf.all.send_redirects = 0
@@ -1184,9 +1177,18 @@ And append the following:
 #+BEGIN_SRC: bash
 # ignore pings
 net.ipv4.icmp_echo_ignore_all = 1
+net.ipv6.icmp_echo_ignore_all = 1
 
 # disable ipv6
 net.ipv6.conf.all.disable_ipv6 = 1
+
+net.ipv4.tcp_synack_retries = 2
+net.ipv4.tcp_syn_retries = 1
+
+# keepalive
+net.ipv4.tcp_keepalive_probes = 9
+net.ipv4.tcp_keepalive_intvl = 75
+net.ipv4.tcp_keepalive_time = 7200
 #+END_SRC
 
 Save and exit.  It may be a good idea to reboot at this point and then log back into the BBB using ssh.  You can do a safe reboot of the system by typing:
