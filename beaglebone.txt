@@ -2043,17 +2043,17 @@ emacs /etc/apache2/apache2.conf
 Search for MaxClients and replace the value with 6. As an example the settings should look something like this:
 
 #+BEGIN_SRC: bash
-KeepAliveTimeout 2
-Timeout 150
+Timeout 30
+KeepAlive On
+MaxKeepAliveRequests 50
+KeepAliveTimeout 10
 
 <IfModule mpm_prefork_module>
-  StartServers           1
-  MinSpareServers        1
-  MaxSpareServers        5
-  ServerLimit           16
-  MaxClients             5
-  MaxRequestsPerChild    0
-  ListenBacklog        100
+  StartServers          3
+  MinSpareServers       2
+  MaxSpareServers       5
+  MaxClients            10
+  MaxRequestsPerChild   1000
 </IfModule>
 
 <IfModule mpm_worker_module>
@@ -2062,7 +2062,7 @@ Timeout 150
     MaxSpareThreads      75
     ThreadLimit          64
     ThreadsPerChild      25
-    MaxClients            5
+    MaxClients           10
     MaxRequestsPerChild   0
 </IfModule>
 
@@ -2072,7 +2072,7 @@ Timeout 150
     MaxSpareThreads      75
     ThreadLimit          64
     ThreadsPerChild      25
-    MaxClients            5
+    MaxClients           10
     MaxRequestsPerChild   0
 </IfModule>
 #+END_SRC
@@ -2357,6 +2357,20 @@ makecert mydomainname.com
 Enter some trivial password for the key file, such as "password".  The password will be removed as part of the /makecert/ script which you just created.  Note that leaving a password on the key file would mean that after a power cycle the Apache server will not be able to boot properly (it would wait indefinitely for a password to be manually entered) and would look as if it had crashed.
 
 If all has gone well then there should be no warnings or errors after you run the service restart command.  After that you should enable ports 80 (HTTP) and 443 (HTTPS) on your internet router/firewall, such that they are redirected to the BBB.
+
+Also limit the amount of memory which any php scripts can use.
+
+#+BEGIN_SRC: bash
+emacs /etc/php5/apache2/php.ini
+#+END_SRC
+
+Set the following:
+
+#+BEGIN_SRC: bash
+memory_limit = 32M
+#+END_SRC
+
+Save and exit.  Also edit */etc/php5/cli/php.ini* and set /memory_limit/ to the same value.  This should prevent any rogue scripts from crashing the system.
 
 ** Accessing your Email
 
