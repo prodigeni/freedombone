@@ -1049,6 +1049,7 @@ iptables -A INPUT -p tcp --destination-port 32771:32774 -j DROP
 iptables -A INPUT -p tcp --destination-port 4000 -j DROP
 iptables -A INPUT -p tcp --destination-port 119 -j DROP
 iptables -A INPUT -p tcp --destination-port 137 -j DROP
+iptables -A INPUT -p tcp --destination-port 3306 -j DROP
 iptables -A INPUT -p udp --destination-port 1 -j DROP
 iptables -A INPUT -p udp --destination-port 7 -j DROP
 iptables -A INPUT -p udp --destination-port 109:111 -j DROP
@@ -1071,6 +1072,7 @@ iptables -A INPUT -p udp --destination-port 119 -j DROP
 iptables -A INPUT -p udp --destination-port 137 -j DROP
 iptables -A INPUT -p udp --destination-port 8432 -j DROP
 iptables -A INPUT -p udp --destination-port 8433 -j DROP
+iptables -A INPUT -p udp --destination-port 3306 -j DROP
 
 # Make sure NEW incoming tcp connections are SYN packets
 iptables -A INPUT -p tcp ! --syn -m state --state NEW -j DROP
