@@ -6265,8 +6265,8 @@ Delete the existing configuration (in Emacs it's CTRL-x h then CTRL-w) and paste
 
     ProxyPass / http://localhost:6543/
 
-    ErrorLog "/var/log/apache2/error_log"
-    CustomLog "/var/log/apache2/access_log" combined
+    ErrorLog "/var/log/apache2/error.log"
+    CustomLog "/var/log/apache2/access.log" combined
 
     RewriteEngine On
     RewriteOptions Inherit
