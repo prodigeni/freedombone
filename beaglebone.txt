@@ -2025,6 +2025,51 @@ cp -r /home/myusername/.gnupg ~/
 chown -R root:root ~/.gnupg
 #+END_SRC
 
+** Protect processes
+Because the BBB has limited RAM some processes may occasionally be automatically killed if physical memory availability is getting too low.  The way in which processes are chosen to be sacrificed is not particularly intelligent, and so can result in vital systems being stopped.  To try to prevent that from ever happening the following script can be used, which should ensure that at a minimum ssh, email and mysql keep running.
+
+#+BEGIN_SRC: bash
+emacs /usr/bin/protectprocesses
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+#!/bin/bash
+
+declare -a protect=('/usr/sbin/sshd' '/usr/sbin/mysqld --basedir=/usr' '/bin/sh /usr/bin/mysqld_safe' '/usr/sbin/exim4')
+
+for p in "${protect[@]}"
+do
+  OOM_PROC_ID=$(ps aux | grep '$p' | grep -v grep | head -n 1 | awk -F ' ' '{print $2}')
+  if [ ! -z "$OOM_PROC_ID" ]; then
+    echo -1000 >/proc/$OOM_PROC_ID/oom_score_adj
+    echo -17 >/proc/$OOM_PROC_ID/oom_adj
+  fi
+done
+#+END_SRC
+
+Save and exit, then edit the cron jobs:
+
+#+BEGIN_SRC: bash
+emacs /etc/crontab
+#+END_SRC
+
+And add the line:
+
+#+BEGIN_SRC: bash
+*/1            * *   *   *   root /usr/bin/timeout 30 /usr/bin/protectprocesses
+#+END_SRC
+
+Then save and exit and restart cron.
+
+#+BEGIN_SRC: bash
+chmod +x /usr/bin/protectprocesses
+service cron restart
+#+END_SRC
+
+Here cron is used so that if we stop one of the relevant processes and then restart it then its oom priority will be reassigned again
+.
 ** Setting up a web site
 
 #+BEGIN_VERSE
