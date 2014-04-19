@@ -3732,6 +3732,12 @@ apt-get install mysql-server php5-common php5-cli php5-curl php5-gd php5-mysql p
 
 Enter an admin password for MySQL.
 
+Reduce the memory use of mysql by using the "small" configuration.
+
+#+BEGIN_SRC: bash
+cp /usr/share/doc/mysql-server-5.5/examples/my-small.cnf /etc/mysql/my.cnf
+#+END_SRC
+
 Create a mysql database.
 
 #+BEGIN_SRC: bash
@@ -3985,6 +3991,12 @@ apt-get install mysql-server php5-common php5-cli php5-curl php5-gd php5-mysql p
 
 If necessary, enter an admin password for MySQL.
 
+Reduce the memory use of mysql by using the "small" configuration.
+
+#+BEGIN_SRC: bash
+cp /usr/share/doc/mysql-server-5.5/examples/my-small.cnf /etc/mysql/my.cnf
+#+END_SRC
+
 Create a mysql database.
 
 #+BEGIN_SRC: bash
@@ -4060,6 +4072,12 @@ apt-get install mysql-server php5-common php5-cli php5-curl php5-gd php5-mysql p
 #+END_SRC
 
 Enter an admin password for MySQL.
+
+Reduce the memory use of mysql by using the "small" configuration.
+
+#+BEGIN_SRC: bash
+cp /usr/share/doc/mysql-server-5.5/examples/my-small.cnf /etc/mysql/my.cnf
+#+END_SRC
 
 Create a mysql database.
 
