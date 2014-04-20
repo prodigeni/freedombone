@@ -2101,7 +2101,7 @@ KeepAliveTimeout 1
     StartServers 5
     MinSpareServers 5
     MaxSpareServers 10
-    MaxClients 10
+    MaxClients 5
     MaxRequestsPerChild 10
 </IfModule>
 
@@ -2111,7 +2111,7 @@ KeepAliveTimeout 1
     MaxSpareThreads 5
     ThreadLimit 6
     ThreadsPerChild 10
-    MaxClients 10
+    MaxClients 5
     MaxRequestsPerChild 10
 </IfModule>
 
@@ -2121,7 +2121,7 @@ KeepAliveTimeout 1
     MaxSpareThreads 5
     ThreadLimit 6
     ThreadsPerChild 10
-    MaxClients 10
+    MaxClients 5
     MaxRequestsPerChild 10
 </IfModule>
 #+END_SRC
