@@ -4018,6 +4018,9 @@ MYSQL_PASSWORD=<mysql root password>
 
 umask 0077
 
+# records go back a couple of weeks
+cp -f /var/backups/friendica_weekly.sql /var/backups/friendica_2weekly.sql
+
 # Backup the database
 mysqldump --password=$MYSQL_PASSWORD friendica > /var/backups/friendica_weekly.sql
 
@@ -4329,6 +4332,9 @@ Enter the following
 MYSQL_PASSWORD=<mysql root password>
 
 umask 0077
+
+# records go back a couple of weeks
+cp -f /var/backups/redmatrix_weekly.sql /var/backups/redmatrix_2weekly.sql
 
 # Backup the database
 mysqldump --password=$MYSQL_PASSWORD redmatrix > /var/backups/redmatrix_weekly.sql
