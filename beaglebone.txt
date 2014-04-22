@@ -3847,15 +3847,20 @@ See [[Setting up a web site]] for details of how to update the Apache configurat
 Edit your Apache configuration and disable the port 80 (HTTP) version of the site.  We only want to log into Friendica via HTTPS, so to prevent anyone from accidentally logging in insecurely:
 
 #+BEGIN_SRC: bash
-emacs /etc/apache2/sites-available/mydomainname.com
+emacs /etc/apache2/sites-available/myfriendicadomainname.com
 #+END_SRC
 
-Within the section which begins with *<VirtualHost *:80>* change the following:
+Replace the section which begins with *<VirtualHost *:80>* with the following, replacing /myusername@mydomainname.com/ with your email address and /myfriendicadomainname.com/ with your Friendica domain name:
 
 #+BEGIN_SRC: bash
-  <Directory /var/www/mydomainname.com/htdocs/>
-    deny from all
-  </Directory>
+<VirtualHost *:80>
+	ServerAdmin myusername@mydomainname.com
+	ServerName myfriendicadomainname.com
+
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+</VirtualHost>
 #+END_SRC
 
 Save and exit, then restart the apache server.
@@ -3911,7 +3916,7 @@ The .gitconfig file should look something like this:
 Get the source code.
 
 #+BEGIN_SRC: bash
-export HOSTNAME=mydomainname.com
+export HOSTNAME=myfriendicadomainname.com
 cd /var/www/$HOSTNAME
 mv htdocs htdocs_old
 git clone https://github.com/friendica/friendica.git htdocs
@@ -3929,10 +3934,10 @@ Install the poller.
 emacs /etc/crontab
 #+END_SRC
 
-and append the following, changing mydomainname.com to whatever your domain is.
+and append the following, changing /myfriendicadomainname.com/ to whatever your Friendica domain is.
 
 #+BEGIN_SRC: bash
-*/10 *  * * *	root	cd /var/www/mydomainname.com/htdocs; /usr/bin/timeout 120 /usr/bin/php include/poller.php
+*/10 *  * * *	root	cd /var/www/myfriendicadomainname.com/htdocs; /usr/bin/timeout 120 /usr/bin/php include/poller.php
 #+END_SRC
 
 Save and exit, then restart cron.
