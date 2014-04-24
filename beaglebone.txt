@@ -7136,3 +7136,4 @@ Now in a browser visit http://myloomiodomain and create a user.
 
   * [[https://freedomboxfoundation.org/][Freedombox]]
   * [[https://arkos.io/][ArkOS]]
+  * [[https://github.com/JoshData/mailinabox][Mail-in-a-Box]]
