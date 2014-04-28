@@ -347,7 +347,7 @@ Verify it.
 
 #+BEGIN_SRC: bash
 sha256sum kernel-3.14.tar.gz
-c0f76ace9ae149ffbba785dd83ee1f1b7e2d5cdcd41120c8cb3fa4aea2612753
+c489a451b2ab0442ff9105c72307061cfe6858350dacceb29e094b9a20c18739
 #+END_SRC
 
 Then extract and install it.
