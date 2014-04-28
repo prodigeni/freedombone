@@ -5471,33 +5471,6 @@ make install
 pybitmessage
 #+END_SRC
 
-*** Connect to Email
-
-TODO: how to connect Bitmessage to an email client.
-
-#+BEGIN_SRC: bash
-cd /tmp
-wget http://freedombone.uk.to/notbit.tar.gz
-#+END_SRC
-
-Verify it.
-
-#+BEGIN_SRC: bash
-sha256sum notbit.tar.gz
-972fdc9cbb8034141282337dcd5e557bce57969ff6bd1d607da89bd93cc7bb68
-#+END_SRC
-
-Extract and install it.
-
-#+BEGIN_SRC: bash
-tar -xzvf notbit.tar.gz
-cd notbit
-apt-get install dh-autoreconf
-./autogen.sh --prefix=/home/myusername
-make
-make install
-#+END_SRC
-
 ** Overcome restrictive environments
 
 #+BEGIN_VERSE
@@ -7131,6 +7104,33 @@ Delete the existing configuration (in Emacs it's CTRL-x h then CTRL-w) and paste
 Save and exit.
 
 Now in a browser visit http://myloomiodomain and create a user.
+
+** Connect Bitmessage to Email
+
+TODO: how to connect Bitmessage to an email client.
+
+#+BEGIN_SRC: bash
+cd /tmp
+wget http://freedombone.uk.to/notbit.tar.gz
+#+END_SRC
+
+Verify it.
+
+#+BEGIN_SRC: bash
+sha256sum notbit.tar.gz
+972fdc9cbb8034141282337dcd5e557bce57969ff6bd1d607da89bd93cc7bb68
+#+END_SRC
+
+Extract and install it.
+
+#+BEGIN_SRC: bash
+tar -xzvf notbit.tar.gz
+cd notbit
+apt-get install dh-autoreconf
+./autogen.sh --prefix=/home/myusername
+make
+make install
+#+END_SRC
 
 * Related projects
 
