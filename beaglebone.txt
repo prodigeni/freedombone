@@ -3336,6 +3336,8 @@ Connect to the IRC and identify yourself as an operator.  Here /mynetwork/ shoul
 /msg -servername chanserv REGISTER #mychannel channelpassword
 
 /msg -servername chanserv set #mychannel mlock +k channelpassword
+
+/set paste_join_multiline OFF
 #+END_SRC
 
 If you edit the irssi config file:
