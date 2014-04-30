@@ -5959,98 +5959,6 @@ You can hand out the random string used to generate the mailing list and its cor
 To make the list easier to identify, rather than just appearing as a random string, then under the *Your Identities* tab right click on it and select *Set Avatar* and assign a suitable icon.
 
 The disadvantage of this type of mailing list is that it's not possible for any one participant to act as a list moderator, or in other words each participant must do their own moderation.  That's ok if the size of the group is small, but if it's larger then anyone spamming or trolling the list can make things miserable for the others.
-** Add a Convergenge notary
-Convergence is a secure replacement for the Certificate Authority System. Rather than employing a traditionally hard-coded list of immutable and largely untrusted CAs, Convergence allows you to configure a dynamic set of Notaries which use network perspective to validate your communication.  For more details see [[http://convergence.io][convergence.io]] or [[http://www.youtube.com/watch?v=Z7Wl2FW2TcA][this talk which explains the concepts]].
-
-*** Installation
-
-#+BEGIN_SRC: bash
-apt-get install python python-twisted-web python-twisted-names python-m2crypto python-openssl
-cd /tmp
-git clone https://github.com/fuzzgun/convergence
-cd convergence/server
-python ./setup.py install
-#+END_SRC
-
-Generate a key pair:
-
-#+BEGIN_SRC: bash
-convergence gencert
-#+END_SRC
-
-When asked for a challenge password just hit *Enter* a couple of times. Then move the key pair to the appropriate directories as follows.
-
-#+BEGIN_SRC: bash
-mv mynotary.key /etc/ssl/private
-chmod 400 /etc/ssl/private/mynotary.key
-mv mynotary.pem /etc/ssl/certs
-#+END_SRC
-
-Now create the database:
-
-#+BEGIN_SRC: bash
-rm /var/lib/convergence/convergence.db
-convergence createdb
-#+END_SRC
-
-Create an initialisation script:
-
-#+BEGIN_SRC: bash
-emacs /etc/init.d/convergence
-#+END_SRC
-
-Add the following:
-
-#+BEGIN_SRC: bash
-#+END_SRC
-
-Save and exit.
-
-#+BEGIN_SRC: bash
-adduser converg
-#+END_SRC
-
-The details for the user don't especially matter, but give them a long random password.
-
-#+BEGIN_SRC: bash
-chown -R converg:converg /home/converg
-chmod +x /etc/init.d/convergence
-update-rc.d convergence defaults
-service convergence start
-#+END_SRC
-
-Generate a notary bundle:
-
-#+BEGIN_SRC: bash
-convergence bundle
-#+END_SRC
-
-Enter your name, nickname, handle or whatever.
-
-For the bundle location enter https://mydomainname.com/convergence.notary
-
-For the Hostname enter your domain name
-
-For SSL port enter *8433* and for HTTP port nter *8432*
-
-For the pem file enter */etc/ssl/certs/mynotary.pem*
-
-#+BEGIN_SRC: bash
-export HOSTNAME=mydomainname.com
-mv mynotarybundle.notary /var/www/$HOSTNAME/htdocs/convergence.notary
-chown www-data:www-data /var/www/$HOSTNAME/htdocs/convergence.notary
-#+END_SRC
-
-Now open ports 8432 and 8433 on your internet router or firewall and direct it to the BBB.
-
-*** Using Convergence
-On a computer which is not the BBB (your laptop, etc):
-
-Install the browser plugin by navigating to https://addons.mozilla.org/en-us/firefox/addon/convergence-extra/
-
-After installation restart your browser.
-
-You will notice that an icon appears in the top right corner of the browser, which resembles a lock and two plus signs.  Click on the down arrow to the right of it and select *options*.
 ** Install a microblog
 
 #+BEGIN_VERSE
@@ -7125,6 +7033,99 @@ apt-get install dh-autoreconf
 make
 make install
 #+END_SRC
+
+** Add a Convergenge notary
+Convergence is a secure replacement for the Certificate Authority System. Rather than employing a traditionally hard-coded list of immutable and largely untrusted CAs, Convergence allows you to configure a dynamic set of Notaries which use network perspective to validate your communication.  For more details see [[http://convergence.io][convergence.io]] or [[http://www.youtube.com/watch?v=Z7Wl2FW2TcA][this talk which explains the concepts]].
+
+*** Installation
+
+#+BEGIN_SRC: bash
+apt-get install python python-twisted-web python-twisted-names python-m2crypto python-openssl
+cd /tmp
+git clone https://github.com/fuzzgun/convergence
+cd convergence/server
+python ./setup.py install
+#+END_SRC
+
+Generate a key pair:
+
+#+BEGIN_SRC: bash
+convergence gencert
+#+END_SRC
+
+When asked for a challenge password just hit *Enter* a couple of times. Then move the key pair to the appropriate directories as follows.
+
+#+BEGIN_SRC: bash
+mv mynotary.key /etc/ssl/private
+chmod 400 /etc/ssl/private/mynotary.key
+mv mynotary.pem /etc/ssl/certs
+#+END_SRC
+
+Now create the database:
+
+#+BEGIN_SRC: bash
+rm /var/lib/convergence/convergence.db
+convergence createdb
+#+END_SRC
+
+Create an initialisation script:
+
+#+BEGIN_SRC: bash
+emacs /etc/init.d/convergence
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+adduser converg
+#+END_SRC
+
+The details for the user don't especially matter, but give them a long random password.
+
+#+BEGIN_SRC: bash
+chown -R converg:converg /home/converg
+chmod +x /etc/init.d/convergence
+update-rc.d convergence defaults
+service convergence start
+#+END_SRC
+
+Generate a notary bundle:
+
+#+BEGIN_SRC: bash
+convergence bundle
+#+END_SRC
+
+Enter your name, nickname, handle or whatever.
+
+For the bundle location enter https://mydomainname.com/convergence.notary
+
+For the Hostname enter your domain name
+
+For SSL port enter *8433* and for HTTP port nter *8432*
+
+For the pem file enter */etc/ssl/certs/mynotary.pem*
+
+#+BEGIN_SRC: bash
+export HOSTNAME=mydomainname.com
+mv mynotarybundle.notary /var/www/$HOSTNAME/htdocs/convergence.notary
+chown www-data:www-data /var/www/$HOSTNAME/htdocs/convergence.notary
+#+END_SRC
+
+Now open ports 8432 and 8433 on your internet router or firewall and direct it to the BBB.
+
+*** Using Convergence
+On a computer which is not the BBB (your laptop, etc):
+
+Install the browser plugin by navigating to https://addons.mozilla.org/en-us/firefox/addon/convergence-extra/
+
+After installation restart your browser.
+
+You will notice that an icon appears in the top right corner of the browser, which resembles a lock and two plus signs.  Click on the down arrow to the right of it and select *options*.
 
 * Related projects
 
