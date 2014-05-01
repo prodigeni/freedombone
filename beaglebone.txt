@@ -4363,6 +4363,9 @@ More information about the Friendica app can be found on http://friendica-for-an
 	:PROPERTIES:
 	:ORDERED:  t
 	:END:
+
+*Note: pump.io should not be regarded as secure, since plain text passwords have been discovered within URLs and within the server log.  Until these problems are resolved only use it for public communications*.
+
 pump.io is the successor to StatusNet (which later became [[GNU Social]]) and is a communications system which can do things other than just microblogging.  It takes fewer system resources to run and so is better suited to low power servers such as the BBB, but is more complicated to install.  Currently when using self-signed certificates it seems very hard to federate with other pump.io servers so it may be that although GNU Social is an older system it may still be more practical.  For the instructions which follow it will be possible to run your own pump.io site for your family and friends, as a kind of /data silo/, but federating with anyone else could turn out to be difficult or impossible.
 
 A list of pump.io sites can be found at http://pumpstatus.jpope.org
