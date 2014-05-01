@@ -5309,7 +5309,7 @@ Installing Bitmessage as a daemon will increase the size of the network, and the
 Install from the current source code.
 
 #+BEGIN_SRC: bash
-apt-get install python screen
+apt-get install python screen tor
 cd /tmp
 git clone https://github.com/Bitmessage/PyBitmessage.git
 cd PyBitmessage
@@ -5411,19 +5411,19 @@ Add the following:
 
 #+BEGIN_SRC: bash
 [bitmessagesettings]
-settingsversion = 7
+settingsversion = 8
 port = 8444
 timeformat = %%a, %%d %%b %%Y  %%I:%%M %%p
 blackwhitelist = black
-startonlogon = false
-minimizetotray = false
-showtraynotifications = false
-startintray = false
-socksproxytype = none
+startonlogon = False
+minimizetotray = False
+showtraynotifications = True
+startintray = False
+socksproxytype = SOCKS5
 sockshostname = localhost
 socksport = 9050
-socksauthentication = false
-sockslisten = false
+socksauthentication = False
+sockslisten = True
 socksusername =
 sockspassword =
 keysencrypted = false
@@ -5434,12 +5434,18 @@ minimizeonclose = false
 maxacceptablenoncetrialsperbyte = 0
 maxacceptablepayloadlengthextrabytes = 0
 userlocale = system
+useidenticons = True
+identiconsuffix = re9E9UtSEaWD
+replybelow = False
+stopresendingafterxdays =
+stopresendingafterxmonths =
 namecoinrpctype = namecoind
 namecoinrpchost = localhost
 namecoinrpcuser =
 namecoinrpcpassword =
 namecoinrpcport = 8336
 sendoutgoingconnections = True
+willinglysendtomobile = False
 daemon = true
 #+END_SRC
 
