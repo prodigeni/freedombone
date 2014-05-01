@@ -4404,7 +4404,7 @@ Add the following, replacing /mypumpiodomainname.com/ with your domain name.
     "urlPort": 443,
     "hostname":  "mypumpiodomainname.com",
     "address":  "localhost",
-    "nologger":  false,
+    "nologger":  true,
     "serverUser":  "pumpio",
 	"rejectUnauthorized": false,
     "key":  "/var/local/pump.io/keys/mypumpiodomainname.com.key",
@@ -4412,7 +4412,7 @@ Add the following, replacing /mypumpiodomainname.com/ with your domain name.
     "uploaddir": "/var/local/pump.io/uploads",
     "debugClient": false,
     "firehose": "ofirehose.example",
-	"logfile": "/var/local/pump.io/pump.io.log",
+	"logfile": "/dev/null",
     "disableRegistration": false
 }
 #+END_SRC
