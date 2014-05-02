@@ -485,7 +485,7 @@ reboot
 After the system has rebooted ssh back into it and become the root user, then to check that the changes were successful:
 
 #+BEGIN_SRC: bash
-cat dmesg | grep zram
+dmesg | grep zram
 #+END_SRC
 
 Should show something like:
