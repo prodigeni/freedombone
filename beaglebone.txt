@@ -357,6 +357,11 @@ mkdir kernel-3.14
 cd kernel-3.14
 tar -xzvf ../kernel-3.14.tar.gz
 sh install-me.sh
+#+END_SRC
+
+If you get a certificate error then edit *install-me.sh* and change the /https/ to /http/, save and try again.  Once the installation has completed then you can reboot by typing:
+
+#+BEGIN_SRC: bash
 reboot
 #+END_SRC
 
