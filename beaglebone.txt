@@ -899,7 +899,7 @@ It's convenient to have the clock on your server automatically synchronised with
 First install some prerequisites.
 
 #+BEGIN_SRC: bash
-apt-get install build-essential automake git
+apt-get install build-essential automake git pkg-config
 #+END_SRC
 
 Now download and install tlsdate.
