@@ -905,9 +905,10 @@ apt-get install build-essential automake git pkg-config autoconf libtool libssl-
 Now download and install tlsdate.
 
 #+BEGIN_SRC: bash
-cd /tmp
+mkdir ~/build
+cd ~/build
 git clone https://github.com/ioerror/tlsdate.git
-cd tlsdate
+cd ~/build/tlsdate
 ./autogen.sh
 ./configure
 make
