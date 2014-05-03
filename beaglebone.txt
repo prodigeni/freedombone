@@ -4373,9 +4373,7 @@ More information about the Friendica app can be found on http://friendica-for-an
 	:ORDERED:  t
 	:END:
 
-pump.io is the successor to StatusNet (which later became [[GNU Social]]) and is a communications system which can do things other than just microblogging.  It takes fewer system resources to run and so is better suited to low power servers such as the BBB, but is more complicated to install.  Currently when using self-signed certificates it seems very hard to federate with other pump.io servers so it may be that although GNU Social is an older system it may still be more practical.  For the instructions which follow it will be possible to run your own pump.io site for your family and friends, as a kind of /data silo/, but federating with anyone else could turn out to be difficult or impossible.
-
-A list of pump.io sites can be found at http://pumpstatus.jpope.org
+pump.io is the successor to StatusNet (which later became [[GNU Social]]) and is a communications system which can do things other than just microblogging.  It takes fewer system resources to run and so is better suited to low power servers such as the BBB, but is more complicated to install.  pump.io doesn't work well with self-signed SSL certificates so this may be something which you can only use if you have your own domain and an "authority" issued certificate.  Using a self-signed certificate you can only use pump.io as a /data silo/ which won't federate with other servers.
 
 For a pump.io site you will need a separate domain/subdomain, so see [[Setting up a web site]] for details of how to create an Apache configuration for your site.  If you're using freedns then you will need to create a new subdomain.
 
@@ -4571,6 +4569,10 @@ Now visit your pump.io site by navigating to:
 https://mypumpiodomainname.com
 
 and add a new user.  If you wish this to be a single user node not open to the general public (including spammers and sockpuppets) then edit */etc/pump.io.json* and set *disableRegistration* to *true*.  After making that change restart with the command *service pumpio restart*.
+
+Once you've set up your user account it's recommended that you don't use the web based user interface and instead use a native client such as [[http://jancoding.wordpress.com/dianara/][Dianara]] or Pumpa.  On Ubuntu you can install these via the Software Center.  On mobile devices you can install AndStatus via F-Droid.
+
+A list of pump.io sites can be found at http://pumpstatus.jpope.org.  At the time of writing there isn't any public directory and so finding people to follow is really a question of navigating through lists of /following/ or /followers/ (rather like the web before search engines were invented).
 
 ** Install Gopher
 *** Server setup
