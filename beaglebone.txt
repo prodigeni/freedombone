@@ -899,7 +899,7 @@ It's convenient to have the clock on your server automatically synchronised with
 First install some prerequisites.
 
 #+BEGIN_SRC: bash
-apt-get install build-essential automake git pkg-config
+apt-get install build-essential automake git pkg-config autoconf libtool libssl-dev
 #+END_SRC
 
 Now download and install tlsdate.
@@ -914,7 +914,7 @@ make
 make install
 #+END_SRC
 
-Create an init script.
+If you get errors during the /configure/ stage then you may need to reboot so that some of the installed dependencies take effect.  Then create an init script.
 
 #+BEGIN_SRC: bash
 emacs /etc/init.d/tlsdated
