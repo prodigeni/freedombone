@@ -290,6 +290,7 @@ For an editor which is less erratic than vi when used within a remote console su
 #+BEGIN_SRC: bash
 apt-get update
 apt-get install emacs
+update-alternatives --set editor /usr/bin/emacs23
 #+END_SRC
 
 Some basic Emacs keys which will be useful to new users are:
@@ -375,7 +376,7 @@ uname -mrs
 Now enable zram.
 
 #+BEGIN_SRC: bash
-emacs /etc/modprobe.d/zram.conf
+editor /etc/modprobe.d/zram.conf
 #+END_SRC
 
 Add the following:
@@ -387,7 +388,7 @@ options zram num_devices=1
 Save and exit, then create an initialisation script.
 
 #+BEGIN_SRC: bash
-emacs /etc/init.d/zram
+editor /etc/init.d/zram
 #+END_SRC
 
 Add the following:
@@ -515,7 +516,7 @@ If you are using a Beaglebone and have updated the kernel then install:
 
 #+BEGIN_SRC: bash
 apt-get install rng-tools
-emacs /etc/default/rng-tools
+editor /etc/default/rng-tools
 #+END_SRC
 
 Uncomment *HRNGDEVICE=/dev/hwrng*, save and exit then restart the daemon.
@@ -624,7 +625,7 @@ chmod 400 ~/.hashlet
 Now create a daemon which will create a random number generator device */dev/hashletrng*.
 
 #+BEGIN_SRC: bash
-emacs /usr/bin/hashletd
+editor /usr/bin/hashletd
 #+END_SRC
 
 #+BEGIN_SRC: bash
@@ -650,7 +651,7 @@ done
 Save and exit.  Now create an init script to run it.
 
 #+BEGIN_SRC: bash
-emacs /etc/init.d/hashlet
+editor /etc/init.d/hashlet
 #+END_SRC
 
 Add the following:
@@ -738,7 +739,7 @@ The rate of entropy generation by the Hashlet seems very slow compared to */dev/
 Altering the ssh configuration will make it a little more secure than the standard Debian settings.
 
 #+BEGIN_SRC: bash
-emacs /etc/ssh/sshd_config
+editor /etc/ssh/sshd_config
 #+END_SRC
 
 Check the following values:
@@ -811,7 +812,7 @@ The freeDNS subdomain which you just created will hereafter just be refered to a
 If you have multiple freedns subdomains then you may want to rationalise that a little within */etc/crontab*.  Rather than listing them all individually create a script:
 
 #+BEGIN_SRC: bash
-emacs /usr/bin/dynamicdns
+editor /usr/bin/dynamicdns
 #+END_SRC
 
 Add however many freedns subdomains you have.
@@ -835,7 +836,7 @@ chmod +x /usr/bin/dynamicdns
 Then within */etc/crontab*
 
 #+BEGIN_SRC: bash
-emacs /etc/crontab
+editor /etc/crontab
 #+END_SRC
 
 You can replace the multiple freedns entries with a single line:
@@ -855,7 +856,7 @@ If you want to know what a typical /crontab/ file might look like then see the [
 ** Set the host name
 
 #+BEGIN_SRC: bash
-emacs /etc/hostname
+editor /etc/hostname
 #+END_SRC
 
 CTRL-x CTRL-s to save, then CTRL-x CTRL-c to exit.
@@ -869,7 +870,7 @@ hostname mydomainname.com
 You may also need to assign the same hostname separately via your router's web interface.
 
 #+BEGIN_SRC: bash
-emacs /etc/hosts
+editor /etc/hosts
 #+END_SRC
 
 Append the following, replacing /mydomainname.com/ with your domain name.
@@ -918,7 +919,7 @@ make install
 If you get errors during the /configure/ stage then you may need to reboot so that some of the installed dependencies take effect.  Then create an init script.
 
 #+BEGIN_SRC: bash
-emacs /etc/init.d/tlsdated
+editor /etc/init.d/tlsdated
 #+END_SRC
 
 Add the following:
@@ -1113,7 +1114,7 @@ A basic firewall limits the maximum rate at which connections can be made and cl
 
 #+BEGIN_SRC: bash
 apt-get install portsentry
-emacs /etc/portsentry/portsentry.conf
+editor /etc/portsentry/portsentry.conf
 #+END_SRC
 
 Uncomment the entry for *iptables support for Linux*
@@ -1137,7 +1138,7 @@ Save and exit.
 
 #+BEGIN_SRC: bash
 service portsentry restart
-emacs /tmp/firewall.sh
+editor /tmp/firewall.sh
 #+END_SRC
 
 Enter the following:
@@ -1295,7 +1296,7 @@ rm /tmp/firewall.sh
 Also disable ping.  This may be inconvenient to some extent, but it seems common for malicious systems, including but not limited to the [[http://www.nbcnews.com/news/investigations/snowden-docs-british-spies-used-sex-dirty-tricks-n23091][JTRIG "EFFECTS" team]], to try to disable the machine by flooding it with pings.  These days there seems to be not much difference between "cybercrime" and nefarious state-sponsored internet activities.
 
 #+BEGIN_SRC: bash
-emacs /etc/sysctl.conf
+editor /etc/sysctl.conf
 #+END_SRC
 
 Uncomment or change the following:
@@ -1407,14 +1408,14 @@ quit
 #+END_SRC
 
 #+BEGIN_SRC: bash
-emacs /etc/default/saslauthd
+editor /etc/default/saslauthd
 #+END_SRC
 
 set START=yes then save and exit.
 
 #+BEGIN_SRC: bash
 /etc/init.d/saslauthd start
-emacs exim-gencert
+editor exim-gencert
 #+END_SRC
 
 #+BEGIN_SRC: bash
@@ -1506,7 +1507,7 @@ chmod +x exim-gencert
 This will generate the certificate used for email authentication.  You will be asked for various details, the most important of which is the server name, which should be your domain name.
 
 #+BEGIN_SRC: bash
-emacs /etc/exim4/exim4.conf.template
+editor /etc/exim4/exim4.conf.template
 #+END_SRC
 
 Append the following:
@@ -1539,7 +1540,7 @@ MAIN_TLS_ENABLE = true
 Save and exit.
 
 #+BEGIN_SRC: bash
-emacs /etc/default/exim4
+editor /etc/default/exim4
 change SMTPLISTENEROPTIONS to:
 SMTPLISTENEROPTIONS='-oX 465:25 -oP /var/run/exim4/exim.pid'
 #+END_SRC
@@ -1547,7 +1548,7 @@ SMTPLISTENEROPTIONS='-oX 465:25 -oP /var/run/exim4/exim.pid'
 save and exit
 
 #+BEGIN_SRC: bash
-emacs /etc/exim4/exim4.conf.template
+editor /etc/exim4/exim4.conf.template
 under the section "main/03_exim4-config_tlsoptions"
 Add the following:
 tls_on_connect_ports=465
@@ -1605,13 +1606,13 @@ chown -R $MYUSERNAME:$MYUSERNAME /home/$MYUSERNAME/Maildir
 
 #+BEGIN_SRC: bash
 apt-get install spamassassin exim4-daemon-heavy
-emacs /etc/default/spamassassin
+editor /etc/default/spamassassin
 #+END_SRC
 
 Set ENABLED=1 then save and exit.
 
 #+BEGIN_SRC: bash
-emacs /etc/exim4/exim4.conf.template
+editor /etc/exim4/exim4.conf.template
 #+END_SRC
 
 uncomment or change according to your configuration
@@ -1665,7 +1666,7 @@ Then restart
 
 #+BEGIN_SRC: bash
 exit
-emacs ~/.procmailrc
+editor ~/.procmailrc
 #+END_SRC
 
 The text should look like the following.
@@ -1701,7 +1702,7 @@ Save and exit.
 
 #+BEGIN_SRC: bash
 su
-emacs /usr/bin/filterspam
+editor /usr/bin/filterspam
 #+END_SRC
 
 Add the following contents:
@@ -1731,7 +1732,7 @@ done
 Save and exit.
 
 #+BEGIN_SRC: bash
-emacs /usr/bin/filterham
+editor /usr/bin/filterham
 #+END_SRC
 
 Add the following contents:
@@ -1761,7 +1762,7 @@ done
 Save and exit.
 
 #+BEGIN_SRC: bash
-emacs /etc/crontab
+editor /etc/crontab
 #+END_SRC
 
 Append the following, replacing *myusername* with your username.
@@ -1797,7 +1798,7 @@ aptitude -y install dovecot-common dovecot-imapd
 Edit the configuration file.
 
 #+BEGIN_SRC: bash
-emacs /etc/dovecot/dovecot.conf
+editor /etc/dovecot/dovecot.conf
 #+END_SRC
 
 Line 26: change:
@@ -1809,7 +1810,7 @@ listen = *
 Save and exit.
 
 #+BEGIN_SRC: bash
-emacs /etc/dovecot/conf.d/10-auth.conf
+editor /etc/dovecot/conf.d/10-auth.conf
 #+END_SRC
 
 Line 9: uncomment and change (allow plain text auth)
@@ -1827,7 +1828,7 @@ auth_mechanisms = plain login
 Save and exit.
 
 #+BEGIN_SRC: bash
-emacs /etc/dovecot/conf.d/10-mail.conf
+editor /etc/dovecot/conf.d/10-mail.conf
 #+END_SRC
 
 Line 30: uncomment and add:
@@ -1839,7 +1840,7 @@ mail_location = maildir:~/Maildir:LAYOUT=fs
 Save and exit.
 
 #+BEGIN_SRC: bash
-emacs /etc/dovecot/conf.d/10-ssl.conf
+editor /etc/dovecot/conf.d/10-ssl.conf
 #+END_SRC
 
 Append the following:
@@ -1874,7 +1875,7 @@ Now we will add some settings:
 
 #+BEGIN_SRC: bash
 mkdir ~/.gnupg
-emacs ~/.gnupg/gpg.conf
+editor ~/.gnupg/gpg.conf
 #+END_SRC
 
 The configuration should look like the following.  Of particular importance are the default preferences at the end.
@@ -2178,7 +2179,7 @@ chown -R root:root ~/.gnupg
 Because the BBB has limited RAM some processes may occasionally be automatically killed if physical memory availability is getting too low.  The way in which processes are chosen to be sacrificed is not particularly intelligent, and so can result in vital systems being stopped.  To try to prevent that from ever happening the following script can be used, which should ensure that at a minimum ssh, email and mysql keep running.
 
 #+BEGIN_SRC: bash
-emacs /usr/bin/protectprocesses
+editor /usr/bin/protectprocesses
 #+END_SRC
 
 Add the following:
@@ -2201,7 +2202,7 @@ done
 Save and exit, then edit the cron jobs:
 
 #+BEGIN_SRC: bash
-emacs /etc/crontab
+editor /etc/crontab
 #+END_SRC
 
 And add the line:
@@ -2231,7 +2232,7 @@ Edit the apache configuration so that it doesn't run out of memory if there are 
 
 #+BEGIN_SRC: bash
 su
-emacs /etc/apache2/apache2.conf
+editor /etc/apache2/apache2.conf
 #+END_SRC
 
 Search for MaxClients and replace the value with 6. As an example the settings should look something like this:
@@ -2291,7 +2292,7 @@ In the examples below replace /mydomainname.com/ with your own domain name.
 export HOSTNAME=mydomainname.com
 mkdir /var/www/$HOSTNAME
 mkdir /var/www/$HOSTNAME/htdocs
-emacs /etc/apache2/sites-available/$HOSTNAME
+editor /etc/apache2/sites-available/$HOSTNAME
 #+END_SRC
 
 The Apache configuration for the site should look something like the following.  Replace /mydonainname.com/ with the site domain name.
@@ -2518,7 +2519,7 @@ Listen 80
 Create a self-signed certificate. The passphrase isn't important and will be removed, so make it easy (such as "password").
 
 #+BEGIN_SRC: bash
-emacs /usr/bin/makecert
+editor /usr/bin/makecert
 #+END_SRC
 
 Enter the following:
@@ -2555,7 +2556,7 @@ If all has gone well then there should be no warnings or errors after you run th
 Also limit the amount of memory which any php scripts can use.
 
 #+BEGIN_SRC: bash
-emacs /etc/php5/apache2/php.ini
+editor /etc/php5/apache2/php.ini
 #+END_SRC
 
 Set the following:
@@ -2582,7 +2583,7 @@ exit
 mkdir ~/.mutt
 echo "text/html; lynx -dump -width=78 -nolist %s | sed ‘s/^ //’; copiousoutput; needsterminal; nametemplate=%s.html" > ~/.mutt/mailcap
 su
-emacs /etc/Muttrc
+editor /etc/Muttrc
 #+END_SRC
 
 Append the following:
@@ -2670,7 +2671,7 @@ set pgp_auto_decode=yes  # decode attachments
 Save and exit.
 
 #+BEGIN_SRC: bash
-emacs /etc/mail/spamassassin/local.cf
+editor /etc/mail/spamassassin/local.cf
 #+END_SRC
 
 Uncomment *use_bayes*, *bayes_auto_learn*
@@ -2684,7 +2685,7 @@ service spamassassin restart
 Now to add an address book:
 
 #+BEGIN_SRC: bash
-emacs ~/.muttrc
+editor ~/.muttrc
 #+END_SRC
 
 Append the following:
@@ -2813,7 +2814,7 @@ rm /var/www/$HOSTNAME/htdocs/mail/.htaccess
 Edit your web site configuration.
 
 #+BEGIN_SRC: bash
-emacs /etc/apache2/sites-available/$HOSTNAME
+editor /etc/apache2/sites-available/$HOSTNAME
 #+END_SRC
 
 Within the 80 VirtualHost section add the following:
@@ -3008,7 +3009,7 @@ A common situation with email is that you may be subscribed to various mailing l
 We can make a script to make adding mailing list rules easy:
 
 #+BEGIN_SRC: bash
-emacs /usr/bin/mailinglistrule
+editor /usr/bin/mailinglistrule
 #+END_SRC
 
 Add the following:
@@ -3059,7 +3060,7 @@ mailinglistrule [myusername] [mailinglistname] [subjecttag]
 Repeat this command for as many mailing lists as you need.  Then edit your local Mutt configuration.
 
 #+BEGIN_SRC: bash
-emacs /home/myusername/.muttrc
+editor /home/myusername/.muttrc
 #+END_SRC
 
 Search for the *mailboxes* variable and add entries for the mailing lists you just created.  For example:
@@ -3075,7 +3076,7 @@ Then save and exit.
 You can also make a script which will allow you to move mail from specific email addresses to a folder.
 
 #+BEGIN_SRC: bash
-emacs /usr/bin/emailrule
+editor /usr/bin/emailrule
 #+END_SRC
 
 Add the following:
@@ -3128,7 +3129,7 @@ If you want any mail from the given email address to be deleted then set the /fo
 To ensure that the folder appears within Mutt.
 
 #+BEGIN_SRC: bash
-emacs /home/myusername/.muttrc
+editor /home/myusername/.muttrc
 #+END_SRC
 
 Search for the *mailboxes* variable and add entries for the mailing lists you just created.  For example:
@@ -3209,7 +3210,7 @@ apt-get source ircd-hybrid
 Modify the source code to include SSL security.
 
 #+BEGIN_SRC: bash
-emacs ircd-hybrid-*/debian/rules
+editor ircd-hybrid-*/debian/rules
 #+END_SRC
 
 Beneath MAXCLIENTS add the line:
@@ -3230,7 +3231,7 @@ dpkg -i ircd-hybrid_*.deb
 Customise the configuration to your system, giving it a name and description.  In this example 192.168.1.60 is the static IP address on the BBB on the local network, so change that if necessary.
 
 #+BEGIN_SRC: bash
-emacs /etc/ircd-hybrid/ircd.conf
+editor /etc/ircd-hybrid/ircd.conf
 #+END_SRC
 
 Set *name* to the name of your server, and set a description.
@@ -3287,7 +3288,7 @@ Make a md5 version of the password for the IRC server operator.
 Edit the ircd-hybrid configuration.
 
 #+BEGIN_SRC: bash
-emacs /etc/ircd-hybrid/ircd.conf
+editor /etc/ircd-hybrid/ircd.conf
 #+END_SRC
 
 Enter the md5 password which you previously created within the /operator/ section.  Also change /user/ to:
@@ -3299,7 +3300,7 @@ Enter the md5 password which you previously created within the /operator/ sectio
 Then save and exit.
 
 #+BEGIN_SRC: bash
-emacs /etc/hybserv/hybserv.conf
+editor /etc/hybserv/hybserv.conf
 #+END_SRC
 
 Change #MD5 PASSWORD HERE# to the md5 operator password created earlier, mydomainname.com to your domain name and mysendacceptpassword to the send/accept password specified within /ircd.conf/.
@@ -3352,7 +3353,7 @@ Connect to the IRC and identify yourself as an operator.  Here /mynetwork/ shoul
 If you edit the irssi config file:
 
 #+BEGIN_SRC: bash
-emacs ~/.irssi/config
+editor ~/.irssi/config
 #+END_SRC
 
 It should look something like this:
@@ -3472,7 +3473,7 @@ apt-get install irssi irssi-plugin-otr irssi-plugin-xmpp screen
 Create an initialisation script.
 
 #+BEGIN_SRC: bash
-emacs /etc/init.d/irssid
+editor /etc/init.d/irssid
 #+END_SRC
 
 Add the following:
@@ -3613,7 +3614,7 @@ chmod +x /etc/init.d/irssid
 Create a configuration file, replacing /myusername/ with your username.
 
 #+BEGIN_SRC: bash
-emacs /etc/irssid.conf
+editor /etc/irssid.conf
 #+END_SRC
 
 #+BEGIN_SRC: bash
@@ -3650,7 +3651,7 @@ service irssid start
 Create a script to make running IRC on the server easier.
 
 #+BEGIN_SRC: bash
-emacs /usr/bin/irc
+editor /usr/bin/irc
 #+END_SRC
 
 Add the following:
@@ -3712,7 +3713,7 @@ Install Prosody.
 #+BEGIN_SRC: bash
 apt-get install prosody
 cp -a /etc/prosody/conf.avail/example.com.cfg.lua /etc/prosody/conf.avail/xmpp.cfg.lua
-emacs /etc/prosody/conf.avail/xmpp.cfg.lua
+editor /etc/prosody/conf.avail/xmpp.cfg.lua
 #+END_SRC
 
 Change the *VirtualHost* name to your domain name and remove the line below it.
@@ -3858,7 +3859,7 @@ See [[Setting up a web site]] for details of how to update the Apache configurat
 Edit your Apache configuration and disable the port 80 (HTTP) version of the site.  We only want to log into Friendica via HTTPS, so to prevent anyone from accidentally logging in insecurely:
 
 #+BEGIN_SRC: bash
-emacs /etc/apache2/sites-available/myfriendicadomainname.com
+editor /etc/apache2/sites-available/myfriendicadomainname.com
 #+END_SRC
 
 Replace the section which begins with *<VirtualHost *:80>* with the following, replacing /myusername@mydomainname.com/ with your email address and /myfriendicadomainname.com/ with your Friendica domain name:
@@ -3910,7 +3911,7 @@ You may need to fix Git SSL problems.
 git config --global http.sslVerify true
 apt-get install ca-certificates
 cd ~/
-emacs .gitconfig
+editor .gitconfig
 #+END_SRC
 
 The .gitconfig file should look something like this:
@@ -3942,7 +3943,7 @@ Now visit the URL of your site and you should be taken through the rest of the i
 Install the poller.
 
 #+BEGIN_SRC: bash
-emacs /etc/crontab
+editor /etc/crontab
 #+END_SRC
 
 and append the following, changing /myfriendicadomainname.com/ to whatever your Friendica domain is.
@@ -3977,7 +3978,7 @@ quit
 Make sure that Friendica doesn't use too much memory.
 
 #+BEGIN_SRC: bash
-emacs /var/www/$HOSTNAME/htdocs/.htaccess
+editor /var/www/$HOSTNAME/htdocs/.htaccess
 #+END_SRC
 
 Append the following:
@@ -3993,7 +3994,7 @@ The save ane exit.
 Make sure that the database gets backed up.  By using cron if anything goes wrong then you should be able to recover the database either from the previous day or the previous week.
 
 #+BEGIN_SRC: bash
-emacs /etc/cron.daily/friendicabackup
+editor /etc/cron.daily/friendicabackup
 #+END_SRC
 
 Enter the following
@@ -4017,7 +4018,7 @@ Save and exit.
 #+BEGIN_SRC: bash
 chmod 600 /etc/cron.daily/friendicabackup
 chmod +x /etc/cron.daily/friendicabackup
-emacs /etc/cron.weekly/friendicabackup
+editor /etc/cron.weekly/friendicabackup
 #+END_SRC
 
 Enter the following
@@ -4090,7 +4091,7 @@ You will need to have previously [[Install a Jabber/XMPP server][installed the J
 Edit your Apache configuration and disable the port 80 (HTTP) version of the site.  We only want to log into Movim via HTTPS, so to prevent anyone from accidentally logging in insecurely:
 
 #+BEGIN_SRC: bash
-emacs /etc/apache2/sites-available/mydomainname.com
+editor /etc/apache2/sites-available/mydomainname.com
 #+END_SRC
 
 Within the section which begins with *<VirtualHost *:80>* add the following:
@@ -4202,7 +4203,7 @@ See [[Setting up a web site]] for details of how to update the Apache configurat
 Edit your Apache configuration and disable the port 80 (HTTP) version of the site.  We only want to log into Red Matrix via HTTPS, so to prevent anyone from accidentally logging in insecurely:
 
 #+BEGIN_SRC: bash
-emacs /etc/apache2/sites-available/mydomainname.com
+editor /etc/apache2/sites-available/mydomainname.com
 #+END_SRC
 
 Replace the section which begins with *<VirtualHost *:80>* with the following:
@@ -4254,7 +4255,7 @@ You may need to fix Git SSL problems.
 git config --global http.sslVerify true
 apt-get install ca-certificates
 cd ~/
-emacs .gitconfig
+editor .gitconfig
 #+END_SRC
 
 The .gitconfig file should look something like this:
@@ -4288,7 +4289,7 @@ Now visit the URL of your site and you should be taken through the rest of the i
 Install the poller.
 
 #+BEGIN_SRC
-emacs /etc/crontab
+editor /etc/crontab
 #+END_SRC
 
 and append the following, changing mydomainname.com to whatever your domain is.
@@ -4308,7 +4309,7 @@ service cron restart
 Make sure that the database gets backed up.  By using cron if anything goes wrong then you should be able to recover the database either from the previous day or the previous week.
 
 #+BEGIN_SRC: bash
-emacs /etc/cron.daily/redmatrixbackup
+editor /etc/cron.daily/redmatrixbackup
 #+END_SRC
 
 Enter the following
@@ -4332,7 +4333,7 @@ Save and exit.
 #+BEGIN_SRC: bash
 chmod 600 /etc/cron.daily/redmatrixbackup
 chmod +x /etc/cron.daily/redmatrixbackup
-emacs /etc/cron.weekly/redmatrixbackup
+editor /etc/cron.weekly/redmatrixbackup
 #+END_SRC
 
 Enter the following
@@ -4389,7 +4390,7 @@ npm install databank-redis
 Edit the configuration file.
 
 #+BEGIN_SRC: bash
-emacs /etc/pump.io.json
+editor /etc/pump.io.json
 #+END_SRC
 
 Add the following, replacing /mypumpiodomainname.com/ with your domain name.
@@ -4454,7 +4455,7 @@ ln -s /usr/lib/apache2/modules/mod_proxy_wstunnel.so ../mods-available/proxy_wst
 Within the section of your Apache site configuration:
 
 #+BEGIN_SRC: bash
-emacs /etc/apache2/sites-available/mypumpiodomainname.com
+editor /etc/apache2/sites-available/mypumpiodomainname.com
 #+END_SRC
 
 The initial section which begins with *<VirtualHost *:80>* should be replaced by the following, replacing /mypumpiodomainname.com/ with your pump.io domain name and /myusername@mydomainname.com/ with your email address.
@@ -4494,7 +4495,7 @@ npm install forever -g
 Now create the daemon.
 
 #+BEGIN_SRC: bash
-emacs /etc/init.d/pumpio
+editor /etc/init.d/pumpio
 #+END_SRC
 
 Add the following text:
@@ -4607,7 +4608,7 @@ mkdir -p /var/gopher
 Your content should be placed within /var/gopher with the index page being named index.gph.  The Gopher format is very simple - simpler than HTML - so creating pages is not much more difficult than editing a text file.
 
 #+BEGIN_SRC: bash
-emacs /etc/init.d/gopher
+editor /etc/init.d/gopher
 #+END_SRC
 
 Enter the following:
@@ -4789,7 +4790,7 @@ There is a browser addon for Gopher called "overbite".  Installing that should e
 A phlog is the gopher equivalent of a blog on the web.  You can create a script which makes phlogging easy.
 
 #+BEGIN_SRC: bash
-emacs /usr/bin/mkphlog
+editor /usr/bin/mkphlog
 #+END_SRC
 
 Add the following:
@@ -4956,7 +4957,7 @@ apt-get install libapache2-mod-php5
 Ensure that the size of files which may be uploaded or downloaded is large enough.
 
 #+BEGIN_SRC: bash
-emacs /etc/php5/apache2/php.ini
+editor /etc/php5/apache2/php.ini
 #+END_SRC
 
 Set the following:
@@ -4970,7 +4971,7 @@ Save and exit, then edit your Apache configuration.
 
 #+BEGIN_SRC: bash
 export HOSTNAME=mydomainname.com
-emacs /etc/apache2/sites-available/$HOSTNAME
+editor /etc/apache2/sites-available/$HOSTNAME
 #+END_SRC
 
 And add the following, to the 443 VirtualHost section.  Really we only will want to be using Owncloud with HTTPS to ensure some level of security and avoidance of dragnet surveillance.
@@ -5031,7 +5032,7 @@ chown www-data:www-data /var/www/$HOSTNAME/htdocs/owncloud
 Edit the htaccess file for Owncloud.
 
 #+BEGIN_SRC: bash
-emacs /var/www/$HOSTNAME/htdocs/owncloud/.htaccess
+editor /var/www/$HOSTNAME/htdocs/owncloud/.htaccess
 #+END_SRC
 
 Set the following.
@@ -5086,7 +5087,7 @@ mv dokuwiki /var/www/$HOSTNAME/htdocs
 Edit the Apache configuration for your wiki site.
 
 #+BEGIN_SRC: bash
-emacs /etc/apache2/sites-available/$HOSTNAME
+editor /etc/apache2/sites-available/$HOSTNAME
 #+END_SRC
 
 The settings should look something like the following.  Replace /mywikidomainname.com/ with your wiki domain name.
@@ -5281,7 +5282,7 @@ rm /var/www/$HOSTNAME/htdocs/install.php
 Add a few extra mime types:
 
 #+BEGIN_SRC: bash
-emacs /var/www/$HOSTNAME/htdocs/conf/mime.conf
+editor /var/www/$HOSTNAME/htdocs/conf/mime.conf
 #+END_SRC
 
 Append the following:
@@ -5328,7 +5329,7 @@ make install
 Now create the daemon.
 
 #+BEGIN_SRC: bash
-emacs /etc/init.d/pybitmessage
+editor /etc/init.d/pybitmessage
 #+END_SRC
 
 Add the following text:
@@ -5413,7 +5414,7 @@ Create a /keys.dat/ file which is used to configure Bitmessage.
 #+BEGIN_SRC: bash
 mkdir /home/bitmsg/.config
 mkdir /home/bitmsg/.config/PyBitmessage
-emacs /home/bitmsg/.config/PyBitmessage/keys.dat
+editor /home/bitmsg/.config/PyBitmessage/keys.dat
 #+END_SRC
 
 Add the following:
@@ -5503,7 +5504,7 @@ Update your Apache configuration.
 
 #+BEGIN_SRC: bash
 export HOSTNAME=mydomainname.com
-emacs /etc/apache2/sites-available/$HOSTNAME
+editor /etc/apache2/sites-available/$HOSTNAME
 #+END_SRC
 
 Within the section which begins with *<VirtualHost *:443>* add the following, replacing /mydomainname.com/ with your domain name and /myusername/ with your username.
@@ -5534,7 +5535,7 @@ htpasswd -c /home/$HOSTNAME/public_html/.htpasswd myusername
 Create a user group.
 
 #+BEGIN_SRC: bash
-emacs /home/$HOSTNAME/public_html/.htgroup
+editor /home/$HOSTNAME/public_html/.htgroup
 #+END_SRC
 
 Add the following:
@@ -5576,7 +5577,7 @@ newlist mailman
 Enter an email address for the list administrator and a password.
 
 #+BEGIN_SRC: bash
-emacs /etc/mailman/mm_cfg.py
+editor /etc/mailman/mm_cfg.py
 #+END_SRC
 
 Set *MTA=None* and change *http:* to *https:*, then save and exit.
@@ -5584,7 +5585,7 @@ Set *MTA=None* and change *http:* to *https:*, then save and exit.
 Add some settings.
 
 #+BEGIN_SRC: bash
-emacs /etc/exim4/conf.d/main/04_mailman_options
+editor /etc/exim4/conf.d/main/04_mailman_options
 #+END_SRC
 
 Add the following, replacing /mydomainname.com/ with your domain name.
@@ -5615,7 +5616,7 @@ MM_LISTCHK=MM_HOME/lists/${lc::$local_part}/config.pck
 Save and exit.
 
 #+BEGIN_SRC: bash
-emacs /etc/exim4/conf.d/main/000_localmacros
+editor /etc/exim4/conf.d/main/000_localmacros
 #+END_SRC
 
 Append the following:
@@ -5629,7 +5630,7 @@ SYSTEM_ALIASES_GROUP = list
 Save and exit.
 
 #+BEGIN_SRC: bash
-emacs /etc/exim4/conf.d/acl/30_exim4-config_check_rcpt
+editor /etc/exim4/conf.d/acl/30_exim4-config_check_rcpt
 #+END_SRC
 
 Append the following, before the final /accept/:
@@ -5643,7 +5644,7 @@ Append the following, before the final /accept/:
 Save and exit.
 
 #+BEGIN_SRC: bash
-emacs
+editor
 /etc/exim4/conf.d/router/450_exim4-config_mailman_aliases
 #+END_SRC
 
@@ -5667,7 +5668,7 @@ mailman:
 Save and exit.
 
 #+BEGIN_SRC: bash
-emacs /etc/exim4/conf.d/transport/40_exim4-config_mailman_pipe
+editor /etc/exim4/conf.d/transport/40_exim4-config_mailman_pipe
 #+END_SRC
 
 Add the following:
@@ -5693,7 +5694,7 @@ chown root:list /var/lib/mailman/mail/mailman
 update-exim4.conf.template -r
 update-exim4.conf
 service exim4 restart
-emacs /etc/apache2/conf.d/mailman
+editor /etc/apache2/conf.d/mailman
 #+END_SRC
 
 Add the following:
@@ -5709,7 +5710,7 @@ Alias /images/mailman /usr/share/images/mailman
 Save and exit.
 
 #+BEGIN_SRC: bash
-emacs /etc/apache2/sites-available/$HOSTNAME
+editor /etc/apache2/sites-available/$HOSTNAME
 #+END_SRC
 
 Add the following to the 443 section.
@@ -5790,7 +5791,7 @@ apt-get install schleuder
 Edit the configuration:
 
 #+BEGIN_SRC: bash
-emacs /etc/schleuder/schleuder.conf
+editor /etc/schleuder/schleuder.conf
 #+END_SRC
 
 Set the following parameters, replacing /mydomainname.com/ with your domain name:
@@ -5829,7 +5830,7 @@ emailrule $MYUSERNAME $MAILINGLISTNAME@$HOSTNAME $MAILINGLISTNAME
 Edit your Mutt configuration.
 
 #+BEGIN_SRC: bash
-emacs /home/$MYUSERNAME/.muttrc
+editor /home/$MYUSERNAME/.muttrc
 #+END_SRC
 
 Search for the /mailboxes/ parameter and add "=mailinglistname".  For example:
@@ -5843,7 +5844,7 @@ Save and exit.
 Update Exim routing.
 
 #+BEGIN_SRC: bash
-emacs /etc/exim4/conf.d/router/550_exim4-config_schleuder
+editor /etc/exim4/conf.d/router/550_exim4-config_schleuder
 #+END_SRC
 
 Add the following:
@@ -5864,7 +5865,7 @@ schleuder:
 Save and exit.
 
 #+BEGIN_SRC: bash
-emacs /etc/exim4/conf.d/transport/30_exim4-config_schleuder
+editor /etc/exim4/conf.d/transport/30_exim4-config_schleuder
 #+END_SRC
 
 Add the following.
@@ -6025,7 +6026,7 @@ chmod +x /var/www/$HOSTNAME/htdocs/scripts/maildaemon.php
 Edit the Apache access settings.
 
 #+BEGIN_SRC: bash
-emacs /var/www/$HOSTNAME/htdocs/.htaccess
+editor /var/www/$HOSTNAME/htdocs/.htaccess
 #+END_SRC
 
 Add the following:
@@ -6064,7 +6065,7 @@ quit
 Add the mailer script to the aliases file:
 
 #+BEGIN_SRC: bash
-emacs /etc/aliases
+editor /etc/aliases
 #+END_SRC
 
 Add the following, replacing /mydomainname.com/ with your domain name.
@@ -6131,7 +6132,7 @@ If you want to invite more users then click on the big button *Invite more colle
 Edit the config file.
 
 #+BEGIN_SRC: bash
-emacs /var/www/$HOSTNAME/htdocs/config.php
+editor /var/www/$HOSTNAME/htdocs/config.php
 #+END_SRC
 
 Change the ssl setting from *always* to *sometimes*, hten save and exit.
@@ -6180,7 +6181,7 @@ virtualenv --system-site-packages .
 ./bin/easy_install flup
 cp mediagoblin.ini mediagoblin_local.ini
 cp paste.ini paste_local.ini
-emacs mediagoblin_local.ini
+editor mediagoblin_local.ini
 #+END_SRC
 
 Change *email_sender_address* to your email address and set *email_debug_mode* to false.  Also append the following to the bottom of the file, under the *plugins* section.
@@ -6197,7 +6198,7 @@ Then save and exit.
 ./bin/pip install scikits.audiolab
 ./bin/gmg dbupdate
 exit # to go back to the root user
-emacs /etc/init.d/mediagoblin
+editor /etc/init.d/mediagoblin
 #+END_SRC
 
 Add the following, replacing /mymediagoblindomain/ with the domain name for your mediagoblin site.
@@ -6277,7 +6278,7 @@ service mediagoblin start
 Edit the Apache configuration for your mediagoblin site.
 
 #+BEGIN_SRC: bash
-emacs /etc/apache2/sites-available/mymediagoblindomain
+editor /etc/apache2/sites-available/mymediagoblindomain
 #+END_SRC
 
 Delete the existing configuration (in Emacs it's CTRL-x h then CTRL-w) and paste the following, replacing /mymediagoblindomain/ with your mediagoblin domain name and /myusername@mydomainname.com/ with your email address.
@@ -6322,7 +6323,7 @@ Save and exit.
 Now in a browser visit http://mymediagoblindomain and create a user.  If you wish this to be a single user installation to prevent a lot of spammers signing up.
 
 #+BEGIN_SRC: bash
-emacs /srv/mymediagoblindomain/mediagoblin/mediagoblin_local.ini
+editor /srv/mymediagoblindomain/mediagoblin/mediagoblin_local.ini
 #+END_SRC
 
 Then set:
@@ -6359,13 +6360,13 @@ you will be asked for two passphrases ("site" and "local").  Make a note of thes
 Turn off reporting of changes to system logs.
 
 #+BEGIN_SRC: bash
-emacs /etc/tripwire/twcfg.txt
+editor /etc/tripwire/twcfg.txt
 #+END_SRC
 
 Set *SYSLOGREPORTING* to false and comment out the line, then save and exit.
 
 #+BEGIN_SRC: bash
-emacs /etc/tripwire/twpol.txt
+editor /etc/tripwire/twpol.txt
 #+END_SRC
 
 Comment out the line:
@@ -6547,13 +6548,13 @@ Select "Subdomains" from the menu on the left then select the MX entry for your 
 To route email to one of your freedns domains:
 
 #+BEGIN_SRC: bash
-emacs /etc/mailname
+editor /etc/mailname
 #+END_SRC
 
 Add any extra domains which you own, then save and exit.
 
 #+BEGIN_SRC: bash
-emacs /etc/exim4/update-exim4.conf.conf
+editor /etc/exim4/update-exim4.conf.conf
 #+END_SRC
 
 Within dc_other_hostnames add your extra domain names, separated by a colon ':' character.
@@ -6608,7 +6609,7 @@ You can then click on "skip" within the StartSSL certificates wizard and copy an
 Log into your StartSSL account and select *Retrieve Certificate* from the *Tool Box* tab.  Copy the text.
 
 #+BEGIN_SRC: bash
-emacs /etc/ssl/certs/$HOSTNAME.crt
+editor /etc/ssl/certs/$HOSTNAME.crt
 #+END_SRC
 
 Paste the public key, then save and exit.  Then on the BBB.
@@ -6650,7 +6651,7 @@ shred -zu /etc/ssl/private/$HOSTNAME.new.key
 Edit your Apache configuration file.
 
 #+BEGIN_SRC: bash
-emacs /etc/apache2/sites-available/$HOSTNAME
+editor /etc/apache2/sites-available/$HOSTNAME
 #+END_SRC
 
 Add the following to the section which starts with *<VirtualHost *:443>*
@@ -6685,7 +6686,7 @@ Sipwitch is like an introduction service or phone book for SIP VoIP clients.  On
 Edit your package sources:
 
 #+BEGIN_SRC: bash
-emacs /etc/apt/sources.list
+editor /etc/apt/sources.list
 #+END_SRC
 
 Append the following line:
@@ -6759,7 +6760,7 @@ usermod -aG sipusers myusername
 Then edit the configuration
 
 #+BEGIN_SRC: bash
-emacs /etc/sipwitch.conf
+editor /etc/sipwitch.conf
 #+END_SRC
 
 Change the *mapped* value from 200 to 20, since we don't want to be serving huge numbers of calls.
@@ -6782,7 +6783,7 @@ Make a note of the resulting string because you're going to use it in the users 
 export HOSTNAME=mydomainname.com
 touch /etc/sipwitch.d/$HOSTNAME.xml
 chmod 600 /etc/sipwitch.d/$HOSTNAME.xml
-emacs /etc/sipwitch.d/$HOSTNAME.xml
+editor /etc/sipwitch.d/$HOSTNAME.xml
 #+END_SRC
 
 It should look something like the following:
@@ -6800,7 +6801,7 @@ It should look something like the following:
 Save and exit.  Now edit the configuration.
 
 #+BEGIN_SRC: bash
-emacs /etc/default/sipwitch
+editor /etc/default/sipwitch
 #+END_SRC
 
 Change "desktop" to "server", then save and exit.
@@ -6864,7 +6865,7 @@ apt-get install openjdk-6-jdk openjdk-7-jre mysql-server adduser dbconfig-common
 Add the Kune repository:
 
 #+BEGIN_SRC: bash
-emacs /etc/apt/sources.list
+editor /etc/apt/sources.list
 #+END_SRC
 
 Append the following:
@@ -6887,7 +6888,7 @@ You will be asked for the MySql root password and another password to be used wi
 Allow the system to start automatically at boot.
 
 #+BEGIN_SRC: bash
-emacs /etc/default/kune
+editor /etc/default/kune
 #+END_SRC
 
 Set /START=yes/, then save and exit.
@@ -6918,7 +6919,7 @@ mysql -p kune_prod < /usr/share/dbconfig-common/data/kune/upgrade/mysql/0.2.0+b2
 Edit the Apache configuration.
 
 #+BEGIN_SRC: bash
-emacs /etc/apache2/sites-available/$HOSTNAME
+editor /etc/apache2/sites-available/$HOSTNAME
 #+END_SRC
 
 <VirtualHost *:80>
@@ -6981,7 +6982,7 @@ foreman start
 Edit the Apache configuration for your mediagoblin site.
 
 #+BEGIN_SRC: bash
-emacs /etc/apache2/sites-available/myloomiodomain
+editor /etc/apache2/sites-available/myloomiodomain
 #+END_SRC
 
 Delete the existing configuration (in Emacs it's CTRL-x h then CTRL-w) and paste the following, replacing /myloomiodomain/ with your mediagoblin domain name and /myusername@mydomainname.com/ with your email address.
@@ -7089,7 +7090,7 @@ convergence createdb
 Create an initialisation script:
 
 #+BEGIN_SRC: bash
-emacs /etc/init.d/convergence
+editor /etc/init.d/convergence
 #+END_SRC
 
 Add the following:
@@ -7144,6 +7145,73 @@ Install the browser plugin by navigating to https://addons.mozilla.org/en-us/fir
 After installation restart your browser.
 
 You will notice that an icon appears in the top right corner of the browser, which resembles a lock and two plus signs.  Click on the down arrow to the right of it and select *options*.
+
+** Gitlab
+
+apt-get update -y
+apt-get upgrade -y
+apt-get install sudo -y
+
+apt-get install -y build-essential zlib1g-dev libyaml-dev libssl-dev libgdbm-dev libreadline-dev libncurses5-dev libffi-dev curl openssh-server redis-server checkinstall libxml2-dev libxslt-dev libcurl4-openssl-dev libicu-dev logrotate git-core
+
+gem install bundler --no-ri --no-rdoc
+
+adduser --disabled-login --gecos 'GitLab' git
+
+apt-get install -y mysql-server mysql-client libmysqlclient-dev
+mysql_secure_installation
+mysql -u root -p
+
+CREATE USER 'git'@'localhost' IDENTIFIED BY '$password';
+SET storage_engine=INNODB;
+CREATE DATABASE IF NOT EXISTS `gitlabhq_production` DEFAULT CHARACTER SET `utf8` COLLATE `utf8_unicode_ci`;
+GRANT SELECT, LOCK TABLES, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER ON `gitlabhq_production`.* TO 'git'@'localhost';
+quit
+
+cd /home/git
+sudo -u git -H git clone https://gitlab.com/gitlab-org/gitlab-ce.git -b 6-8-stable gitlab
+cd /home/git/gitlab
+sudo -u git -H cp config/gitlab.yml.example config/gitlab.yml
+sudo -u git -H editor config/gitlab.yml
+chown -R git log/
+chown -R git tmp/
+chmod -R u+rwX log/
+chmod -R u+rwX tmp/
+sudo -u git -H mkdir /home/git/gitlab-satellites
+chmod u+rwx,g+rx,o-rwx /home/git/gitlab-satellites
+chmod -R u+rwX tmp/pids/
+chmod -R u+rwX tmp/sockets/
+chmod -R u+rwX public/uploads
+sudo -u git -H cp config/unicorn.rb.example config/unicorn.rb
+sudo -u git -H editor config/unicorn.rb
+sudo -u git -H cp config/initializers/rack_attack.rb.example config/initializers/rack_attack.rb
+sudo -u git -H git config --global user.name "GitLab"
+sudo -u git -H git config --global user.email "gitlab@localhost"
+sudo -u git -H git config --global core.autocrlf input
+
+Edit gitlab.yml and unicorn.rb as needed.
+
+sudo -u git cp config/database.yml.mysql config/database.yml
+sudo -u git -H editor config/database.yml
+sudo -u git -H chmod o-rwx config/database.yml
+sudo -u git -H bundle install --deployment --without development test postgres aws
+sudo -u git -H bundle exec rake gitlab:setup RAILS_ENV=production
+cd /home/git/gitlab
+sudo -u git -H bundle exec rake gitlab:shell:install[v1.9.3] REDIS_URL=redis://localhost:6379
+sudo -u git -H editor /home/git/gitlab-shell/config.yml
+cp lib/support/init.d/gitlab /etc/init.d/gitlab
+update-rc.d gitlab defaults 21
+cp lib/support/logrotate/gitlab /etc/logrotate.d/gitlab
+sudo -u git -H bundle exec rake gitlab:env:info RAILS_ENV=production
+sudo -u git -H bundle exec rake assets:precompile RAILS_ENV=production
+service gitlab start
+
+cp lib/support/apache/gitlab /etc/apache2/sites-available/mygitlabdomain
+editor /etc/apache2/sites-available/mygitlabdomain
+
+Set your domain name and email accordingly.
+
+a2ensite mygitlabdomain
 
 * Related projects
 
