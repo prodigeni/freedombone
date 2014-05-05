@@ -4278,7 +4278,7 @@ npm install
 npm install databank-redis
 #+END_SRC
 
-Limit the use of RAM bt the Redis database.
+Limit the use of RAM by the Redis database.
 
 #+BEGIN_SRC: bash
 editor /etc/redis/redis.conf
