@@ -4278,7 +4278,15 @@ npm install
 npm install databank-redis
 #+END_SRC
 
-Edit the configuration file.
+Limit the use of RAM bt the Redis database.
+
+#+BEGIN_SRC: bash
+editor /etc/redis/redis.conf
+#+END_SRC
+
+Set /maxmemory/ to 16777216 bytes, then save and exit.  This should prevent the amount of data stored in memory from making the system unstable.
+
+Now edit the configuration file.
 
 #+BEGIN_SRC: bash
 editor /etc/pump.io.json
@@ -4465,6 +4473,30 @@ and add a new user.  If you wish this to be a single user node not open to the g
 Once you've set up your user account it's recommended that you don't use the web based user interface and instead use a native client such as [[http://jancoding.wordpress.com/dianara/][Dianara]] or Pumpa.  On Ubuntu you can install these via the Software Center.  On mobile devices you can install AndStatus via F-Droid.
 
 A list of pump.io sites can be found at http://pumpstatus.jpope.org.  At the time of writing there isn't any public directory and so finding people to follow is really a question of navigating through lists of /following/ or /followers/ (rather like the web before search engines were invented).
+
+Ensure that data data gets backed up with:
+
+#+BEGIN_SRC: bash
+printf "\n\n# Redis backup" >> /etc/cron.daily/backup
+printf "\ntar -czvf /var/backups/redis_daily.tar.gz /var/lib/redis/dump.rdb" >> /etc/cron.daily/backup
+printf "\n\n# Redis backup" >> /etc/cron.weekly/backup
+printf "\ncp -f /var/backups/redis_weekly.tar.gz /var/backups/redis_weekly2.tar.gz" >> /etc/cron.weekly/backup
+printf "\ncp -f /var/backups/redis_daily.tar.gz /var/backups/redis_weekly.tar.gz" >> /etc/cron.weekly/backup
+printf "\n\n# Redis backup" >> /etc/cron.monthly/backup
+printf "\ncp -f /var/backups/redis_monthly.tar.gz /var/backups/redis_monthly2.tar.gz" >> /etc/cron.monthly/backup
+printf "\ncp -f /var/backups/redis_weekly.tar.gz /var/backups/redis_monthly.tar.gz" >> /etc/cron.monthly/backup
+
+printf "\n\n# Pump.io backup" >> /etc/cron.daily/backup
+printf "\ntar -czvf /var/backups/pumpio_daily.tar.gz /var/local/pump.io --exclude /var/local/pump.io/.forever" >> /etc/cron.daily/backup
+printf "\n\n# Pump.io backup" >> /etc/cron.weekly/backup
+printf "\ncp -f /var/backups/pumpio_weekly.tar.gz /var/backups/pumpio_weekly2.tar.gz" >> /etc/cron.weekly/backup
+printf "\ncp -f /var/backups/pumpio_daily.tar.gz /var/backups/pumpio_weekly.tar.gz" >> /etc/cron.weekly/backup
+printf "\n\n# Pump.io backup" >> /etc/cron.monthly/backup
+printf "\ncp -f /var/backups/pumpio_monthly.tar.gz /var/backups/pumpio_monthly2.tar.gz" >> /etc/cron.monthly/backup
+printf "\ncp -f /var/backups/pumpio_weekly.tar.gz /var/backups/pumpio_monthly.tar.gz" >> /etc/cron.monthly/backup
+#+END_SRC
+
+At the time of writing creating backups of the pump.io database is critically important, because regenerating the database or moving to a different databank type causes you to be /permanently banned/ from the pump.io network unless you change your domain name (which may not always be an available option).
 
 ** Install Gopher
 *** Server setup
