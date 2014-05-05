@@ -3834,7 +3834,7 @@ The save ane exit.
 Make sure that the database gets backed up.  By using cron if anything goes wrong then you should be able to recover the database either from the previous day or the previous week.
 
 #+BEGIN_SRC: bash
-editor /etc/cron.daily/friendicabackup
+editor /etc/cron.daily/backup
 #+END_SRC
 
 Enter the following
@@ -3842,8 +3842,10 @@ Enter the following
 #+BEGIN_SRC: bash
 #!/bin/sh
 
-MYSQL_PASSWORD=<mysql root password>
+# stop the web server to avoid any changes to the databases during backup
+service apache2 stop
 
+MYSQL_PASSWORD=<mysql root password>
 umask 0077
 
 # Backup the database
@@ -3851,14 +3853,23 @@ mysqldump --password=$MYSQL_PASSWORD friendica > /var/backups/friendica_daily.sq
 
 # Make the backup readable only by root
 chmod 600 /var/backups/friendica_daily.sql
+
+# Backup the database
+#mysqldump --password=$MYSQL_PASSWORD redmatrix > /var/backups/redmatrix_daily.sql
+
+# Make the backup readable only by root
+#chmod 600 /var/backups/redmatrix_daily.sql
+
+# restart the web server
+service apache2 start
 #+END_SRC
 
 Save and exit.
 
 #+BEGIN_SRC: bash
-chmod 600 /etc/cron.daily/friendicabackup
-chmod +x /etc/cron.daily/friendicabackup
-editor /etc/cron.weekly/friendicabackup
+chmod 600 /etc/cron.daily/backup
+chmod +x /etc/cron.daily/backup
+editor /etc/cron.weekly/backup
 #+END_SRC
 
 Enter the following
@@ -3866,18 +3877,15 @@ Enter the following
 #+BEGIN_SRC: bash
 #!/bin/sh
 
-MYSQL_PASSWORD=<mysql root password>
-
 umask 0077
 
-# records go back a couple of weeks
+# Friendica
 cp -f /var/backups/friendica_weekly.sql /var/backups/friendica_2weekly.sql
+cp -f /var/backups/friendica_daily.sql /var/backups/friendica_weekly.sql
 
-# Backup the database
-mysqldump --password=$MYSQL_PASSWORD friendica > /var/backups/friendica_weekly.sql
-
-# Make the backup readable only by root
-chmod 600 /var/backups/friendica_weekly.sql
+# Red Matrix
+#cp -f /var/backups/redmatrix_weekly.sql /var/backups/redmatrix_2weekly.sql
+#cp -f /var/backups/redmatrix_daily.sql /var/backups/redmatrix_weekly.sql
 #+END_SRC
 
 Save and exit.
@@ -3885,7 +3893,24 @@ Save and exit.
 #+BEGIN_SRC: bash
 chmod 600 /etc/cron.weekly/friendicabackup
 chmod +x /etc/cron.weekly/friendicabackup
+editor /etc/cron.monthly/backup
 #+END_SRC
+
+Enter the following
+
+#+BEGIN_SRC: bash
+#!/bin/sh
+
+# Friendica
+cp -f /var/backups/friendica_monthly.sql /var/backups/friendica_2monthly.sql
+cp -f /var/backups/friendica_weekly.sql /var/backups/friendica_monthly.sql
+
+# Red Matrix
+#cp -f /var/backups/redmatrix_monthly.sql /var/backups/redmatrix_2monthly.sql
+#cp -f /var/backups/redmatrix_weekly.sql /var/backups/redmatrix_monthly.sql
+#+END_SRC
+
+Save and exit.
 
 **** Recommended configuration
 ***** Admin
@@ -4149,58 +4174,84 @@ service cron restart
 Make sure that the database gets backed up.  By using cron if anything goes wrong then you should be able to recover the database either from the previous day or the previous week.
 
 #+BEGIN_SRC: bash
-editor /etc/cron.daily/redmatrixbackup
+editor /etc/cron.daily/backup
 #+END_SRC
 
-Enter the following
+If you already have a backup script created for Friendica then just uncomment the lines for Red Matrix.  The backup script should look something like the following:
 
 #+BEGIN_SRC: bash
 #!/bin/sh
 
-MYSQL_PASSWORD=<mysql root password>
+# stop the web server to avoid any changes to the databases during backup
+service apache2 stop
 
+MYSQL_PASSWORD=elNYCk3hKE5jCjifUUL6ymP7
 umask 0077
+
+# Backup the database
+mysqldump --password=$MYSQL_PASSWORD friendica > /var/backups/friendica_daily.sql
+
+# Make the backup readable only by root
+chmod 600 /var/backups/friendica_daily.sql
 
 # Backup the database
 mysqldump --password=$MYSQL_PASSWORD redmatrix > /var/backups/redmatrix_daily.sql
 
 # Make the backup readable only by root
 chmod 600 /var/backups/redmatrix_daily.sql
+
+# restart the web server
+service apache2 start
 #+END_SRC
 
 Save and exit.
 
 #+BEGIN_SRC: bash
-chmod 600 /etc/cron.daily/redmatrixbackup
-chmod +x /etc/cron.daily/redmatrixbackup
-editor /etc/cron.weekly/redmatrixbackup
+chmod 600 /etc/cron.daily/backup
+chmod +x /etc/cron.daily/backup
+editor /etc/cron.weekly/backup
 #+END_SRC
 
-Enter the following
+If you already have a backup script created for Friendica then just uncomment the lines for Red Matrix.  The backup script should look something like the following:
 
 #+BEGIN_SRC: bash
 #!/bin/sh
 
-MYSQL_PASSWORD=<mysql root password>
-
 umask 0077
 
-# records go back a couple of weeks
+# Friendica
+cp -f /var/backups/friendica_weekly.sql /var/backups/friendica_2weekly.sql
+cp -f /var/backups/friendica_daily.sql /var/backups/friendica_weekly.sql
+
+# Red Matrix
 cp -f /var/backups/redmatrix_weekly.sql /var/backups/redmatrix_2weekly.sql
-
-# Backup the database
-mysqldump --password=$MYSQL_PASSWORD redmatrix > /var/backups/redmatrix_weekly.sql
-
-# Make the backup readable only by root
-chmod 600 /var/backups/redmatrix_weekly.sql
+cp -f /var/backups/redmatrix_daily.sql /var/backups/redmatrix_weekly.sql
 #+END_SRC
 
 Save and exit.
 
 #+BEGIN_SRC: bash
-chmod 600 /etc/cron.weekly/redmatrixbackup
-chmod +x /etc/cron.weekly/redmatrixbackup
+chmod 600 /etc/cron.weekly/backup
+chmod +x /etc/cron.weekly/backup
+editor /etc/cron.monthly/backup
 #+END_SRC
+
+If you already have a backup script created for Friendica then just uncomment the lines for Red Matrix.  The backup script should look something like the following:
+
+#+BEGIN_SRC: bash
+#!/bin/sh
+
+# Friendica
+cp -f /var/backups/friendica_monthly.sql /var/backups/friendica_2monthly.sql
+cp -f /var/backups/friendica_weekly.sql /var/backups/friendica_monthly.sql
+
+# Red Matrix
+cp -f /var/backups/redmatrix_monthly.sql /var/backups/redmatrix_2monthly.sql
+cp -f /var/backups/redmatrix_weekly.sql /var/backups/redmatrix_monthly.sql
+#+END_SRC
+
+Save and exit.
+
 **** To access from an Android device
 ***** App
 Open a browser on your device and go to https://f-droid.org/ then download and install the F-Droid apk.  If you then open F-Droid you can search for and install the Friendica app.
