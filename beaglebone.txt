@@ -895,7 +895,7 @@ it should return your domain name.
 -- Benjamin Franklin
 #+END_VERSE
 
-It's convenient to have the clock on your server automatically synchronised with other servers on the internet so that you don't need to set the clock manually.
+It's convenient to have the clock on your server automatically synchronised with other servers on the internet so that you don't need to set the clock manually.  The usual way of doing this is via [[https://en.wikipedia.org/wiki/Network_Time_Protocol][NTP]], but that method uses unencrypted signals which could potentially be interfered with in order to mess up your system.  /tlsdate/ provides a slightly more secure way of setting the date and time over a SSL/TLS connection to a known good time source.
 
 First install some prerequisites.
 
@@ -934,7 +934,7 @@ Save and exit.
 service cron restart
 #+END_SRC
 
-This should set the date and time from a known source (www.ptb.de) using a SSL/TLS secured connection every 15 minutes.  Obviously if you wish to use a different source for the date and time then the cron entry can be edited accordingly.
+This obtains the date and time from www.ptb.de every 15 minutes.  Obviously if you wish to use a different source for the date and time then the cron entry can be edited accordingly.
 
 ** Install fail2ban
 
