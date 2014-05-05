@@ -732,7 +732,7 @@ Then to obtain some random bytes:
 cat /dev/hashletrng
 #+END_SRC
 
-The rate of entropy generation by the Hashlet seems very slow compared to */dev/hwrng*, and this is most likely because of the I2C interface.  So it's probably a good idea to keep hwrng as the main random source and only use the Hashlet's random number generator for any ancillary stuff.
+The rate of entropy generation by the Hashlet seems very slow compared to */dev/hwrng*, and this is most likely because of the I2C interface. So it's probably a good idea to keep hwrng as the main random source and only use the Hashlet's random number generator for any ancillary stuff.
 
 ** Alter ssh configuration
 
@@ -803,7 +803,7 @@ Edit */etc/crontab* and append that to the top of the file, underneath the headi
 # m h dom mon dow user	command
 #+END_SRC
 
-In general the most frequently run crontab entries should be at the top.  Then save and exit.
+In general the most frequently run crontab entries should be at the top. Then save and exit.
 
 Via your router's firewall settings you should now open port 22 (secure shell).  This will allow you to ssh into your BBB from any location - not just your own local network.
 
@@ -916,185 +916,25 @@ make
 make install
 #+END_SRC
 
-If you get errors during the /configure/ stage then you may need to reboot so that some of the installed dependencies take effect.  Then create an init script.
+If you get errors during the /configure/ stage then you may need to reboot so that some of the installed dependencies take effect.
 
 #+BEGIN_SRC: bash
-editor /etc/init.d/tlsdated
+editor /etc/crontab
 #+END_SRC
 
-Add the following:
+Add the following near the top of the list of tasks.
 
 #+BEGIN_SRC: bash
-#!/bin/sh
-### BEGIN INIT INFO
-# Provides:          tlsdate
-# Required-Start:    $network $local_fs $remote_fs
-# Required-Stop:     $local_fs $remote_fs
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Short-Description: secure parasitic rdate replacement
-# Description:       tlsdate sets the local clock by securely connecting with
-#                    TLS to remote servers and extracting the remote time out
-#                    of the secure handshake. Unlike ntpdate, tlsdate uses
-#                    TCP, for instance connecting to a remote HTTPS or TLS
-#                    enabled service, and provides some protection against
-#                    adversaries that try to feed you malicious time
-#                    information.
-#
-### END INIT INFO
-
-# Author: Jacob Appelbaum <jacob@appelbaum.net>
-
-# PATH should only include /usr/* if it runs after the mountnfs.sh script
-PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/sbin
-DESC="secure parasitic rdate replacement daemon"
-NAME=tlsdated
-DAEMON=/usr/local/sbin/tlsdated
-DAEMON_ARGS=""
-PIDFILE=/var/run/$NAME.pid
-SCRIPTNAME=/etc/init.d/$NAME
-
-# Exit if the package is not installed
-[ -x $DAEMON ] || exit 0
-
-# Read configuration variable file if it is present
-[ -r /etc/default/$NAME ] && . /etc/default/$NAME
-
-# Load the VERBOSE setting and other rcS variables
-. /lib/init/vars.sh
-
-# Define LSB log_* functions.
-# Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
-. /lib/lsb/init-functions
-
-#
-# Function that starts the daemon/service
-#
-do_start()
-{
-    # Return
-    #   0 if daemon has been started
-    #   1 if daemon was already running
-    #   2 if daemon could not be started
-    start-stop-daemon --background --start --quiet --pidfile $PIDFILE \
-		--exec $DAEMON --test > /dev/null \
-        || return 1
-    start-stop-daemon --background --start --quiet --pidfile $PIDFILE \
-		--exec $DAEMON -- \
-        $DAEMON_ARGS \
-        || return 2
-    # Add code here, if necessary, that waits for the process to be ready
-    # to handle requests from services started subsequently which depend
-    # on this one.  As a last resort, sleep for some time.
-}
-
-#
-# Function that stops the daemon/service
-#
-do_stop()
-{
-    # Return
-    #   0 if daemon has been stopped
-    #   1 if daemon was already stopped
-    #   2 if daemon could not be stopped
-    #   other if a failure occurred
-    start-stop-daemon --stop --quiet --retry=TERM/5/KILL/1 --pidfile $PIDFILE \
-		--name $NAME
-        RETVAL="$?"
-        [ "$RETVAL" = 2 ] && return 2
-    # Wait for children to finish too if this is a daemon that forks
-    # and if the daemon is only ever run from this initscript.
-    # If the above conditions are not satisfied then add some other code
-    # that waits for the process to drop all resources that could be
-    # needed by services started subsequently.  A last resort is to
-    # sleep for some time.
-    start-stop-daemon --stop --quiet --oknodo --retry=0/5/KILL/5 --exec $DAEMON
-        [ "$?" = 2 ] && return 2
-        # Many daemons don't delete their pidfiles when they exit.
-        rm -f $PIDFILE
-        return "$RETVAL"
-}
-
-#
-# Function that sends a SIGHUP to the daemon/service
-#
-do_reload() {
-    #
-    # If the daemon can reload its configuration without
-    # restarting (for example, when it is sent a SIGHUP),
-    # then implement that here.
-    #
-    start-stop-daemon --stop --signal 1 --quiet --pidfile $PIDFILE --name $NAME
-    return 0
-}
-
-case "$1" in
-  start)
-    [ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC " "$NAME"
-    do_start
-    case "$?" in
-         0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
-              2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
-              esac
-  ;;
-  stop)
-  [ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
-  do_stop
-  case "$?" in
-       0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
-            2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
-            esac
-            ;;
-  status)
-       status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
-       ;;
-  #reload|force-reload)
-  #
-  # If do_reload() is not implemented then leave this commented out
-  # and leave 'force-reload' as an alias for 'restart'.
-  #
-  #log_daemon_msg "Reloading $DESC" "$NAME"
-  #do_reload
-  #log_end_msg $?
-  #;;
-  restart|force-reload)
-  #
-  # If the "reload" option is implemented then remove the
-  # 'force-reload' alias
-  #
-  log_daemon_msg "Restarting $DESC" "$NAME"
-  do_stop
-  case "$?" in
-    0|1)
-        do_start
-        case "$?" in
-            0) log_end_msg 0 ;;
-            1) log_end_msg 1 ;; # Old process is still running
-            *) log_end_msg 1 ;; # Failed to start
-            esac
-        ;;
-    *)
-    # Failed to stop
-    log_end_msg 1
-    ;;
-    esac
-    ;;
-  *)
-  echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
-  exit 3
-  ;;
-esac
-
-:
+*/15           * *   *   *   root /usr/bin/timeout 20 tlsdate -v -V -l -t -H www.ptb.de -p 443
 #+END_SRC
 
-Save and exit, then start the daemon.
+Save and exit.
 
 #+BEGIN_SRC: bash
-chmod +x /etc/init.d/tlsdated
-update-rc.d tlsdated defaults
-service tlsdated start
+service cron restart
 #+END_SRC
+
+This should set the date and time from a known source (www.ptb.de) using a SSL/TLS secured connection every 15 minutes.  Obviously if you wish to use a different source for the date and time then the cron entry can be edited accordingly.
 
 ** Install fail2ban
 
@@ -2176,7 +2016,7 @@ chown -R root:root ~/.gnupg
 #+END_SRC
 
 ** Protect processes
-Because the BBB has limited RAM some processes may occasionally be automatically killed if physical memory availability is getting too low.  The way in which processes are chosen to be sacrificed is not particularly intelligent, and so can result in vital systems being stopped.  To try to prevent that from ever happening the following script can be used, which should ensure that at a minimum ssh, email and mysql keep running.
+Because the BBB has limited RAM some processes may occasionally be automatically killed if physical memory availability is getting too low. The way in which processes are chosen to be sacrificed is not particularly intelligent, and so can result in vital systems being stopped.  To try to prevent that from ever happening the following script can be used, which should ensure that at a minimum ssh, email and mysql keep running.
 
 #+BEGIN_SRC: bash
 editor /usr/bin/protectprocesses
@@ -6570,11 +6410,11 @@ service exim4 restart
 You should now be able to send an email from /postmaster@mynewdomainname/ and it should arrive in your inbox.
 
 ** Obtaining an "official" SSL certificate
-You can obtain a free "official" (as in recognised by default by web browsers) SSL certificate from [[https://www.startssl.com/][StartSSL]].  You will first need to have bought a domain name, since it's not possible to obtain one for a freedns subdomain, so see [[Using your own domain]] for details of how to do that.  You should also have tested that you can send email to the domain and receive it on the BBB (via Mutt or any other email client).
+You can obtain a free "official" (as in recognised by default by web browsers) SSL certificate from [[https://www.startssl.com/][StartSSL]]. You will first need to have bought a domain name, since it's not possible to obtain one for a freedns subdomain, so see [[Using your own domain]] for details of how to do that.  You should also have tested that you can send email to the domain and receive it on the BBB (via Mutt or any other email client).
 
 When creating a SSL certificate it's important that the private key (the private component of the public/private pair in [[https://en.wikipedia.org/wiki/Public-key_cryptography][public key cryptography]]) be generated on the BBB /and remain there/.  Don't generate the private key via the StartSSL certificate wizard because this means that potentially they may retain a copy of it which could then be exfiltrated either via [[https://en.wikipedia.org/wiki/Lavabit][Lavabit]] style methodology, "implants", compromised sysadmins or other "side channel" methods.  So that the private key isn't broadcast on the internet we can instead generate a certificate request, which is really just a request for authorisation of a public key.
 
-Firstly you should have an Apache web site configutaion ready to go.  See [[Setting up a web site]] for details.
+Firstly you should have an Apache web site configutaion ready to go. See [[Setting up a web site]] for details.
 
 Within StartSSL under the validations wizard validate your domain, which means sending an email to it and confirming a code.
 
