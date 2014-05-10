@@ -358,9 +358,9 @@ tzselect
 For example, for British time:
 
 #+BEGIN_SRC: bash
-TZ='Europe/London'; export TZ
-echo "TZ='Europe/London'; export TZ" >> ~/.bashrc
-echo "TZ='Europe/London'; export TZ" >> /home/myusername/.bashrc
+export TZ='Europe/London'
+echo "export TZ='Europe/London'" >> ~/.bashrc
+echo "export TZ='Europe/London'" >> /home/myusername/.bashrc
 #+END_SRC
 
 ** Upgrade the kernel
