@@ -162,7 +162,7 @@ ls /dev/sd*
 
 then plug in the flash drive and type the same command again.  You'll be able to see the difference.  Once you know the device name then you can proceed to install the image onto the flash drive.
 
-#+BASH_SRC: bash
+#+BEGIN_SRC: bash
 sudo dd if=EXTRACTED_CUBIAN_IMAGE of=/dev/sdX bs=4096; sync
 #+END_SRC
 
