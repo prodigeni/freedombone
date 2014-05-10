@@ -103,6 +103,7 @@ The plug should be /centre positive/, meaning that the centre/tip is positive an
 Just an ordinary cat5 or cat6 cable that you can get from most electrical/computer stores.
 
 * Installing Debian onto the microSD card
+** Beaglebone Black
 
 The Debian Linux OS will be installed onto a small flash drive.  It's a good idea to do this rather than using the internal flash, because it will allow you to easily create backups of the entire system if necessary using the dd command.
 
@@ -142,6 +143,29 @@ sudo ./setup_sdcard.sh --mmc /dev/sdX --uboot bone --swap-file 1024
 
 Once completed then safely remove the microSD card via your file manager (usually right click and "safely remove" or "eject").
 
+** Cubieboard
+
+The Debian Linux OS will be installed onto a small flash drive.  It's a good idea to do this rather than using the internal flash, because it will allow you to easily create backups of the entire system if necessary using the dd command.
+
+Download the Cubieboard image from http://cubian.org/downloads/
+
+#+BEGIN_SRC: bash
+sudo apt-get install p7zip-full
+7z x CUBIAN_IMAGE.7z
+#+END_SRC
+
+Create the disk image, where sdX is the name of the flash drive (probably it will be sdb or sdc).  An easy way to find out the device name of the flash drive is to enter the command:
+
+#+BEGIN_SRC: bash
+ls /dev/sd*
+#+END_SRC
+
+then plug in the flash drive and type the same command again.  You'll be able to see the difference.  Once you know the device name then you can proceed to install the image onto the flash drive.
+
+#+BASH_SRC: bash
+sudo dd if=EXTRACTED_CUBIAN_IMAGE of=/dev/sdX bs=4096; sync
+#+END_SRC
+
 * Setup
 
 #+BEGIN_VERSE
@@ -166,6 +190,8 @@ Not knowing who you're really connecting to is especially true for self-signed c
 ** Initial
 
 Eject the microSD card from your computer and plug it into the BBB, then connect the USB cable between the two.  You may need to wait for a couple of minutes for the BBB to boot from the card, then you can then open a terminal and login via ssh.
+
+Note that if you're using a Cubieboard then the ssh login is different (see https://github.com/cubieplayer/Cubian/wiki/Get-started-with-Cubian) and it may be easier to directly edit the following files with the microSD card plugged into your laptop.
 
 #+BEGIN_SRC: bash
 ssh debian@192.168.7.2
@@ -4275,7 +4301,7 @@ cd /opt
 git clone https://github.com/e14n/pump.io.git
 cd /opt/pump.io
 npm install
-npm install databank-redis
+npm install databank-leveldb
 #+END_SRC
 
 Limit the use of RAM by the Redis database.
