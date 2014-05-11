@@ -279,6 +279,44 @@ nameserver 213.73.91.35
 nameserver 85.214.20.141
 #+END_SRC
 
+It's not a good idea to use the DNS servers provided by default by your ISP, since those are almost certainly subject to censorship and monitoring.  Other possible IP addresses are:
+
+|          DNS IP | Organisation                   | Location    |
+|-----------------+--------------------------------+-------------|
+|    85.214.73.63 | FoeBuD e.V                     | Germany     |
+|  87.118.100.175 | German Privacy Foundation e.V. | Germany     |
+|    94.75.228.29 | German Privacy Foundation e.V. | Germany     |
+|   85.25.251.254 | German Privacy Foundation e.V. | Germany     |
+|     2.141.58.13 | German Privacy Foundation e.V. | Germany     |
+|    213.73.91.35 | Chaos Computer Club Berlin     | Germany     |
+|    212.82.225.7 | ClaraNet                       | Germany     |
+|  212.82.226.212 | ClaraNet                       | Germany     |
+|     58.6.115.42 | OpenNIC                        | Australia   |
+|     58.6.115.43 | OpenNIC                        | Australia   |
+|   119.31.230.42 | OpenNIC                        | Australia   |
+|  200.252.98.162 | OpenNIC                        | Brazil      |
+|  217.79.186.148 | OpenNIC                        | Germany     |
+|      81.89.98.6 | OpenNIC                        | Germany     |
+|   78.159.101.37 | OpenNIC                        | Germany     |
+| 203.167.220.153 | OpenNIC                        | New Zealand |
+|  82.229.244.191 | OpenNIC                        | France      |
+|  82.229.244.191 | OpenNIC                        | Czechnya    |
+|   216.87.84.211 | OpenNIC                        | USA         |
+|    66.244.95.20 | OpenNIC                        | USA         |
+|  207.192.69.155 | OpenNIC                        | USA         |
+|   72.14.189.120 | OpenNIC                        | USA         |
+|  194.145.226.26 | PowerNS                        | Germany     |
+|   77.220.232.44 | PowerNS                        | Germany     |
+|    78.46.89.147 | ValiDOM                        | Germany     |
+|   88.198.75.145 | ValiDOM                        | Germany     |
+|   85.25.149.144 | Freie Unzensierte Nameserver   | Germany     |
+|   87.106.37.196 | Freie Unzensierte Nameserver   | Germany     |
+|  209.59.210.167 | Christoph Hochstätter          | USA         |
+|   85.214.117.11 | Christoph Hochstätter          | Germany     |
+|    83.243.5.253 | private                        | Germany     |
+|  88.198.130.211 | private                        | Germany     |
+|   85.10.211.244 | private                        | Germany     |
+
 CTRL-o followed by ENTER to save, then CTRL-x to exit.
 
 Now disconnect the BBB from your computer and plug it into the router. You'll need an ethernet patch cable and you may also need a 5V/1A power supply for the BBB.
