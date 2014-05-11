@@ -341,9 +341,10 @@ apt-get install ca-certificates
 #+BEGIN_SRC: bash
 dpkg-reconfigure locales
 apt-get install keyboard-configuration
+reboot
 #+END_SRC
 
-You may need to reboot for this to take effect.  To verify the change.
+After reboot is complete ssh back in as the root user, then to verify the change.
 
 #+BEGIN_SRC: bash
 locale -a
