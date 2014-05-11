@@ -283,7 +283,7 @@ It's not a good idea to use the DNS servers provided by default by your ISP, sin
 
 |          DNS IP | Organisation                   | Location    |
 |-----------------+--------------------------------+-------------|
-|    85.214.73.63 | FoeBuD e.V                     | Germany     |
+|    85.214.73.63 | Digitalcourage                 | Germany     |
 |  87.118.100.175 | German Privacy Foundation e.V. | Germany     |
 |    94.75.228.29 | German Privacy Foundation e.V. | Germany     |
 |   85.25.251.254 | German Privacy Foundation e.V. | Germany     |
