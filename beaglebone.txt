@@ -1414,7 +1414,7 @@ Save and exit
 
 #+BEGIN_SRC: bash
 chmod +x /usr/bin/exim-gencert
-exim-gencert
+exim-gencert --force
 #+END_SRC
 
 This will generate the certificate used for email authentication.  You will be asked for various details, the most important of which is the server name, which should be your domain name.
@@ -6697,7 +6697,7 @@ chmod 600 /etc/ircd-hybrid/key/ircd.pem
 Regenerate email certificate.
 
 #+BEGIN_SRC: bash
-exim-gencert
+exim-gencert --force
 #+END_SRC
 
 As an added precaution you may wish to regenerate your ssh host keys:
