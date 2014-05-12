@@ -3075,6 +3075,8 @@ Extract and install it.
 tar -xzvf flatpress.tar.gz
 cd flatpress-*
 cp -r * /var/www/$HOSTNAME/htdocs
+chmod -R 755 /var/www/$HOSTNAME/htdocs/fp-content
+chown -R www-data:www-data /var/www/$HOSTNAME/htdocs/fp-content
 cd ..
 rm -rf flatpress-*
 rm -f flatpress.tar.gz
@@ -3105,36 +3107,30 @@ Then get the source code for ircd-hybrid.
 
 #+BEGIN_SRC: bash
 cd /tmp
-mkdir hybrid
-cd hybrid
-apt-get source ircd-hybrid
+wget http://freedombone.uk.to/ircd-hybrid-9.1.17.tgz
 #+END_SRC
 
-Modify the source code to include SSL security.
+verify it.
 
 #+BEGIN_SRC: bash
-editor ircd-hybrid-*/debian/rules
+sha256sum ircd-hybrid-8.1.17.tgz
+440c9d86ba6bc930efef9cdaaec547b425c35cad3f08bed8df69e55788c1268a
 #+END_SRC
 
-Beneath MAXCLIENTS add the line:
+Install it.
 
 #+BEGIN_SRC: bash
-USE_OPENSSL = 1
-#+END_SRC
-
-Then save and exit.  Now we can build the debian package for ircd-hybrid and install it.
-
-#+BEGIN_SRC: bash
+tar -xzvf ircd-hybrid-8.1.17.tgz
 cd ircd-hybrid-*
-dpkg-buildpackage -rfakeroot -uc -b
-cd ..
-dpkg -i ircd-hybrid_*.deb
+./configure --prefix=/usr/local/ircd --enable-openssl
+make
+make install
 #+END_SRC
 
 Customise the configuration to your system, giving it a name and description.  In this example 192.168.1.60 is the static IP address on the BBB on the local network, so change that if necessary.
 
 #+BEGIN_SRC: bash
-editor /etc/ircd-hybrid/ircd.conf
+editor /usr/local/ircd/etc/reference /etc/ircd-hybrid/ircd.conf
 #+END_SRC
 
 Set *name* to the name of your server, and set a description.
@@ -3158,6 +3154,178 @@ Ensure that the configuration is only readable by the root user.
 
 #+BEGIN_SRC: bash
 chmod 600 /etc/ircd-hybrid/ircd.conf
+#+END_SRC
+
+#+BEGIN_SRC: bash
+emacs /etc/init.d/ircd-hybrid
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+#! /bin/sh
+
+# ircd-hybrid Start/stop the Hybrid 8 IRC server.
+
+### BEGIN INIT INFO
+# Provides: ircd-hybrid
+# Required-Start: $syslog
+# Required-Stop: $syslog
+# Should-Start: $local_fs $network $named
+# Should-Stop: $local_fs $network $named
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: IRCd-Hybrid daemon init.d script
+# Description: Use to manage the IRCd-Hybrid daemon.
+### END INIT INFO
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=/usr/local/ircd/bin/ircd
+DEFAULT=/etc/default/ircd-hybrid
+NAME=ircd
+PID_DIR=/usr/local/ircd/etc
+PID=$PID_DIR/$NAME.pid
+DESC="Hybrid 8 IRC Server"
+
+test -f $DAEMON || exit 0
+
+if [ -f $DEFAULT ]
+then
+. $DEFAULT
+fi
+
+set -e
+
+
+
+case "$1" in
+start)
+if [ "$START" = "yes" ]
+then
+echo -n "Starting $DESC: $NAME"
+mkdir -p -m 755 $PID_DIR
+chown irc:irc $PID_DIR
+start-stop-daemon --start --quiet \
+-u irc -c irc --exec $DAEMON -- -pidfile $PID \
+> /dev/null
+echo "."
+fi
+;;
+stop)
+if [ "$START" = "yes" ]
+then
+echo -n "Stopping $DESC: $NAME"
+start-stop-daemon --oknodo --stop --quiet \
+--pidfile $PID \
+--signal 15 --exec $DAEMON -- -pidfile $PID
+echo "."
+fi
+;;
+
+reload)
+if [ "$START" = "yes" ]
+then
+if [ -f "$PID" ]; then
+echo -n "Reloading configuration files for $NAME..."
+kill -HUP `cat $PID`
+echo "done."
+else
+echo "Not reloading configuration files for $NAME - not running!"
+fi
+fi
+;;
+restart|force-reload)
+if [ "$START" = "yes" ]
+then
+echo -n "Restarting $DESC: $NAME"
+if [ -f "$PID" ]; then
+start-stop-daemon --stop --quiet --pidfile \
+$PID --signal 15 \
+--exec $DAEMON -- -pidfile $PID
+sleep 1
+fi
+mkdir -p -m 755 $PID_DIR
+chown irc:irc $PID_DIR
+start-stop-daemon --start --quiet \
+-u irc -c irc --exec $DAEMON -- -pidfile $PID \
+> /dev/null
+echo "."
+fi
+;;
+
+*)
+echo "Usage: $0 {start|stop|restart|reload|force-reload}" >&2
+exit 1
+;;
+esac
+
+exit 0
+
+etc_logrotate_ircd-hybrid
+
+# ircd-hybrid log rotation
+
+/var/log/ircd/ircd-hybrid.log {
+rotate 3
+weekly
+compress
+delaycompress
+postrotate
+invoke-rc.d ircd-hybrid reload > /dev/null
+endscript
+missingok
+}
+
+postinst
+Shell
+
+#!/bin/sh
+
+set -e
+
+. /usr/share/debconf/confmodule
+
+# Automatically added by dh_installinit, edited for use with debconf
+# Not added anymore due to dh_installinit -n, so we manage it manually.
+if [ -x "/etc/init.d/ircd-hybrid" ]; then
+update-rc.d ircd-hybrid defaults >/dev/null
+
+if [ "$1" = "configure" ]; then
+if dpkg --compare-versions "$2" le "1:7.2.2-1"; then
+RET="true"
+else
+if [ -e /usr/share/debconf/confmodule ]; then
+. /usr/share/debconf/confmodule
+db_get ircd-hybrid/restart_on_upgrade
+db_stop
+else
+RET="true"
+fi
+fi
+fi
+fi
+# End automatically added section
+
+if [ "$1" = configure ]; then
+
+
+
+# These directories may have been created before, but we need to make them
+# owned by irc. Or the initscript will get owned. If it's already this
+# way, this operation makes no difference.
+
+chown irc:irc /var/log/ircd /etc/ircd-hybrid
+chmod 770 /etc/ircd-hybrid
+
+if [ "$RET" = "true" ]; then
+invoke-rc.d ircd-hybrid start || exit $?
+else
+echo "I have not stopped or restarted the ircd-hybrid daemon."
+echo "You should do this yourself whenever you're ready."
+echo "Type \`\`invoke-rc.d ircd-hybrid restart''."
+fi
+
+fi
 #+END_SRC
 
 *** Channel management
