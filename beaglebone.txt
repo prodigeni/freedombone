@@ -1510,7 +1510,12 @@ chown -R $MYUSERNAME:$MYUSERNAME /home/$MYUSERNAME/Maildir
 ** Spam filtering
 
 #+BEGIN_SRC: bash
-apt-get install spamassassin exim4-daemon-heavy
+aptitude install spamassassin exim4-daemon-heavy
+#+END_SRC
+
+If you encounter any problems with dependencies then select 'n' and then 'y' to whatever the suggestion for removals is.  Repeat the aptitude install process until you don't get any more dependency errors.
+
+#+BEGIN_SRC: bash
 editor /etc/default/spamassassin
 #+END_SRC
 
@@ -2571,6 +2576,11 @@ set pgp_autosign         # autosign all outgoing mails
 set pgp_replyencrypt     # autocrypt replies to crypted
 set pgp_replysign        # autosign replies to signed
 set pgp_auto_decode=yes  # decode attachments
+
+set alias_file=~/.mutt-alias
+source ~/.mutt-alias
+set query_command= "abook --mutt-query '%s'"
+macro index,pager A "<pipe-message>abook --add-email-quiet<return>" "add the sender address to abook"
 #+END_SRC
 
 Save and exit.
@@ -2585,26 +2595,8 @@ Save and exit, then run:
 
 #+BEGIN_SRC: bash
 service spamassassin restart
-#+END_SRC
-
-Now to add an address book:
-
-#+BEGIN_SRC: bash
-editor ~/.muttrc
-#+END_SRC
-
-Append the following:
-
-#+BEGIN_SRC: bash
-set alias_file=~/.mutt-alias
-source ~/.mutt-alias
-set query_command= "abook --mutt-query '%s'"
-macro index,pager A "<pipe-message>abook --add-email-quiet<return>" "add the sender address to abook"
-#+END_SRC
-
-Then save and exit.
-
-#+BEGIN_SRC: bash
+exit
+cp /etc/Muttrc ~/.muttrc
 touch ~/.mutt-alias
 #+END_SRC
 
@@ -2675,10 +2667,16 @@ If your folder still doesn't show up then press the *menu button*, select *show 
 
 For maximum speed and efficiency the recommended email client is Mutt, accessed via ssh, but non-technical people who aren't using an Android app are unlikely to want to use email in that manner.  So it's a good idea to also have a webmail system installed, both for accessibility and as a fallback should ssh not be available due to port blocking.
 
+If you're not already logged in as root:
+
+#+BEGIN_SRC: bash
+su
+#+END_SRC
+
 Install dependencies.
 
 #+BEGIN_SRC: bash
-apt-get install libapache2-mod-authz-unixgroup
+apt-get install mysql-server libapache2-mod-authz-unixgroup
 #+END_SRC
 
 Create a mysql database, specifying a password which should be a long random string generated with a password manager such as KeepassX.
@@ -6418,11 +6416,25 @@ deb http://ftp.us.debian.org/debian wheezy-backports main contrib non-free
 *** Cubieboard
 #+BEGIN_SRC: bash
 deb http://http.debian.net/debian/ wheezy main contrib non-free
+deb-src http://http.debian.net/debian/ wheezy main contrib non-free
+
+deb http://http.debian.net/debian/ wheezy-updates main contrib non-free
+deb-src http://http.debian.net/debian/ wheezy-updates main contrib non-free
+
 deb http://http.debian.net/debian/ wheezy-backports main contrib non-free
+deb-src http://http.debian.net/debian/ wheezy-backports main contrib non-free
+
 deb http://security.debian.org/ wheezy/updates main contrib non-free
+deb-src http://security.debian.org/ wheezy/updates main contrib non-free
+
 deb http://mirrors.sohu.com/debian/ wheezy main contrib non-free
+deb-src http://mirrors.sohu.com/debian/ wheezy main contrib non-free
+
 deb http://packages.cubian.org/ wheezy main non-free
+deb-src http://packages.cubian.org/ wheezy main non-free
+
 deb http://repo.ajenti.org/debian main main debian
+deb-src http://repo.ajenti.org/debian main main debian
 #+END_SRC
 
 ** Messaging security
