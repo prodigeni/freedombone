@@ -6622,6 +6622,8 @@ rm /var/www/myblogdomainname.com/htdocs/fp-content/%%setup.lock
 
 Then visit your blog and reinstall it.  Your existing content will be unaffected but you will need to delete the welcome post which gets added and also re-select your chosen theme.
 
+If you need to import blog posts from another blog then copy the *fp-content/content directory* from the old blog to the new blog, then within the admin panel select *maintain* and *rebuild index*.
+
 ** MySql foo
 *** Backup all databases
 To back up all mysql databases:
