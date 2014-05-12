@@ -6583,26 +6583,22 @@ deb http://ftp.us.debian.org/debian wheezy-backports main contrib non-free
 #+END_SRC
 *** Cubieboard
 #+BEGIN_SRC: bash
-deb http://http.debian.net/debian/ wheezy main contrib non-free
-deb-src http://http.debian.net/debian/ wheezy main contrib non-free
+deb http://ftp.us.debian.org/debian/ wheezy main contrib non-free
+deb-src http://ftp.us.debian.org/debian/ wheezy main contrib non-free
 
-deb http://http.debian.net/debian/ wheezy-updates main contrib non-free
-deb-src http://http.debian.net/debian/ wheezy-updates main contrib non-free
-
-deb http://http.debian.net/debian/ wheezy-backports main contrib non-free
-deb-src http://http.debian.net/debian/ wheezy-backports main contrib non-free
+deb http://ftp.us.debian.org/debian/ wheezy-updates main contrib non-free
+deb-src http://ftp.us.debian.org/debian/ wheezy-updates main contrib non-free
 
 deb http://security.debian.org/ wheezy/updates main contrib non-free
 deb-src http://security.debian.org/ wheezy/updates main contrib non-free
+
+deb http://ftp.us.debian.org/debian wheezy-backports main contrib non-free
 
 deb http://mirrors.sohu.com/debian/ wheezy main contrib non-free
 deb-src http://mirrors.sohu.com/debian/ wheezy main contrib non-free
 
 deb http://packages.cubian.org/ wheezy main non-free
-deb-src http://packages.cubian.org/ wheezy main non-free
-
 deb http://repo.ajenti.org/debian main main debian
-deb-src http://repo.ajenti.org/debian main main debian
 #+END_SRC
 
 ** Messaging security
