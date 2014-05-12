@@ -1328,7 +1328,7 @@ set START=yes then save and exit.
 
 #+BEGIN_SRC: bash
 /etc/init.d/saslauthd start
-editor exim-gencert
+editor /usr/bin/exim-gencert
 #+END_SRC
 
 #+BEGIN_SRC: bash
@@ -1413,8 +1413,8 @@ echo "    support in your mail transfer agent."
 Save and exit
 
 #+BEGIN_SRC: bash
-chmod +x exim-gencert
-./exim-gencert
+chmod +x /usr/bin/exim-gencert
+exim-gencert
 #+END_SRC
 
 This will generate the certificate used for email authentication.  You will be asked for various details, the most important of which is the server name, which should be your domain name.
@@ -6692,6 +6692,12 @@ openssl genrsa -out /etc/ircd-hybrid/key/ircd.key 4096
 openssl req -new -x509 -key /etc/ircd-hybrid/key/ircd.key -out /etc/ircd-hybrid/key/ircd.pem -days 3650
 chmod 600 /etc/ircd-hybrid/key/ircd.key
 chmod 600 /etc/ircd-hybrid/key/ircd.pem
+#+END_SRC
+
+Regenerate email certificate.
+
+#+BEGIN_SRC: bash
+exim-gencert
 #+END_SRC
 
 As an added precaution you may wish to regenerate your ssh host keys:
