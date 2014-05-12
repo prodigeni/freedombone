@@ -323,6 +323,14 @@ Now disconnect the BBB from your computer and plug it into the router. You'll ne
 
 If you go to the web administration screen for your internet router (often it's on 192.168.2.1 or 192.168.1.254) then after a few minutes you should see the BBB appear on the network.  It's name will be "arm".
 
+If you're using a Cubieboard:
+
+#+BEGIN_SRC: bash
+nano /etc/apt/sources.list
+#+END_SRC
+
+Delete the existing sources and replace them with the sources [[Example software sources][listed here]], then save and exit.  If you use the default Cubian software sources then dependency problems will occur later on.
+
 ** Add a user
 
 Ssh back in to the BBB and login as root.  In this example the BBB's IP address is 192.168.1.60.
