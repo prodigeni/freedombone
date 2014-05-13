@@ -3883,12 +3883,12 @@ Reduce the memory use of mysql by using the "small" configuration.
 cp /usr/share/doc/mysql-server-5.5/examples/my-small.cnf /etc/mysql/my.cnf
 #+END_SRC
 
-Create a mysql database.
+Create a mysql database, replacing /myfriendicapassword/ with a password used to administer the friendica database.
 
 #+BEGIN_SRC: bash
 mysql -u root -p
 create database friendica;
-CREATE USER 'friendicaadmin'@'localhost' IDENTIFIED BY 'password';
+CREATE USER 'friendicaadmin'@'localhost' IDENTIFIED BY 'myfriendicapassword';
 GRANT ALL PRIVILEGES ON friendica.* TO 'friendicaadmin'@'localhost';
 quit
 #+END_SRC
@@ -3926,7 +3926,14 @@ chown -R www-data:www-data htdocs/view/smarty3
 git clone https://github.com/friendica/friendica-addons.git htdocs/addon
 #+END_SRC
 
-Now visit the URL of your site and you should be taken through the rest of the installation procedure.  If you have trouble with "allow override" ensure that "AllowOverride" is set to "all" in your Apache settings for the site (within /etc/apache2/sites-available) and then restart the apache2 service.
+Now visit the URL of your site and you should be taken through the rest of the installation procedure.
+
+| Database Server Name    | localhost           |
+| Database login name     | friendicaadmin      |
+| Database Login Password | myfriendicapassword |
+| Database Name           | friendica           |
+
+If you have trouble with "allow override" ensure that "AllowOverride" is set to "all" in your Apache settings for the site (within /etc/apache2/sites-available) and then restart the apache2 service.
 
 Install the poller.
 
