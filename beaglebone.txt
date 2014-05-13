@@ -974,6 +974,7 @@ First install some prerequisites.
 
 #+BEGIN_SRC: bash
 apt-get install build-essential automake git pkg-config autoconf libtool libssl-dev
+apt-get remove ntpdate
 #+END_SRC
 
 Now download and install tlsdate.
@@ -1038,8 +1039,8 @@ Set the following properties:
 TCP_PORTS="1,7,9,11,15,79,109,110,111,119,138,139,512,513,514,515,540,635,1080,1524,2000,2001,4000,4001,5742,6000,6001,6667,12345,12346,20034,27665,30303,32771,32772,32773,32774,31337,40421,40425,49724,54320"
 UDP_PORTS="1,7,9,66,67,68,69,111,137,138,161,162,474,513,517,518,635,640,641,666,700,2049,31335,27444,34555,32770,32771,32772,32773,32774,31337,54321"
 
-ADVANCED_EXCLUDE_TCP="113,139,70,80,443,587,143,6670,993,5060,5061,25,465,22,5222,5223,5269,5280,5281,8432,8433,8444"
-ADVANCED_EXCLUDE_UDP="520,138,137,67,70,80,443,143,6670,993, 5060,5061,25,465,22,5222,5223,5269,5280,5281,8444"
+ADVANCED_EXCLUDE_TCP="113,139,70,80,443,587,143,6697,993,5060,5061,25,465,22,5222,5223,5269,5280,5281,8432,8433,8444"
+ADVANCED_EXCLUDE_UDP="520,138,137,67,70,80,443,143,6697,993, 5060,5061,25,465,22,5222,5223,5269,5280,5281,8444"
 
 SCAN_TRIGGER="2"
 
@@ -1091,6 +1092,7 @@ iptables -A INPUT -p tcp --destination-port 31337 -j DROP
 iptables -A INPUT -p tcp --destination-port 2000:2001 -j DROP
 iptables -A INPUT -p tcp --destination-port 12345 -j DROP
 iptables -A INPUT -p tcp --destination-port 32771:32774 -j DROP
+iptables -A INPUT -p tcp --destination-port 6665:6669 -j DROP
 iptables -A INPUT -p tcp --destination-port 4000 -j DROP
 iptables -A INPUT -p tcp --destination-port 119 -j DROP
 iptables -A INPUT -p tcp --destination-port 137 -j DROP
@@ -1114,6 +1116,7 @@ iptables -A INPUT -p udp --destination-port 31337 -j DROP
 iptables -A INPUT -p udp --destination-port 2000:2001 -j DROP
 iptables -A INPUT -p udp --destination-port 12345 -j DROP
 iptables -A INPUT -p udp --destination-port 32771:32774 -j DROP
+iptables -A INPUT -p udp --destination-port 6665:6669 -j DROP
 iptables -A INPUT -p udp --destination-port 4000 -j DROP
 iptables -A INPUT -p udp --destination-port 119 -j DROP
 iptables -A INPUT -p udp --destination-port 137 -j DROP
@@ -1138,7 +1141,7 @@ iptables -A INPUT -p tcp --tcp-flags ALL SYN,RST,ACK,FIN,URG -j DROP
 iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
 
 # Drop UDP to used ports
-iptables -A INPUT -p udp --match multiport --dports 70,80,443,143,6670,993,5060,5061,25 -j DROP
+iptables -A INPUT -p udp --match multiport --dports 70,80,443,143,6697,993,5060,5061,25 -j DROP
 iptables -A INPUT -p udp --match multiport --dports 465,587,22,5222,5223,5269,5280,5281,8444 -j DROP
 
 # Limit ssh logins
@@ -1152,7 +1155,7 @@ iptables -A INPUT -p tcp --dport 443 -m limit --limit 10/minute --limit-burst 1 
 iptables -A INPUT -p tcp --match multiport --dports 5222:5223,5269,5280:5281 -m limit --limit 3/minute --limit-burst 1 -j ACCEPT
 
 # Limit IRC connections
-iptables -A INPUT -p tcp --dport 6666:6670 -m limit --limit 3/minute --limit-burst 1 -j ACCEPT
+iptables -A INPUT -p tcp --dport 6697 -m limit --limit 3/minute --limit-burst 1 -j ACCEPT
 
 # Limit gopher connections
 iptables -A INPUT -p tcp --dport 70 -m limit --limit 3/minute --limit-burst 1 -j ACCEPT
@@ -2891,6 +2894,8 @@ Click on the Thunderbird menu, which looks like three horizontal bars on the rig
 
 Hover over *preferences* and then *Account settings*.
 
+Select *OpenPGP Security* and make sure that *use PGP/MIME by default* is ticked. This will enable you to sign/encrypt attachments, HTML bodies and UTF-8 without any problems.
+
 Select *Synchronization & Storage*.
 
 Make sure that *Keep messages for this account on this computer* is unticked, then click *Ok*.
@@ -3109,14 +3114,14 @@ First install some dependencies.
 
 #+BEGIN_SRC: bash
 apt-get update
-apt-get install build-essential openssl libssl-dev debhelper dpatch docbook-to-man flex bison libpcre3-dev
+apt-get install build-essential openssl libssl-dev debhelper dpatch docbook-to-man flex bison libpcre3-dev screen
 #+END_SRC
 
 Then get the source code for ircd-hybrid.
 
 #+BEGIN_SRC: bash
 cd /tmp
-wget http://freedombone.uk.to/ircd-hybrid-9.1.17.tgz
+wget http://freedombone.uk.to/ircd-hybrid-8.1.17.tgz
 #+END_SRC
 
 verify it.
@@ -3139,10 +3144,12 @@ make install
 Customise the configuration to your system, giving it a name and description.  In this example 192.168.1.60 is the static IP address on the BBB on the local network, so change that if necessary.
 
 #+BEGIN_SRC: bash
-editor /usr/local/ircd/etc/reference /etc/ircd-hybrid/ircd.conf
+chown -R irc:irc /usr/local/ircd
+cp /usr/local/ircd/etc/reference.conf /usr/local/ircd/etc/ircd.conf
+editor /usr/local/ircd/etc/ircd.conf
 #+END_SRC
 
-Set *name* to the name of your server, and set a description.
+Set *name* to the domain name of your server, and set a description.
 
 Set a *network_name* and *network_desc*.  The network name should not contain any spaces.
 
@@ -3153,188 +3160,97 @@ Within the admin section set your *name* and *email*.
 Within the *listen* section set host to your fixed IP address (in the earlier
 sections it was 192.168.1.60).
 
-Within the *auth* section set user = "*@192.168.1.60" - or whatever the fixed IP address of the BBB is on your network.
+Within the *auth* section set user = "*@192.168.1.60" - or whatever the fixed IP address of the BBB is on your network - and password to the desired password for the IRC server.  If you don't wish to use a password then remove need_password from the flags.
 
-Uncomment the first *connect* section and set the *name* to your domain name, the *host* to 192.168.1.60 and the send/accept passwords to a password which you use to log into the IRC server.  Also set the *port* to 6670.
+Within the *connect* section set *host* and *vhost* to your fixed IP address (in the earlier
+sections it was 192.168.1.60) and *name* to your domain name.  Also set the *send/accept passwords* to your IRC login password.
 
-Save and exit, then restart the IRC server.  Open port 6670 on your internet router and forward it to the BBB.
+Save and exit, then restart the IRC server.  Open port 6697 on your internet router and forward it to the BBB.  Note that although ports 6665 to 6669 are active within the configuration file in practice we will only use the encrypted port.
 
 Ensure that the configuration is only readable by the root user.
 
 #+BEGIN_SRC: bash
-chmod 600 /etc/ircd-hybrid/ircd.conf
+chmod 600 /usr/local/ircd/etc/ircd.conf
 #+END_SRC
 
+Now create an init script.
+
 #+BEGIN_SRC: bash
-emacs /etc/init.d/ircd-hybrid
+adduser --disabled-login irc
+editor /etc/init.d/ircd-hybrid
 #+END_SRC
 
 Add the following:
 
 #+BEGIN_SRC: bash
-#! /bin/sh
-
-# ircd-hybrid Start/stop the Hybrid 8 IRC server.
+#!/bin/bash
+# /etc/init.d/ircd-hybrid
 
 ### BEGIN INIT INFO
-# Provides: ircd-hybrid
-# Required-Start: $syslog
-# Required-Stop: $syslog
-# Should-Start: $local_fs $network $named
-# Should-Stop: $local_fs $network $named
-# Default-Start: 2 3 4 5
-# Default-Stop: 0 1 6
-# Short-Description: IRCd-Hybrid daemon init.d script
-# Description: Use to manage the IRCd-Hybrid daemon.
+# Provides:          ircd-hybrid
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts irc server
+# Description:       starts irc server
 ### END INIT INFO
 
-PATH=/sbin:/bin:/usr/sbin:/usr/bin
-DAEMON=/usr/local/ircd/bin/ircd
-DEFAULT=/etc/default/ircd-hybrid
-NAME=ircd
-PID_DIR=/usr/local/ircd/etc
-PID=$PID_DIR/$NAME.pid
-DESC="Hybrid 8 IRC Server"
+# Author: Bob Mottram <bob@robotics.uk.to>
 
-test -f $DAEMON || exit 0
-
-if [ -f $DEFAULT ]
-then
-. $DEFAULT
-fi
-
-set -e
+#Settings
+SERVICE='ircd-hybrid'
+COMMAND="ircd"
+USERNAME='irc'
+NICELEVEL=19 # from 0-19 the bigger the number, the less the impact on system resources
+HISTORY=1024
+INVOCATION="nice -n ${NICELEVEL} ${COMMAND}"
+PATH='/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/core_perl:/sbin:/usr/sbin:/bin'
 
 
 
+
+irc_start() {
+echo "Starting $SERVICE..."
+cd /usr/local/ircd
+su --command "screen -h ${HISTORY} -dmS ${SERVICE} ${INVOCATION}" $USERNAME
+}
+
+
+irc_stop() {
+echo "Stopping $SERVICE"
+su --command "screen -p 0 -S ${SERVICE} -X stuff "'^C'"" $USERNAME
+}
+
+
+#Start-Stop here
 case "$1" in
-start)
-if [ "$START" = "yes" ]
-then
-echo -n "Starting $DESC: $NAME"
-mkdir -p -m 755 $PID_DIR
-chown irc:irc $PID_DIR
-start-stop-daemon --start --quiet \
--u irc -c irc --exec $DAEMON -- -pidfile $PID \
-> /dev/null
-echo "."
-fi
-;;
-stop)
-if [ "$START" = "yes" ]
-then
-echo -n "Stopping $DESC: $NAME"
-start-stop-daemon --oknodo --stop --quiet \
---pidfile $PID \
---signal 15 --exec $DAEMON -- -pidfile $PID
-echo "."
-fi
-;;
-
-reload)
-if [ "$START" = "yes" ]
-then
-if [ -f "$PID" ]; then
-echo -n "Reloading configuration files for $NAME..."
-kill -HUP `cat $PID`
-echo "done."
-else
-echo "Not reloading configuration files for $NAME - not running!"
-fi
-fi
-;;
-restart|force-reload)
-if [ "$START" = "yes" ]
-then
-echo -n "Restarting $DESC: $NAME"
-if [ -f "$PID" ]; then
-start-stop-daemon --stop --quiet --pidfile \
-$PID --signal 15 \
---exec $DAEMON -- -pidfile $PID
-sleep 1
-fi
-mkdir -p -m 755 $PID_DIR
-chown irc:irc $PID_DIR
-start-stop-daemon --start --quiet \
--u irc -c irc --exec $DAEMON -- -pidfile $PID \
-> /dev/null
-echo "."
-fi
-;;
-
-*)
-echo "Usage: $0 {start|stop|restart|reload|force-reload}" >&2
-exit 1
-;;
+  start)
+    irc_start
+    ;;
+  stop)
+    irc_stop
+    ;;
+  restart)
+    irc_stop
+    sleep 10s
+    irc_start
+    ;;
+    *)
+  echo "Usage: $0 {start|stop|restart}"
+  exit 1
+  ;;
 esac
 
 exit 0
+#+END_SRC
 
-etc_logrotate_ircd-hybrid
+Save and exit, then start the daemon.
 
-# ircd-hybrid log rotation
-
-/var/log/ircd/ircd-hybrid.log {
-rotate 3
-weekly
-compress
-delaycompress
-postrotate
-invoke-rc.d ircd-hybrid reload > /dev/null
-endscript
-missingok
-}
-
-postinst
-Shell
-
-#!/bin/sh
-
-set -e
-
-. /usr/share/debconf/confmodule
-
-# Automatically added by dh_installinit, edited for use with debconf
-# Not added anymore due to dh_installinit -n, so we manage it manually.
-if [ -x "/etc/init.d/ircd-hybrid" ]; then
-update-rc.d ircd-hybrid defaults >/dev/null
-
-if [ "$1" = "configure" ]; then
-if dpkg --compare-versions "$2" le "1:7.2.2-1"; then
-RET="true"
-else
-if [ -e /usr/share/debconf/confmodule ]; then
-. /usr/share/debconf/confmodule
-db_get ircd-hybrid/restart_on_upgrade
-db_stop
-else
-RET="true"
-fi
-fi
-fi
-fi
-# End automatically added section
-
-if [ "$1" = configure ]; then
-
-
-
-# These directories may have been created before, but we need to make them
-# owned by irc. Or the initscript will get owned. If it's already this
-# way, this operation makes no difference.
-
-chown irc:irc /var/log/ircd /etc/ircd-hybrid
-chmod 770 /etc/ircd-hybrid
-
-if [ "$RET" = "true" ]; then
-invoke-rc.d ircd-hybrid start || exit $?
-else
-echo "I have not stopped or restarted the ircd-hybrid daemon."
-echo "You should do this yourself whenever you're ready."
-echo "Type \`\`invoke-rc.d ircd-hybrid restart''."
-fi
-
-fi
+#+BEGIN_SRC: bash
+chmod +x /etc/init.d/ircd-hybrid
+update-rc.d ircd-hybrid defaults
+service ircd-hybrid start
 #+END_SRC
 
 *** Channel management
@@ -3389,7 +3305,7 @@ Change #MD5 PASSWORD HERE# to the md5 operator password created earlier, mydomai
 A:mynickname <myemailaddress>
 N:irc.mydomainname.com:Hybrid services
 O:*@*:#MD5 PASSWORD HERE#:root:segj (comment out other Q: lines)
-S:mysendacceptpassword:192.168.1.60:6670 (remove the other two services)
+S:mysendacceptpassword:192.168.1.60:6697 (remove the other two services)
 #+END_SRC
 
 Also remove the line *#NOT-EDITED#*, then save and exit.
@@ -3417,7 +3333,7 @@ Connect to the IRC and identify yourself as an operator.  Here /mynetwork/ shoul
 
 /channel add -auto #mychannel mynetwork channelpassword
 
-/server add -auto -network mynetwork -ssl mydonainname.com 6670 mysendacceptpassword
+/server add -auto -network mynetwork -ssl mydonainname.com 6697 mysendacceptpassword
 
 /connect mydomainname.com
 
@@ -3442,7 +3358,7 @@ It should look something like this:
   {
     address = "mydomainname.com";
     chatnet = "mynetwork";
-    port = "6670";
+    port = "6697";
     password = "mysendacceptpassword";
     use_ssl = "yes";
     ssl_verify = "no";
@@ -3529,7 +3445,7 @@ And to trust or distrust someone else's fingerprint.
 *** Usage with XChat
 Within the network list click, *Add* and enter your domain name then click *Edit*.
 
-Select the entry within the servers box, then enter *mydomainname.com/6670* and press *Enter*.
+Select the entry within the servers box, then enter *mydomainname.com/6697* and press *Enter*.
 
 Uncheck *use global user information*.
 
@@ -3767,14 +3683,6 @@ irc
 Generate a SSL certificate.
 
 #+BEGIN_SRC: bash
-openssl ecparam -out /etc/ssl/private/xmpp.pem -name prime256v1
-openssl genpkey -paramfile /etc/ssl/private/xmpp.pem -out /etc/ssl/private/xmpp.key
-openssl req -new -x509 -key /etc/ssl/private/xmpp.key -out /etc/ssl/certs/xmpp.crt -days 3650
-#+END_SRC
-
-The above uses a Diffie-Hellman elliptic curve (ECDH P-256) algorithm. It is apparent that amongst crypographers there are differences of opinion about the security of elliptic curves, so if you prefer there is also a more traditional RSA way to generate an SSL certificate:
-
-#+BEGIN_SRC: bash
 openssl genrsa -out /etc/ssl/private/xmpp.key 4096
 openssl req -new -x509 -key /etc/ssl/private/xmpp.key -out /etc/ssl/certs/xmpp.crt -days 3650
 #+END_SRC
@@ -3784,14 +3692,14 @@ Change permissions.
 #+BEGIN_SRC: bash
 chmod 600 /etc/ssl/private/xmpp.key
 chmod 600 /etc/ssl/certs/xmpp.crt
-chown prosody:prosody /etc/ssl/private/xmpp.key
-chown prosody:prosody /etc/ssl/certs/xmpp.crt
 #+END_SRC
 
 Install Prosody.
 
 #+BEGIN_SRC: bash
 apt-get install prosody
+chown prosody:prosody /etc/ssl/private/xmpp.key
+chown prosody:prosody /etc/ssl/certs/xmpp.crt
 cp -a /etc/prosody/conf.avail/example.com.cfg.lua /etc/prosody/conf.avail/xmpp.cfg.lua
 editor /etc/prosody/conf.avail/xmpp.cfg.lua
 #+END_SRC
@@ -3964,7 +3872,7 @@ service apache2 restart
 Now install some dependencies.
 
 #+BEGIN_SRC: bash
-apt-get install mysql-server php5-common php5-cli php5-curl php5-gd php5-mysql php5-mcrypt
+apt-get install mysql-server php5-common php5-cli php5-curl php5-gd php5-mysql php5-mcrypt php5-fpm php5-cgi php-apc
 #+END_SRC
 
 Enter an admin password for MySQL.
@@ -3997,12 +3905,12 @@ editor .gitconfig
 The .gitconfig file should look something like this:
 
 #+BEGIN_SRC: bash
+[user]
+        name = yourname
+        email = myusername@mydomainname.com
 [http]
         sslVerify = true
         sslCAinfo = /etc/ssl/certs/ca-certificates.crt
-[user]
-        email = myusername@mydomainname.com
-        name = yourname
 #+END_SRC
 
 Get the source code.
@@ -4010,7 +3918,7 @@ Get the source code.
 #+BEGIN_SRC: bash
 export HOSTNAME=myfriendicadomainname.com
 cd /var/www/$HOSTNAME
-mv htdocs htdocs_old
+rm -rf htdocs
 git clone https://github.com/friendica/friendica.git htdocs
 chmod -R 755 htdocs
 chown -R www-data:www-data htdocs
@@ -6561,7 +6469,7 @@ The following ports on your internet router/firewall should be forwarded to the 
 | HTTP          |         80 |
 | HTTPS         |        443 |
 | IMAP          |        143 |
-| IRC SSL       |       6670 |
+| IRC SSL       |       6697 |
 | SIP           | 5060..5061 |
 | SMTP          |     25,587 |
 | SMTPS         |        465 |
