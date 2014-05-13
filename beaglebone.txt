@@ -3933,6 +3933,8 @@ Now visit the URL of your site and you should be taken through the rest of the i
 | Database Login Password | myfriendicapassword |
 | Database Name           | friendica           |
 
+When installation is complete if you already have an exported account which you wish to import then visit https://myfriendicadomain.com/uimport, rather than registering a new user.
+
 If you have trouble with "allow override" ensure that "AllowOverride" is set to "all" in your Apache settings for the site (within /etc/apache2/sites-available) and then restart the apache2 service.
 
 Install the poller.
