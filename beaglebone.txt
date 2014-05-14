@@ -1010,6 +1010,65 @@ service cron restart
 
 This obtains the date and time from www.ptb.de every 15 minutes. Obviously if you wish to use a different source for the date and time then the cron entry can be edited accordingly.
 
+To ensure that the system always gets the correct time on initial bootup create an init script.
+
+#+BEGIN_SRC: bash
+editor /etc/init.d/tlsdate
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+#!/bin/bash
+# /etc/init.d/tlsdate
+
+### BEGIN INIT INFO
+# Provides:          tlsdate
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Initially calls tlsdate with the timewarp option
+# Description:       Initially calls tlsdate with the timewarp option
+### END INIT INFO
+
+# Author: Bob Mottram <bob@robotics.uk.to>
+
+PATH='/usr/local/sbin:/usr/local/bin:/usr/bin:/sbin:/usr/sbin:/bin'
+
+LOGFILE="/var/log/tlsdate.log"
+TLSDATECOMMAND="tlsdate --timewarp -l -t -H www.ptb.de -p 443 >> $LOGFILE"
+
+#Start-Stop here
+case "$1" in
+  start)
+    echo "tlsdate started"
+    $TLSDATECOMMAND
+    ;;
+  stop)
+    echo "tlsdate stopped"
+    ;;
+  restart)
+    echo "tlsdate restarted"
+    $TLSDATECOMMAND
+    ;;
+    *)
+  echo "Usage: $0 {start|stop|restart}"
+  exit 1
+  ;;
+esac
+
+exit 0
+#+END_SRC
+
+Save and exit, then start the daemon.
+
+#+BEGIN_SRC: bash
+chmod +x /etc/init.d/tlsdate
+update-rc.d tlsdate defaults
+service tlsdate start
+#+END_SRC
+
 ** Install fail2ban
 
 #+BEGIN_SRC: bash
