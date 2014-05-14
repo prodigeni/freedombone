@@ -2234,7 +2234,7 @@ The Apache configuration for the site should look something like the following. 
 		AllowOverride All
 		Order allow,deny
 		allow from all
-        LimitRequestBody 128000
+        LimitRequestBody 512000
 	</Directory>
 
 	# Don't serve .php~ or .php# files created by emacs
@@ -2259,7 +2259,7 @@ The Apache configuration for the site should look something like the following. 
 		Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
 		Order allow,deny
 		Allow from all
-        LimitRequestBody 128000
+        LimitRequestBody 512000
 	</Directory>
 
 	ErrorLog ${APACHE_LOG_DIR}/error.log
@@ -2286,7 +2286,7 @@ The Apache configuration for the site should look something like the following. 
 		AllowOverride All
 		Order allow,deny
 		allow from all
-        LimitRequestBody 128000
+        LimitRequestBody 512000
 	</Directory>
 
 	# Don't serve .php~ or .php# files created by emacs
@@ -2311,7 +2311,7 @@ The Apache configuration for the site should look something like the following. 
 		Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
 		Order allow,deny
 		Allow from all
-        LimitRequestBody 128000
+        LimitRequestBody 512000
 	</Directory>
 
 	ErrorLog ${APACHE_LOG_DIR}/error.log
@@ -3933,7 +3933,7 @@ Now visit the URL of your site and you should be taken through the rest of the i
 | Database Login Password | myfriendicapassword |
 | Database Name           | friendica           |
 
-When installation is complete if you already have an exported account which you wish to import then visit https://myfriendicadomain.com/uimport, rather than registering a new user.
+When installation is complete if you already have an exported account which you wish to import then visit https://myfriendicadomain.com/uimport, rather than registering a new user.  If you get an error when trying to import an account then try increasing the value of LimitRequestBody within your apache configuration and restart the apache2 service.
 
 If you have trouble with "allow override" ensure that "AllowOverride" is set to "all" in your Apache settings for the site (within /etc/apache2/sites-available) and then restart the apache2 service.
 
@@ -4048,8 +4048,8 @@ cp -f /var/backups/friendica_daily.sql /var/backups/friendica_weekly.sql
 Save and exit.
 
 #+BEGIN_SRC: bash
-chmod 600 /etc/cron.weekly/friendicabackup
-chmod +x /etc/cron.weekly/friendicabackup
+chmod 600 /etc/cron.weekly/backup
+chmod +x /etc/cron.weekly/backup
 editor /etc/cron.monthly/backup
 #+END_SRC
 
@@ -4068,6 +4068,11 @@ cp -f /var/backups/friendica_weekly.sql /var/backups/friendica_monthly.sql
 #+END_SRC
 
 Save and exit.
+
+#+BEGIN_SRC: bash
+chmod 600 /etc/cron.monthly/backup
+chmod +x /etc/cron.monthly/backup
+#+END_SRC
 
 **** Recommended configuration
 ***** Admin
@@ -4408,6 +4413,11 @@ cp -f /var/backups/redmatrix_weekly.sql /var/backups/redmatrix_monthly.sql
 #+END_SRC
 
 Save and exit.
+
+#+BEGIN_SRC: bash
+chmod 600 /etc/cron.monthly/backup
+chmod +x /etc/cron.monthly/backup
+#+END_SRC
 
 **** To access from an Android device
 ***** App
