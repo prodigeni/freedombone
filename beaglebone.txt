@@ -1037,7 +1037,7 @@ Add the following:
 PATH='/usr/local/sbin:/usr/local/bin:/usr/bin:/sbin:/usr/sbin:/bin'
 
 LOGFILE="/var/log/tlsdate.log"
-TLSDATECOMMAND="tlsdate --timewarp -l -t -H www.ptb.de -p 443 >> $LOGFILE"
+TLSDATECOMMAND="tlsdate --timewarp -l -H www.ptb.de -p 443 >> $LOGFILE"
 
 #Start-Stop here
 case "$1" in
