@@ -3670,6 +3670,13 @@ Then to subsequently access irssi log into the BBB using ssh and type:
 irc
 #+END_SRC
 
+To set UK time within Irssi:
+
+#+BEGIN_SRC: bash
+/script exec $ENV{'TZ'}='Europe/London';
+/save
+#+END_SRC
+
 ** Install a Jabber/XMPP server
 
 #+BEGIN_VERSE
@@ -4437,21 +4444,35 @@ pump.io is the successor to StatusNet (which later became [[GNU Social]]) and is
 For a pump.io site you will need a separate domain/subdomain, so see [[Setting up a web site]] for details of how to create an Apache configuration for your site.  If you're using freedns then you will need to create a new subdomain.
 
 #+BEGIN_SRC: bash
-apt-get update && apt-get install redis-server nodejs-legacy imagemagick graphicsmagick git-core screen
+apt-get update && apt-get install nodejs-legacy build-essential openssl libssl-dev redis-server imagemagick graphicsmagick git-core screen
+#+END_SRC
+
+Now install nodejs.
+
+#+BEGIN_SRC: bash
+cd /tmp
+git clone https://github.com/joyent/node.git
+cd /tmp/node
+git checkout v0.10.28
+./configure --openssl-libpath=/usr/lib/ssl --without-snapshot
+make
+#+END_SRC
+
+Compiling may take approximately 45 minutes, so go and do something else for a while.
+
+#+BEGIN_SRC: bash
+make install
+#+END_SRC
+
+Install pump.io
+
+#+BEGIN_SRC: bash
 cd /opt
 git clone https://github.com/e14n/pump.io.git
 cd /opt/pump.io
 npm install
-npm install databank-leveldb
+npm install databank-redis
 #+END_SRC
-
-Limit the use of RAM by the Redis database.
-
-#+BEGIN_SRC: bash
-editor /etc/redis/redis.conf
-#+END_SRC
-
-Set /maxmemory/ to 16777216 bytes, then save and exit.  This should prevent the amount of data stored in memory from making the system unstable.
 
 Now edit the configuration file.
 
@@ -4499,6 +4520,11 @@ cp /etc/ssl/certs/$HOSTNAME.crt /var/local/pump.io/keys
 useradd -s /bin/bash -d /var/local/pump.io pumpio
 chown -R pumpio:pumpio /var/local/pump.io
 chmod 400 /var/local/pump.io/keys/*
+#+END_SRC
+
+Patch the version of Apache.
+
+#+BEGIN_SRC: bash
 mkdir /tmp/apache2
 cd /tmp/apache2
 apt-get build-dep apache2
@@ -4513,6 +4539,8 @@ patch -p1 -i apache-2.2-wstunnel.patch
 autoconf
 ./configure --enable-so --enable-proxy=shared --enable-proxy-wstunnel=shared
 make
+make install
+
 cp modules/proxy/.libs/mod_proxy_wstunnel.so  /usr/lib/apache2/modules/
 cd /etc/apache2/mods-enabled
 ln -s /usr/lib/apache2/modules/mod_proxy_wstunnel.so ../mods-available/proxy_wstunnel.load
@@ -4551,8 +4579,13 @@ Add the following in the section which begins with *<VirtualHost *:443>*.
 Save and exit.
 
 #+BEGIN_SRC: bash
+a2enmod ssl
 a2enmod cache
 a2enmod disk_cache
+a2enmod expires
+a2enmod proxy
+a2enmod proxy_connect
+a2enmod proxy_http
 apachectl configtest
 service apache2 restart
 npm install forever -g
