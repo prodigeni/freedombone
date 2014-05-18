@@ -809,6 +809,12 @@ The rate of entropy generation by the Hashlet seems very slow compared to */dev/
 
 ** Alter ssh configuration
 
+#+BEGIN_VERSE
+/The privacy rights of US persons in international communications are significantly diminished, if not completely eliminated, when those communications have been transmitted to or obtained from non-US persons located outside the United States./
+
+-- US Department Of Justice
+#+END_VERSE
+
 Altering the ssh configuration will make it a little more secure than the standard Debian settings.
 
 #+BEGIN_SRC: bash
