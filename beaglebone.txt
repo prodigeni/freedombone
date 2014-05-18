@@ -6560,10 +6560,27 @@ Comment out the line:
 
 Then save and exit.
 
+#+BEGIN_SRC: bash
+editor /usr/bin/reset-tripwire
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+#!/bin/sh
+tripwire --update-policy --secure-mode low /etc/tripwire/twpol.txt
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+chmod +x /usr/bin/reset-tripwire
+#+END_SRC
+
 If you subsequently install any more packages or make configuration changes then update the policy again with:
 
 #+BEGIN_SRC: bash
-tripwire --update-policy --secure-mode low /etc/tripwire/twpol.txt
+reset-tripwire
 #+END_SRC
 
 Also, to look for any rootkits.
