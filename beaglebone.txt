@@ -1362,7 +1362,7 @@ IP addresses to listen on: blank
 
 Destinations: mydomainname.com (and any other domains that you own)
 
-Domains to relay mail: mydomainname.com (and any other domains that you own)
+Domains to relay mail: blank
 
 Smarthost Relay: 192.168.1.0/24 (the range of addresses on your LAN)
 
@@ -1486,20 +1486,7 @@ This will generate the certificate used for email authentication.  You will be a
 editor /etc/exim4/exim4.conf.template
 #+END_SRC
 
-Append the following:
-
-#+BEGIN_SRC: bash
-login_saslauthd_server:
-  driver = plaintext
-  public_name = LOGIN
-  server_prompts = "Username:: : Password::"
-  # don't send system passwords over unencrypted connections
-  server_condition = ${if saslauthd{{$auth1}{$auth2}}{1}{0}}
-  server_set_id = $auth1
- .ifndef AUTH_SERVER_ALLOW_NOTLS_PASSWORDS
- server_advertise_condition = ${if eq{$tls_cipher}{}{}{*}}
- .endif
-#+END_SRC
+Uncomment the section which begins with *login_saslauthd_server*
 
 Search for the line *.ifdef MAIN_HARDCODE_PRIMARY_HOSTNAME* and above it insert the line:
 
@@ -2719,9 +2706,11 @@ One of the most common things which you might wish to do is to send an email.  T
  * Select settings/account settings
  * Select Sending mail/outgoing server
  * Set SMTP server to your domain name
- * Set Security to None
- * Set port to 587
- * Set password to None
+ * Set Security to SSL/TLS (always)
+ * Set port to 465
+ * Set authentication to PLAIN
+ * Enter your username and password
+ * Accept the SSL certificate
 **** Folders
 To view any new folders which you may have created using the /mailinglistrule/ script from your inbox press the *K9 icon* at the top left to access folders, then press the *menu button* and select *refresh folder list*.
 
@@ -2893,7 +2882,7 @@ You'll get a message saying "/Thunderbird failed to find the settings/"
 The settings should be as follows, substituting /mydomainname.com/ for your domain name and /myusername/ for the username given previously in [[Add a user]].
 
   * Incoming: IMAP, mydomainname.com, 993, SSL/TLS, Normal Password
-  * Outgoing: SMTP, mydomainname.com, 587, None, No Password
+  * Outgoing: SMTP, mydomainname.com, 465, SSL/TLS, Normal Password
   * Username: myusername
 
 Click *Done*.
