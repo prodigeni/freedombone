@@ -7021,6 +7021,18 @@ Set your domain name and email accordingly.
 a2ensite mygitlabdomain
 #+END_SRC
 
+** Monkeysphere
+
+#+BEGIN_SRC: bash
+aptitude install monkeysphere
+aptitude install msva-perl
+aptitude install xul-ext-monkeysphere
+
+export HOSTNAME=mydomainname.com
+monkeysphere-host import-key /etc/ssh/ssh_host_rsa_key ssh://$HOSTNAME
+monkeysphere-host publish-key
+#+END_SRC
+
 * Related projects
 
   * [[https://freedomboxfoundation.org/][Freedombox]]
