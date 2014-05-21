@@ -1336,7 +1336,7 @@ ip6tables -L
 ** Install Email
 
 #+BEGIN_VERSE
-/If you knew what I know about email, you might not use it/
+/The government argued that, since the "inspection" of the data was to be carried out by a machine, they were exempt from the normal search-and-seizure protections of the Fourth Amendment...The prosecution also argued that my users had no expectation of privacy, even though the service I provided - encryption - is designed for users' privacy/
 
 -- Ladar Levison
 #+END_VERSE
