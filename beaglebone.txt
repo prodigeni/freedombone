@@ -6552,10 +6552,11 @@ Set *SYSLOGREPORTING* to false and comment out the line, then save and exit.
 editor /etc/tripwire/twpol.txt
 #+END_SRC
 
-Comment out the line:
+Comment out the lines:
 
 #+BEGIN_SRC: bash
 	/var/log		-> $(SEC_CONFIG) ;
+	/proc		-> $(Device) ;
 #+END_SRC
 
 Then save and exit.
