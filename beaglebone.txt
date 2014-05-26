@@ -4630,6 +4630,7 @@ Add the following in the section which begins with *<VirtualHost *:443>*.
 #+BEGIN_SRC: bash
     ProxyVia On
     ProxyPreserveHost On
+	ProxyRequests Off
     SSLProxyEngine On
 
     ProxyPass / https://localhost:7270/
@@ -7032,6 +7033,213 @@ aptitude install xul-ext-monkeysphere
 export HOSTNAME=mydomainname.com
 monkeysphere-host import-key /etc/ssh/ssh_host_rsa_key ssh://$HOSTNAME
 monkeysphere-host publish-key
+#+END_SRC
+
+** Diaspora
+
+First install some dependencies:
+
+#+BEGIN_SRC: bash
+aptitude install build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libxslt-dev imagemagick git-core redis-server curl libmysqlclient-dev libmagickwand-dev librtmp-dev libgnutls-dev libp11-kit-dev libp11-kit0 curl
+#+END_SRC
+
+If there is trouble with dependencies select 'n' then 'y' to the solution.
+
+Create a diaspora user.
+
+#+BEGIN_SRC: bash
+adduser --disabled-login diaspora
+su diaspora
+cd ~/
+curl -L dspr.tk/1t | bash
+echo "[[ -s \"$HOME/.rvm/scripts/rvm\" ]] && source \"$HOME/.rvm/scripts/rvm\"" >> ~/.bashrc
+. ~/.bashrc
+rvm autolibs read-only
+rvm install 2.0.0-p353
+git clone -b master git://github.com/diaspora/diaspora.git
+cd diaspora
+#+END_SRC
+
+Select 'y' to trust /home/diaspora/diaspora/.rvmrc
+
+#+BEGIN_SRC: bash
+cp config/database.yml.example config/database.yml
+cp config/diaspora.yml.example config/diaspora.yml
+editor config/diaspora.yml
+#+END_SRC
+
+Set *url* to https://mydiasporadomainname.com/
+
+Set *certificate_authorities* to */etc/ssl/certs/ca-certificates.crt*
+
+Set *require_ssl* to *true*
+
+Set *single_process_mode* to *false*
+
+Set *port* to 3000
+
+Set *rails_environment* to 'production'.
+
+Set *pod_name* to the name of your pod.
+
+Set *enable_registrations* to *true*.
+
+Set *autofollow_on_join* to *false*
+
+Under *captcha* set *enable* to *false*
+
+Under *invitations* set *open* to *true*
+
+Set *bitcoin_address* if you wish to accept donations.
+
+Under *mail* set *enable* to *true*
+
+Set *sender_address* to no-reply@mydiasporadomainname.com
+
+Set *method* to *sendmail*
+
+Set *exim_fix* to true.
+
+Under *admins* set *account* to *podmaster*
+
+Under *admins* set *podmin_email* to podmin@mydiasporadomainname.com
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+export HOSTNAME=mydiasporadomainname.com
+editor /etc/apache2/sites-available/$HOSTNAME
+#+END_SRC
+
+The initial section which begins with *<VirtualHost *:80>* should be replaced by the following, replacing /mydiasporadomainname.com/ with your Diaspora domain name and /myusername@mydomainname.com/ with your email address.
+
+#+BEGIN_SRC: bash
+<VirtualHost *:80>
+	ServerAdmin myusername@mydomainname.com
+	ServerName mydiasporadomainname.com
+
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+</VirtualHost>
+#+END_SRC
+
+Add the following in the section which begins with *<VirtualHost *:443>*.
+
+#+BEGIN_SRC: bash
+    ProxyVia On
+    ProxyPreserveHost On
+	ProxyRequests Off
+    SSLProxyEngine On
+
+    ProxyPass / https://localhost:3000/
+    ProxyPassReverse / https://localhost:3000/
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+RAILS_ENV=production  bundle install --without test development
+#+END_SRC
+
+This will take quite a while to install.
+
+#+BEGIN_SRC: bash
+RAILS_ENV=production  bundle exec rake db:create db:schema:load
+bundle exec rake assets:precompile
+#+END_SRC
+
+Create an init script:
+
+#+BEGIN_SRC: bash
+editor /etc/init.d/diaspora
+#+END_SRC
+
+Add the following.
+
+#+BEGIN_SRC: bash
+#!/bin/bash
+# /etc/init.d/diaspora
+
+### BEGIN INIT INFO
+# Provides:          diaspora
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts diaspora
+# Description:       Starts Diaspora.
+### END INIT INFO
+
+# Author: Bob Mottram <bob@robotics.uk.to>
+
+#Settings
+SERVICE='diaspora'
+USERNAME='diaspora'
+DIASPORA_HOME=/home/$USERNAME/diaspora
+LOGFILE=/home/$USERNAME/diaspora.log
+COMMAND="cd $DIASPORA_HOME; ./script/server >> $LOGFILE"
+PATH='/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/core_perl:/sbin:/usr/sbin:/bin'
+
+
+diaspora_start() {
+ echo -n $"Starting $SERVICE service: "
+# cd $DIASPORA_HOME
+ su -l $USERNAME -c "$COMMAND"
+ RETVAL=$?
+ echo
+}
+
+
+diaspora_stop() {
+ echo -n $"Stopping $SERVICE service: "
+ # Uncomment here to allow stop
+ su -l $USERNAME -c "$DIASPORA_HOME/script/server"
+ RETVAL=$?
+ echo
+}
+
+
+#Start-Stop here
+case "$1" in
+  start)
+    diaspora_start
+    ;;
+  stop)
+    diaspora_stop
+    ;;
+  restart)
+    diaspora_stop
+    diaspora_start
+    ;;
+    *)
+  echo "Usage: $0 {start|stop|restart}"
+  exit 1
+  ;;
+esac
+
+exit 0
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+chmod +x /etc/init.d/diaspora
+update-rc.d diaspora defaults
+service diaspora start
+#+END_SRC
+
+Now enable the site:
+
+#+BEGIN_SRC: bash
+a2enmod ssl
+a2enmod rewrite
+a2enmod headers
+a2enmod proxy
+a2enmod proxy_connect
+a2enmod proxy_http
+a2ensite $HOSTNAME
+service apache2 restart
 #+END_SRC
 
 * Related projects
