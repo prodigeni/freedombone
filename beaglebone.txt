@@ -7078,7 +7078,7 @@ Set *require_ssl* to *true*
 
 Set *single_process_mode* to *false*
 
-Set *port* to 3000
+Set *port* to 3001
 
 Set *rails_environment* to 'production'.
 
@@ -7109,6 +7109,20 @@ Under *admins* set *podmin_email* to podmin@mydiasporadomainname.com
 Save and exit.
 
 #+BEGIN_SRC: bash
+RAILS_ENV=production  bundle install --without test development
+#+END_SRC
+
+This will take quite a while to install.
+
+#+BEGIN_SRC: bash
+RAILS_ENV=production  bundle exec rake db:create db:schema:load
+bundle exec rake assets:precompile
+#+END_SRC
+
+Alter the Apache configuration.
+
+#+BEGIN_SRC: bash
+exit
 export HOSTNAME=mydiasporadomainname.com
 editor /etc/apache2/sites-available/$HOSTNAME
 #+END_SRC
@@ -7134,26 +7148,44 @@ Add the following in the section which begins with *<VirtualHost *:443>*.
 	ProxyRequests Off
     SSLProxyEngine On
 
-    ProxyPass / https://localhost:3000/
-    ProxyPassReverse / https://localhost:3000/
+    ProxyPass / http://localhost:3001/
+    ProxyPassReverse / http://localhost:3001/
+    RequestHeader set X_FORWARDED_PROTO https
+
+	DocumentRoot /home/diaspora/diaspora/public
+	<Directory />
+		Options FollowSymLinks
+		AllowOverride All
+	</Directory>
+	<Directory /home/diaspora/diaspora/public>
+		Options All
+		AllowOverride All
+		Order allow,deny
+		allow from all
+	</Directory>
 #+END_SRC
 
 Save and exit.
 
 #+BEGIN_SRC: bash
-RAILS_ENV=production  bundle install --without test development
+editor /usr/bin/rundiaspora
 #+END_SRC
 
-This will take quite a while to install.
+Add the following.
 
 #+BEGIN_SRC: bash
-RAILS_ENV=production  bundle exec rake db:create db:schema:load
-bundle exec rake assets:precompile
+#!/bin/sh
+USERNAME=diaspora
+COMMAND="cd /home/$USERNAME/diaspora; /bin/sh /home/$USERNAME/diaspora/script/server > /home/$USERNAME/diaspora.log"
+su -l $USERNAME -c '$COMMAND'
 #+END_SRC
+
+Save and exit.
 
 Create an init script:
 
 #+BEGIN_SRC: bash
+chmod +x /usr/bin/rundiaspora
 editor /etc/init.d/diaspora
 #+END_SRC
 
@@ -7177,27 +7209,30 @@ Add the following.
 
 #Settings
 SERVICE='diaspora'
+HISTORY=1024
 USERNAME='diaspora'
-DIASPORA_HOME=/home/$USERNAME/diaspora
-LOGFILE=/home/$USERNAME/diaspora.log
-COMMAND="cd $DIASPORA_HOME; ./script/server >> $LOGFILE"
-PATH='/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/core_perl:/sbin:/usr/sbin:/bin'
+COMMAND="rundiaspora"
+NICELEVEL=19 # from 0-19
+INVOCATION="nice -n ${NICELEVEL} ${COMMAND}"
+PATH='/usr/local/sbin:/usr/local/bin:/usr/bin:/sbin:/usr/sbin:/bin'
 
 
 diaspora_start() {
- echo -n $"Starting $SERVICE service: "
-# cd $DIASPORA_HOME
- su -l $USERNAME -c "$COMMAND"
- RETVAL=$?
+ echo -n $"Starting $SERVICE service"
+ screen -h ${HISTORY} -dmS ${SERVICE} ${INVOCATION}
+# su --command "screen -h ${HISTORY} -dmS ${SERVICE} ${INVOCATION}" $USERNAME
+# su -l $USERNAME -c "$COMMAND"
+# RETVAL=$?
  echo
 }
 
 
 diaspora_stop() {
- echo -n $"Stopping $SERVICE service: "
- # Uncomment here to allow stop
- su -l $USERNAME -c "$DIASPORA_HOME/script/server"
- RETVAL=$?
+ echo -n $"Stopping $SERVICE service"
+ screen -p 0 -S ${SERVICE} -X stuff "'^C'"
+# su --command "screen -p 0 -S ${SERVICE} -X stuff "'^C'"" $USERNAME
+# su -l $USERNAME -c "/home/$USERNAME/diaspora/script/server"
+# RETVAL=$?
  echo
 }
 
