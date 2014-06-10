@@ -4533,6 +4533,8 @@ git clone https://github.com/e14n/pump.io.git
 cd /opt/pump.io
 npm install
 npm install databank-redis
+echo "vm.overcommit_memory=1" >> /etc/sysctl.conf
+sysctl vm.overcommit_memory=1
 #+END_SRC
 
 Now edit the configuration file.
