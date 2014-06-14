@@ -3219,6 +3219,10 @@ Within the *auth* section set user = "*@192.168.1.60" - or whatever the fixed IP
 Within the *connect* section set *host* and *vhost* to your fixed IP address (in the earlier
 sections it was 192.168.1.60) and *name* to your domain name.  Also set the *send/accept passwords* to your IRC login password.
 
+Within the *operator* section change *name* to the username/nick which you will user to irc@192.168.1.60
+
+Change *ssl_connection_required* to *yes*.
+
 Save and exit, then restart the IRC server.  Open port 6697 on your internet router and forward it to the BBB.  Note that although ports 6665 to 6669 are active within the configuration file in practice we will only use the encrypted port.
 
 Ensure that the configuration is only readable by the root user.
@@ -3231,6 +3235,22 @@ Now create an init script.
 
 #+BEGIN_SRC: bash
 adduser --disabled-login irc
+editor /usr/bin/runircd
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+#!/bin/sh
+USERNAME=irc
+COMMAND="cd /usr/local/ircd; ircd > /usr/local/ircd/ircd.log"
+su -l $USERNAME -c '$COMMAND'
+#+END_SRC
+
+Save and exit.
+
+#+BEGIN_SRC: bash
+chmod +x /usr/bin/runircd
 editor /etc/init.d/ircd-hybrid
 #+END_SRC
 
@@ -3254,8 +3274,8 @@ Add the following:
 
 #Settings
 SERVICE='ircd-hybrid'
-COMMAND="ircd"
-USERNAME='irc'
+COMMAND="runircd"
+USER='irc'
 NICELEVEL=19 # from 0-19 the bigger the number, the less the impact on system resources
 HISTORY=1024
 INVOCATION="nice -n ${NICELEVEL} ${COMMAND}"
@@ -3266,14 +3286,13 @@ PATH='/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/core_perl:/sbin:/usr/sbin
 
 irc_start() {
 echo "Starting $SERVICE..."
-cd /usr/local/ircd
-su --command "screen -h ${HISTORY} -dmS ${SERVICE} ${INVOCATION}" $USERNAME
+su --command "screen -h ${HISTORY} -dmS ${SERVICE} ${INVOCATION}" $USER
 }
 
 
 irc_stop() {
 echo "Stopping $SERVICE"
-su --command "screen -p 0 -S ${SERVICE} -X stuff "'^C'"" $USERNAME
+pkill ${COMMAND}
 }
 
 
@@ -3792,7 +3811,26 @@ Save and exit.  Create a symbolic link.
 
 #+BEGIN_SRC: bash
 ln -sf /etc/prosody/conf.avail/xmpp.cfg.lua /etc/prosody/conf.d/xmpp.cfg.lua
+editor /etc/prosody/prosody.cfg.lua
 #+END_SRC
+
+Within the *ssl* section set:
+
+#+BEGIN_SRC: bash
+ssl = {
+    key = "/etc/ssl/private/xmpp.key";
+	certificate = "/etc/ssl/certs/xmpp.crt";
+}
+#+END_SRC
+
+Uncomment and set the following to *true*
+
+#+BEGIN_SRC: bash
+c2s_require_encryption = true
+s2s_require_encryption = true
+#+END_SRC
+
+Within the *modules_enabled* section uncomment *bosh*, then save and exit.
 
 Add a user.  You will be prompted to specify a password.  You can repeat the process for as many users as needed.  This will also be your Jabber ID (JID).
 
