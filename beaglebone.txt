@@ -1084,12 +1084,12 @@ apt-get install fail2ban
 ** Set up a firewall
 
 #+BEGIN_VERSE
-/The documents, from a PowerPoint presentation prepared for a 2012 NSA conference called SIGDEV, show that the unit known as the Joint Threat Research Intelligence Group, or JTRIG, boasted of using the DDOS attack – which it dubbed Rolling Thunder/
+/The NSA also attacks network devices directly: routers, switches, firewalls, etc. Most of these devices have surveillance capabilities already built in; the trick is to surreptitiously turn them on. This is an especially fruitful avenue of attack; routers are updated less frequently, tend not to have security software installed on them, and are generally ignored as a vulnerability./
 
--- NBC News article: /War on Anonymous: British Spies Attacked Hackers, Snowden Docs Show/
+-- Bruce Schneier
 #+END_VERSE
 
-A basic firewall limits the maximum rate at which connections can be made and closes any unused ports, and this helps to defend against various kinds of DDOS attack.
+A basic firewall limits the maximum rate at which connections can be made and closes any unused ports, and this helps to defend against various kinds of DDOS attack.  Your internet router may contain a firewall, but chances are that it also contains proprietary software which can be remotely changed/updated by the ISP.  Unless you're running free software, such as [[https://en.wikipedia.org/wiki/OpenWrt][OpenWrt]], on your internet router then it's reasonable to assume that the device is hostile and could be conducting surveillance, trying to do [[https://en.wikipedia.org/wiki/Man-in-the-middle_attack]["man in the middle"]] attacks or be pushing "implants" onto the computers and mobile devices on your local network.  That means that your server needs its own firewall.
 
 #+BEGIN_SRC: bash
 apt-get install portsentry
