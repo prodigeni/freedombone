@@ -60,6 +60,8 @@ If you're particularly security conscious then you shouldn't.  Binary or source 
 However, for maximum security for those software systems which are not already packaged within the Debian repositories then seek out the original sources and verify the hashes independently.
 
 It's worth adopting an attitude of "/trust but verify/".  Don't let fear of mass surveillance and [[https://www.techdirt.com/articles/20140207/08354426130/gchq-has-entire-program-dirty-tricks-including-honeypots-using-journalists-deleting-online-accounts.shtml]["dirty tricks"]] paralyse you into trusting nothing and consequently doing nothing.  Doing nothing means that the surveillance apparatus has succeeded in keeping you under observation at all times.
+** Do I need to have a static IP address?
+This is often a question which people ask about running a server from home.  The answer is that you don't need a static IP address.  In the vast majority of cases you will have a dynamic IP address issued by your ISP, which may change from time to time.  How then does the DNS system know how to resolve your domain name correctly?  To do this you need to use a dynamic IP address system, such as [[http://freedns.afraid.org/][freeDNS]].  The details of that are explained [[Getting onto the web][here]].  Other services are available, but they're not usually /free as in beer/.  In this guide a static IP address of 192.168.1.60 is only used within your /local network/ (i.e. not the big bad internet of public IP addresses), so that your internet router can be set up to send incoming traffic to the right computer.
 * Inventory
 
 #+BEGIN_VERSE
