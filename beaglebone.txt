@@ -366,6 +366,130 @@ After the system has rebooted you can ssh back unto it and log in as the root us
 uname -mrs
 #+END_SRC
 
+Now enable zram.
+
+#+BEGIN_SRC: bash
+emacs /etc/modprobe.d/zram.conf
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+options zram num_devices=1
+#+END_SRC
+
+Save and exit, then create an initialisation script.
+
+#+BEGIN_SRC: bash
+emacs /etc/init.d/zram
+#+END_SRC
+
+Add the following:
+
+#+BEGIN_SRC: bash
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides: zram
+# Required-Start:
+# Required-Stop:
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Increased Performance In Linux With zRam (Virtual Swap Compressed in RAM)
+# Description: Adapted from systemd scripts at https://github.com/mystilleef/FedoraZram
+### END INIT INFO
+
+start() {
+    # get the number of CPUs
+    num_cpus=$(grep -c processor /proc/cpuinfo)
+    # if something goes wrong, assume we have 1
+    [ "$num_cpus" != 0 ] || num_cpus=1
+
+    # set decremented number of CPUs
+    decr_num_cpus=$((num_cpus - 1))
+
+    # get the amount of memory in the machine
+    mem_total_kb=$(grep MemTotal /proc/meminfo | grep -E --only-matching '[[:digit:]]+')
+    mem_total=$((mem_total_kb * 1024))
+
+    # load dependency modules
+    modprobe zram num_devices=$num_cpus
+
+    # initialize the devices
+    for i in $(seq 0 $decr_num_cpus); do
+    echo $((mem_total / num_cpus)) > /sys/block/zram$i/disksize
+    done
+
+    # Creating swap filesystems
+    for i in $(seq 0 $decr_num_cpus); do
+    mkswap /dev/zram$i
+    done
+
+    # Switch the swaps on
+    for i in $(seq 0 $decr_num_cpus); do
+    swapon -p 100 /dev/zram$i
+    done
+}
+
+stop() {
+    # get the number of CPUs
+    num_cpus=$(grep -c processor /proc/cpuinfo)
+
+    # set decremented number of CPUs
+    decr_num_cpus=$((num_cpus - 1))
+
+    # Switching off swap
+    for i in $(seq 0 $decr_num_cpus); do
+    if [ "$(grep /dev/zram$i /proc/swaps)" != "" ]; then
+    swapoff /dev/zram$i
+    sleep 1
+    fi
+    done
+
+    sleep 1
+    rmmod zram
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        sleep 3
+        start
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        RETVAL=1
+esac
+exit $RETVAL
+#+END_SRC
+
+Save and exit, then reboot again.
+
+#+BEGIN_SRC: bash
+chmod +x /etc/init.d/zram
+update-rc.d zram defaults
+service zram start
+reboot
+#+END_SRC
+
+After the system has rebooted ssh back into it and become the root user, then to check that the changes were successful:
+
+#+BEGIN_SRC: bash
+cat dmesg | grep zram
+#+END_SRC
+
+Should show something like:
+
+#+BEGIN_SRC: bash
+[  507.322337] zram: Created 1 device(s) ...
+[  507.651151] Adding 505468k swap on /dev/zram0.  Priority:100 extents:1 across:505468k SS
+#+END_SRC
+
 ** Random number generation
 
 #+BEGIN_VERSE
@@ -2095,34 +2219,34 @@ Search for MaxClients and replace the value with 6. As an example the settings s
 Timeout 30
 KeepAlive On
 MaxKeepAliveRequests 5
-KeepAliveTimeout 1
+KeepAliveTimeout 10
 
 <IfModule mpm_prefork_module>
-    StartServers 5
-    MinSpareServers 5
-    MaxSpareServers 10
-    MaxClients 5
-    MaxRequestsPerChild 10
+    StartServers           1
+    MinSpareServers        1
+    MaxSpareServers        3
+    MaxClients            10
+    MaxRequestsPerChild 3000
 </IfModule>
 
 <IfModule mpm_worker_module>
-    StartServers 2
-    MinSpareThreads 5
-    MaxSpareThreads 5
-    ThreadLimit 6
-    ThreadsPerChild 10
-    MaxClients 5
-    MaxRequestsPerChild 10
+    StartServers          1
+    MinSpareThreads       5
+    MaxSpareThreads      15
+    ThreadLimit          25
+    ThreadsPerChild       5
+    MaxClients           25
+    MaxRequestsPerChild 200
 </IfModule>
 
 <IfModule mpm_event_module>
-    StartServers 2
-    MinSpareThreads 5
-    MaxSpareThreads 5
-    ThreadLimit 6
-    ThreadsPerChild 10
-    MaxClients 5
-    MaxRequestsPerChild 10
+    StartServers          1
+    MinSpareThreads       5
+    MaxSpareThreads      15
+    ThreadLimit          25
+    ThreadsPerChild       5
+    MaxClients           25
+    MaxRequestsPerChild 200
 </IfModule>
 #+END_SRC
 
